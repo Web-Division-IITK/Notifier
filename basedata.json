@@ -1,0 +1,8 @@
+{
+    "councils": ["ss", "snt", "gns", "anc", "mnc"],
+    "clubs": ["Aeromodelling Club", "Astronomy Club", "Electronics Club", "Robotics Club", "Programming Club", "Speedcubing Club", "Finance and Analytics Club"],
+    "hobby": ["ScienceCoffeeHouse", "DESCON", "Consulting Group"],
+    "division": ["Web Division", "Outreach and Connect", "Product Development Society"],
+    "teams": ["Aerial Robotics", "AUV", "IITK Motorsports", "ERA IITK", "Vision", "ZURA", "Humanoid", "iGEM", "Robocon"],
+    "misc": ["Science and Technology Council", "Techkriti"]
+}

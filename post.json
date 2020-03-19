@@ -1,0 +1,11 @@
+{
+    "title": "This is the Title. Show this in bold in the Notification.",
+    "tags": ["", "", "...some more maybe"],
+    "council": "snt",
+    "sub": ["Electronics Club", "Robotics Club"],
+    "body": "This is the Main Body of the post, make this the main content of the card.",
+    "author": "Utkarsh Gupta",
+    "url": "url of a image that needs to be fetch to complete the post",
+    "owner": "utkarshg",
+    "message": "This is to be displayed in the Notification"
+}
