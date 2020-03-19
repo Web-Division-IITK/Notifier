@@ -129,3 +129,22 @@ exports.resetCouncil = functions.https.onRequest(async function (req, res) {
         res.send(data.id);
     }
 })
+
+/*
+// Firebase function 
+
+exports.createAccountDocument = functions.auth.user().onCreate((user) => {
+  // get user data from the auth trigger
+  const userUid = user.uid; // The UID of the user.
+  //const email = user.email; // The email of the user.
+  //const displayName = user.displayName; // The display name of the user.
+
+  // set account  doc  
+  const account = {
+    useruid: userUid,
+    calendarEvents: []
+  }
+  // write new doc to collection
+  return admin.firestore().collection('accounts').add(account); 
+});
+*/

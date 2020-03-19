@@ -1,7 +1,7 @@
 # Notifier
 
 ### TODO Frontend:
-* Create Register User using cc-userId, append ```@iitk.ac.in``` automatically (Registering User should create a document in users collection)
+* Create Register User using cc-userId, append ```@iitk.ac.in``` automatically
 * Create LogIn system
 * Save the userId upon login
 * Keep the User Logged In
@@ -21,3 +21,4 @@
 ### TODO Backend:
 * Update the ```elevatePerson``` function to set ```admin:True``` in users collection
 * Update the ```resetCouncil``` function to reset each user in people to ```admin:False```
+* Create a new user for every Sign In
