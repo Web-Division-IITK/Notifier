@@ -17,3 +17,7 @@
 * Deal with the Notifications received on deleting a new post: On a delete, just delete the post stored locally using the ```id```. ```type:delete```
 * For Type 2 interface, allow erasing all posts and people at once.
 * For Type 2 interface, allow adding of new People as Coordinators and Managers
+
+### TODO Backend:
+* Update the ```elevatePerson``` function to set ```admin:True``` in users collection
+* Update the ```resetCouncil``` function to reset each user in people to ```admin:False```
