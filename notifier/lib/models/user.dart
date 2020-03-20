@@ -7,8 +7,9 @@ class User {
 
 class UserData{
   final String uid;
-  final String name;
-  final String password;
-  final String email;
-  UserData({this.uid,this.name,this.email,this.password});
+  final bool admin;
+  final String id;
+  // final String password;
+  // final String email;
+  UserData({this.uid,this.admin,this.id});
 }

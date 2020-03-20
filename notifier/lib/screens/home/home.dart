@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:notifier/main.dart';
 import 'package:notifier/models/user.dart';
+import 'package:notifier/screens/home/type1.dart';
 // import 'package:notifier/screens/home/display/qrscan_cde/qr_code.dart';
 import 'package:notifier/services/auth.dart';
 import 'package:notifier/services/database.dart';
@@ -9,7 +10,7 @@ import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   // final Function toggleTheme;
-  final AuthService _authe = AuthService();
+  
  
   @override
   _HomeState createState() => _HomeState();
@@ -53,7 +54,7 @@ class _HomeState extends State<Home> {
         false;
   }
 
-  String password;
+  bool admin = false;
 
   @override
   Widget build(BuildContext context) {
@@ -61,16 +62,35 @@ class _HomeState extends State<Home> {
     return StreamBuilder<UserData>(
         stream: DatabaseService(uid: user.uid).userData,
         builder: (context, snapshot) {
+          if(snapshot != null){
+            print(admin);
           UserData userData = snapshot.data;
-          userData == null ? CircularProgressIndicator(backgroundColor:Colors.white) : password = userData.password;
+          print(userData.id);
+          userData == null ? CircularProgressIndicator(backgroundColor:Colors.white) : admin = userData.admin;
           return WillPopScope(
             onWillPop: _onWillPop,
-            child: new Scaffold(
+            child: admin ? Admin(userData.id): Container(child: Text('You are not an admin'))
+          );
+          }
+          else {
+            return Center(child: CircularProgressIndicator(backgroundColor:Colors.black));
+          }
+        });
+  }
+}
+
+class Admin extends StatelessWidget {
+  final id;
+  final AuthService _auth = AuthService();
+  Admin(this.id);
+  @override
+  Widget build(BuildContext context) {
+    return  Scaffold(
               appBar: AppBar(
                 iconTheme: IconThemeData(
                   color: darkThemeEnabled ? Colors.white : Colors.black,
                 ),
-                title: Text('Scan Qr Code',
+                title: Text('Selection',
                   style: TextStyle(
                     color:darkThemeEnabled ? Colors.white : Colors.black),),
                 backgroundColor: darkThemeEnabled ? Colors.black : Colors.white,
@@ -78,13 +98,13 @@ class _HomeState extends State<Home> {
                 actions: <Widget>[
                   FlatButton.icon(
                     icon: Icon(Icons.person,
-                    color: Colors.white,),
+                    color: Colors.black,),
                     label: Text('Logout',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                     ),),
                     onPressed: () async {
-                      await widget._authe.signOut();
+                      await _auth.signOut();
                     },
                   )
                 ],
@@ -98,8 +118,8 @@ class _HomeState extends State<Home> {
                 // padding: EdgeInsets.only(top: 170.0),
                 color: darkThemeEnabled ? Colors.black : Colors.white,
                 // child: ListView(
-                  child: Column(mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
+                  // child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                  // children: <Widget>[
                     // (password == null)
                     //     ? SpinKitFadingCircle(
                     //         color: darkThemeEnabled ? Colors.white : Colors.black,
@@ -125,11 +145,10 @@ class _HomeState extends State<Home> {
                     // ),
                     // SizedBox(height: 15.0),
                     // QrScanner(),
-                  ],
-                ),
+                   child: Type1(id)
+              //     ],
+              //   // ),
               ),
-            ),
-          );
-        });
+            );
   }
 }
