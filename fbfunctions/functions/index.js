@@ -93,6 +93,7 @@ exports.sendToTopicDelete = functions.firestore.document('snt/{id}').onDelete(as
 })
 
 exports.elevatePerson = functions.https.onRequest(async function (req, res) {
+    // input: id, sub (array)
     let data = req.body;
     let datax = {
         "id": data.id,
@@ -100,7 +101,9 @@ exports.elevatePerson = functions.https.onRequest(async function (req, res) {
         "posts": []
     }
     await db.collection('people').doc(data.id).set(datax);
-    res.send(data.id);
+    let dxc = await db.collection('users').where('id', '==', data.id).get()
+    dxc.forEach(async (res)=> await db.collection('users').doc(res.data().uid).update({"admin": true}))
+    res.send(data.id)
 })
 
 exports.resetCouncil = functions.https.onRequest(async function (req, res) {
@@ -130,21 +133,23 @@ exports.resetCouncil = functions.https.onRequest(async function (req, res) {
     }
 })
 
-/*
-// Firebase function 
-
-exports.createAccountDocument = functions.auth.user().onCreate((user) => {
-  // get user data from the auth trigger
-  const userUid = user.uid; // The UID of the user.
-  //const email = user.email; // The email of the user.
-  //const displayName = user.displayName; // The display name of the user.
-
-  // set account  doc  
-  const account = {
-    useruid: userUid,
-    calendarEvents: []
-  }
-  // write new doc to collection
-  return admin.firestore().collection('accounts').add(account); 
+exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
+    let id = user.email.replace("@iitk.ac.in", "");
+    const account = {
+        uid: user.uid,
+        email: user.email,
+        name: "",
+        rollno: "",
+        id,
+        admin: false,
+        prefs: []
+    }
+    await db.collection('users').doc(user.uid).set(account); 
 });
-*/
+
+exports.updateUser = functions.https.onRequest(async function (req, res) {
+    // update: name, rollno and prefs array, input: uid of the person
+    let data = req.body;
+    await db.collection('users').doc(data.uid).update(data);
+    res.send(data.uid)
+})

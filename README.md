@@ -22,3 +22,4 @@
 * Update the ```elevatePerson``` function to set ```admin:True``` in users collection
 * Update the ```resetCouncil``` function to reset each user in people to ```admin:False```
 * Create a new user for every Sign In
+* CleanUp process in case of Account Deletion
