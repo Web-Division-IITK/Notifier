@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "689242550997",
+    "firebase_url": "https://notifier-snt.firebaseio.com",
+    "project_id": "notifier-snt",
+    "storage_bucket": "notifier-snt.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689242550997:android:72ca7f6d7fab42b765285c",
+        "android_client_info": {
+          "package_name": "com.sntcouncil.notifier"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "689242550997-uccstqitstcuqiiej004t0ksmubfojnm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJrTu0tefn7D72Ny4lLRPqfd-xWEZlea0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689242550997-uccstqitstcuqiiej004t0ksmubfojnm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
