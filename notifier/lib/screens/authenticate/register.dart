@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:notifier/color/decoration.dart';
+import 'package:notifier/screens/authenticate/break.dart';
+import 'package:notifier/screens/wrapper.dart';
 import 'package:notifier/services/auth.dart';
 
 class Register extends StatefulWidget {
@@ -34,6 +36,12 @@ class _RegisterState extends State<Register> {
     return SizedBox(
       height: 0.0,
     );
+  }
+  @override
+   void setState(fn) {
+    if(mounted){
+      super.setState(fn);
+    }
   }
   @override
   Widget build(BuildContext context) {
@@ -136,21 +144,21 @@ class _RegisterState extends State<Register> {
                         ],
                       ),
                       SizedBox(height: 25.0),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 50.0),
-                        child: TextFormField(
-                          style: TextStyle(
-                          color: Colors.black,
-                        ),
-                            validator: (val) => val.isEmpty ? 'Name' : null,
-                            onChanged: (val) {
-                              setState(() {
-                                userName = val;
-                              });
-                            },
-                            decoration: decoration(" Name")),
-                      ),
-                      SizedBox(height: 18.0),
+                      // Padding(
+                      //   padding: EdgeInsets.symmetric(horizontal: 50.0),
+                      //   child: TextFormField(
+                      //     style: TextStyle(
+                      //     color: Colors.black,
+                      //   ),
+                      //       validator: (val) => val.isEmpty ? 'Name' : null,
+                      //       onChanged: (val) {
+                      //         setState(() {
+                      //           userName = val;
+                      //         });
+                      //       },
+                      //       decoration: decoration(" Name")),
+                      // ),
+                      // SizedBox(height: 18.0),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 50.0),
                         child: TextFormField(
@@ -158,9 +166,9 @@ class _RegisterState extends State<Register> {
                           color: Colors.black,
                         ),
                             validator: (val) => val.isEmpty
-                                ? 'Enter an email'
-                                : (!val.contains('@') || val.contains(" ")
-                                    ? 'Invalid Email'
+                                ? 'Enter Username'
+                                : (val.contains('@') || val.contains(" ") || val.contains('iitk.ac.in')
+                                    ? 'Invalid UserName or You have not entered CC User ID'
                                     : null),
                             onChanged: (val) {
                               setState(
@@ -169,7 +177,7 @@ class _RegisterState extends State<Register> {
                                 },
                               );
                             },
-                            decoration: decoration(" Email")),
+                            decoration: decoration("CC UserID")),
                       ),
                       SizedBox(height: 18.0),
                       Padding(
@@ -215,7 +223,18 @@ class _RegisterState extends State<Register> {
                               });
                               dynamic result =
                                   await _auth.registerWithEmailAndPassword(
-                                      userName, email, password);
+                                      userName, email + '@iitk.ac.in', password);
+                                      print(result);
+                                //       val = result;
+                                      if(result == 'false'){
+                                setState(() {
+                                  loading = false;
+                                  
+                                   Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context){
+                                           return Break();
+                                          }));
+                                });
+                              }
                               if (result == null) {
                                 setState(() {
                                   error = 'Please supply a valid email';

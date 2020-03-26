@@ -1,4 +1,4 @@
-import 'package:notifier/models/options.dart';
+import 'package:notifier/model/options.dart';
 
 // const selectionData= {
 //     "councils": ["ss", "snt", "gns", "anc", "mnc"],
@@ -19,17 +19,39 @@ import 'package:notifier/models/options.dart';
 // ];
 List<Options> selectionData = [
   // Options("Council",["ss", "snt", "gns", "anc", "mnc"]),
-  Options( 'Choose..', ["Aeromodelling Club", "Astronomy Club", "Electronics Club", "Robotics Club", "Programming Club", "Speedcubing Club", "Finance and Analytics Club","Aerial Robotics", "AUV", "IITK Motorsports", "ERA IITK", "Vision", "ZURA", "Humanoid", "iGEM", "Robocon"],),
+  Options(
+    'Choose..',
+    [
+      "Aeromodelling Club",
+      "Astronomy Club",
+      "Electronics Club",
+      "Robotics Club",
+      "Programming Club",
+      "Speedcubing Club",
+      "Finance and Analytics Club",
+      "Aerial Robotics",
+      "AUV",
+      "Game Development Society",
+      "IITK Motorsports",
+      "ERA IITK",
+      "Vision",
+      "ZURA",
+      "Humanoid",
+      "iGEM",
+      "Robocon"
+    ],
+    [false,
+    false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
+    ]
+  ),
   // Options( "Misc", ["Science and Technology Council", "Techkriti"]),
 ];
 // List<String> selection
 
 class Repository {
-
   List<Map> getAll() => _selectionData;
 
   getLocalByState(String state) => null;
-     
 
   List<String> getStates() => null;
 
@@ -39,8 +61,16 @@ class Repository {
     //   'options': ["ss", "snt", "gns", "anc", "mnc"]
     // },
     {
-      'title':"clubs",
-      'options': ["Aeromodelling Club", "Astronomy Club", "Electronics Club", "Robotics Club", "Programming Club", "Speedcubing Club", "Finance and Analytics Club"],
+      'title': "clubs",
+      'options': [
+        "Aeromodelling Club",
+        "Astronomy Club",
+        "Electronics Club",
+        "Robotics Club",
+        "Programming Club",
+        "Speedcubing Club",
+        "Finance and Analytics Club"
+      ],
     },
     {
       'title': "hobby",
@@ -48,15 +78,27 @@ class Repository {
     },
     {
       'title': "division",
-      'options': ["Web Division", "Outreach and Connect", "Product Development Society"],
+      'options': [
+        "Web Division",
+        "Outreach and Connect",
+        "Product Development Society"
+      ],
     },
     {
-      'title':"teams",
-      'options': ["Aerial Robotics", "AUV", "IITK Motorsports", "ERA IITK", "Vision", "ZURA", "Humanoid", "iGEM", "Robocon"]
+      'title': "teams",
+      'options': [
+        "Aerial Robotics",
+        "AUV",
+        "IITK Motorsports",
+        "ERA IITK",
+        "Vision",
+        "ZURA",
+        "Humanoid",
+        "iGEM",
+        "Robocon"
+      ]
     }
-    
-    
+
     // "misc": ["Science and Technology Council", "Techkriti"]
   ];
-
 }

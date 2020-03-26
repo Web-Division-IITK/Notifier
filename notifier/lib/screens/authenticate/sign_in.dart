@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:notifier/color/decoration.dart';
+import 'package:notifier/screens/authenticate/break.dart';
 import 'package:notifier/screens/authenticate/reset_password.dart';
 import 'package:notifier/services/auth.dart';
 
@@ -193,9 +194,9 @@ class _SignInState extends State<SignIn> {
                           color: Colors.black,
                         ),
                         cursorColor: Colors.teal,
-                        validator: (val) => val.isEmpty ? 'Enter an email' : (!val.contains('@')? 'Invalid Email' :  null) ,
+                        validator: (val) => val.isEmpty ? 'Enter Username' : (val.contains('@')? 'Invalid UserName' :  null) ,
                         
-                        decoration: decoration(" Email"),
+                        decoration: decoration(" Username"),
                         onChanged: (val) {
                           setState(() {
                             email = val;
@@ -230,12 +231,20 @@ class _SignInState extends State<SignIn> {
                                 loading = true;
                               });
                               dynamic result = await _auth
-                                  .signInWithEmailAndPassword(email, password);
-                              
+                                  .signInWithEmailAndPassword(email + '@iitk.ac.in', password);
+                                  print(result);
+                              if(result == 'false'){
+                                setState(() {
+                                  loading = false;
+                                   Navigator.of(context).push(MaterialPageRoute(builder: (context){
+                                           return Break();
+                                          }));
+                                });
+                              }
                               if (result == null) {
                                 setState(() {
                                   error =
-                                      'Email / Password is incorrect';
+                                      'UserName / Password is incorrect';
                                   loading = false;
                                 });
                               }
@@ -257,7 +266,7 @@ class _SignInState extends State<SignIn> {
                       Navigator.of(context).push(new MaterialPageRoute(
                           builder: (BuildContext context) => new ResetPassword()));
                   }),
-                  loading  ? CircularProgressIndicator(backgroundColor: Colors.white):
+                  loading  ? Center(child: CircularProgressIndicator(backgroundColor: Colors.white)):
                   //error displaying
                   Text(
                     error,
