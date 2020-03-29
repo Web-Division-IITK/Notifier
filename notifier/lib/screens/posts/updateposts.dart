@@ -36,14 +36,17 @@ class _UpDatePostsState extends State<UpDatePosts> {
         // for (var i in v['posts']) {
         // docById.clear();
         loadPostsUsers(v['posts']).then((bool status) {
-          print(status);
+          print(status.toString() + 'stauts line39 upadate.dart');
           if (docById != null) {
             setState(() {
-              // var i = 0;
+              var i = 0;
+              // print(docById['exists'].toString() + 'dobyid line43 update.dart');
               docById.keys.forEach((key) {
-                if (docById[key]['exists']!=null && docById['exists']) {
+                
+                if (docById[key]['exists']!=null && docById[key]['exists']) {
                   update.insert(
                       0, UpdatePostsFormat(uid: key, value: docById[key]));
+                      i++;
                 } else if (update.contains(
                     UpdatePostsFormat(uid: key, value: docById[key]))) {
                   update
@@ -63,8 +66,14 @@ class _UpDatePostsState extends State<UpDatePosts> {
                     print('writing posts failed line87 in updatepost.dart');
                   }
                 });
-                _post = docById;
+               if(i!=0){
+                  _post = docById;
                 _load = false;
+               }
+               else if(i == 0){
+                 _post = null;
+                 _load = false;
+               }
               });
             }
             });

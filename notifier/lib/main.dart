@@ -21,9 +21,20 @@ class _MyAppState extends State<MyApp> {
       defaultBrightness: Brightness.light,
       data: (brightness) => ThemeData(
         fontFamily: 'Raleway',
-        primaryColor: brightness == Brightness.dark ? Colors.orange: Colors.amber,
-        buttonColor: Colors.deepOrange,
+        
+        primaryColor: brightness == Brightness.dark ? Colors.deepPurple: Colors.amber,
+        buttonColor:brightness == Brightness.dark ? Colors.pink: Colors.deepOrange,
           splashColor: Colors.orange,
+          // toggleButtonsTheme: ,
+          appBarTheme: AppBarTheme(
+            
+          ),
+          toggleableActiveColor: brightness == Brightness.dark ? Colors.teal:Colors.green,
+          cupertinoOverrideTheme: CupertinoThemeData(
+            brightness: brightness,
+            
+          ),
+          dialogBackgroundColor: brightness == Brightness.dark ? Colors.black:Colors.white,
         // accentColor: MyColors.accent,
         brightness: brightness, // default is dark
       ),

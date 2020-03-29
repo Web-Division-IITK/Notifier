@@ -283,6 +283,7 @@ class _HomePageState extends State<HomePage> {
 
   signOut() async {
     try {
+      DynamicTheme.of(context).setBrightness(Brightness.light);
       subscribeUnsubsTopic([], _prefs);
       await widget.auth.signOut();
       widget.logoutCallback();
@@ -328,14 +329,14 @@ class _HomePageState extends State<HomePage> {
                 },
                 child: Container(
                     height: MediaQuery.of(context).size.width * 0.7,
-                    color: Colors.amber,
+                    color: darkMode ?Colors.deepPurple :Colors.amber,
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           CircleAvatar(
                             radius: 50.0,
-                            backgroundColor: Colors.blue,
+                            // backgroundColor: Colors.blue,
                             child: Text(
                                 name == null || name == ''
                                     ? id[0].toUpperCase()
@@ -454,22 +455,27 @@ class _HomePageState extends State<HomePage> {
                 height: 55.0,
                 padding: EdgeInsets.only(left: 15.0, top: 15.0, bottom: 15.0),
                 child: Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
                       'Dark Mode',
                       style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito'),
                     ),
-                    Switch(
-                      value: darkMode, onChanged: (value){
-                        setState(() {
-                          darkMode = value;
-                        });
-                          DynamicTheme.of(context).setBrightness(
+                    // SizedBox(width: 40.0),
+                    Container(
+                      padding: EdgeInsets.only(left:50.0),
+                      child: Switch(
+                        value: darkMode, onChanged: (value){
+                          setState(() {
+                            darkMode = value;
+                          });
+                            DynamicTheme.of(context).setBrightness(
               Theme.of(context).brightness == Brightness.light
                   ? Brightness.dark
                   : Brightness.light);
-                        
-                      })
+                          
+                        }),
+                    )
                   ],
                 ),
               ),

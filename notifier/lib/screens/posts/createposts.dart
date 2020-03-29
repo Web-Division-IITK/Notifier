@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
@@ -376,161 +377,166 @@ class _CreatePostsState extends State<CreatePosts> {
                             size: 30.0,
                           ),
                           onPressed: () {
-                            return showDialog(
+                            return showCupertinoDialog(
                                 context: context,
                                 builder: (context) {
                                   return StatefulBuilder(
                                     builder: (context, setState) {
-                                      return AlertDialog(
-                                        shape:
-                        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: <Widget>[
-                                            Stack(
-                                              alignment: AlignmentDirectional.center,
-                                              children: <Widget>[
-                                                // Center(
-                                                //   child: CircularProgressIndicator(),
-                                                // ),
-                                                Column(
-                                                  // mainAxisAlignment: MainAxisAlignment.center,
-                                                  // crossAxisAlignment: CrossAxisAlignment.center,
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: <Widget>[
-                                                    SizedBox(
-                                                      height: 20.0,
-                                                    ),
-                                                    _image != null
-                                                        ? Text('Selected Image',
-                                                            style:
-                                                                TextStyle(fontSize: 20.0))
-                                                        : Container(),
-                                                    _image != null
-                                                        ? SizedBox(
-                                                            height: 10.0,
-                                                          )
-                                                        : SizedBox(),
-                                                    _image != null
-                                                        ? Container(
-                                                            padding: EdgeInsets.only(
-                                                                bottom: 10.0),
-                                                            height: 250.0,
-                                                            // child: Image.asset(
-                                                            //     _image.path,
-                                                            //     fit: BoxFit.fill)
-                                                            child: Image.file(_image),
-                                                                )
-                                                        : Container(),
-                                                    _url == null
-                                                        ? RaisedButton(
-                                                            shape:new RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        new BorderRadius
-                                                                                .circular(
-                                                                            30.0)),
-                                                            child: Text(
-                                                              _url == null &&
-                                                                      _image == null
-                                                                  ? 'Choose Image'
-                                                                  : 'Choose another',
-                                                              style: TextStyle(
-                                                                  color: Colors.white),
-                                                            ),
-                                                            onPressed: () async {
-                                                              await ImagePicker.pickImage(
-                                                                      source: ImageSource
-                                                                          .gallery)
-                                                                  .then((image) {
-                                                                setState(() {
-                                                                  _image = image;
-                                                                });
-                                                              });
-                                                            },
-                                                            color: Colors.cyan,
-                                                          )
-                                                        : Container(),
-                                                    _image != null && _url == null
-                                                        ? RaisedButton(
-                                                            shape:
-                                                                new RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        new BorderRadius
-                                                                                .circular(
-                                                                            30.0)),
-                                                            child: Text(
-                                                              'Upload Image',
-                                                              style: TextStyle(
-                                                                  color: Colors.white),
-                                                            ),
-                                                            onPressed: (){
-                                                              setState((){
-                                                                _loadingWidget =true;
-                                                              });
-                                                              uploadFile().then((bool status){
-                                                                if(status){
-                                                                
-                                                                  Fluttertoast.showToast(msg: 'Upload Successful!!');
-                                                                  Navigator.of(context).pop();
-                                                                  setState((){
-                                                                    _loadingWidget = false;
+                                      return WillPopScope(
+                                        onWillPop: ()async{
+                                          return Navigator.of(context).pop(_loadingWidget);
+                                        },
+                                        child: CupertinoAlertDialog(
+                        //                 shape:
+                        // RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+                                              Stack(
+                                                alignment: AlignmentDirectional.center,
+                                                children: <Widget>[
+                                                  // Center(
+                                                  //   child: CircularProgressIndicator(),
+                                                  // ),
+                                                  Column(
+                                                    // mainAxisAlignment: MainAxisAlignment.center,
+                                                    // crossAxisAlignment: CrossAxisAlignment.center,
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: <Widget>[
+                                                      SizedBox(
+                                                        height: 20.0,
+                                                      ),
+                                                      _image != null
+                                                          ? Text('Selected Image',
+                                                              style:
+                                                                  TextStyle(fontSize: 20.0))
+                                                          : Container(),
+                                                      _image != null
+                                                          ? SizedBox(
+                                                              height: 10.0,
+                                                            )
+                                                          : SizedBox(),
+                                                      _image != null
+                                                          ? Container(
+                                                              padding: EdgeInsets.only(
+                                                                  bottom: 10.0),
+                                                              height: 250.0,
+                                                              // child: Image.asset(
+                                                              //     _image.path,
+                                                              //     fit: BoxFit.fill)
+                                                              child: Image.file(_image),
+                                                                  )
+                                                          : Container(),
+                                                      _url == null
+                                                          ? RaisedButton(
+                                                              shape:new RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          new BorderRadius
+                                                                                  .circular(
+                                                                              30.0)),
+                                                              child: Text(
+                                                                _url == null &&
+                                                                        _image == null
+                                                                    ? 'Choose Image'
+                                                                    : 'Choose another',
+                                                                style: TextStyle(
+                                                                    color: Colors.white),
+                                                              ),
+                                                              onPressed: () async {
+                                                                await ImagePicker.pickImage(
+                                                                        source: ImageSource
+                                                                            .gallery)
+                                                                    .then((image) {
+                                                                  setState(() {
+                                                                    _image = image;
                                                                   });
-                                                                }
-                                                              });
-
-                                                            },
-                                                            color: Colors.cyan,
-                                                          )
-                                                        : Container(),
-                                                    _image != null
-                                                        ? RaisedButton(
-                                                            color: Colors.white,
-                                                            shape:
-                                                                new RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        new BorderRadius
-                                                                                .circular(
-                                                                            30.0)),
-                                                            child: Text(
-                                                              'Clear Selection',
-                                                              style: TextStyle(
-                                                                  color: Colors.black),
-                                                            ),
-                                                            onPressed: () {
-                                                              print(_image.path);
-                                                              if (_url == null) {
-                                                                setState(() {
-                                                                  _image = null;
-                                                                  _url = null;
                                                                 });
-                                                              } else {
-                                                                StorageReference
-                                                                    storageReference =
-                                                                    FirebaseStorage
-                                                                        .instance
-                                                                        .ref()
-                                                                        .child(
-                                                                            'upload_image/${Path.basename(_image.path)}');
-                                                                storageReference
-                                                                    .delete()
-                                                                    .then((_) {
-                                                                  Fluttertoast.showToast(
-                                                                      msg:
-                                                                          'Removed Successfully');
+                                                              },
+                                                              color: Colors.cyan,
+                                                            )
+                                                          : Container(),
+                                                      _image != null && _url == null
+                                                          ? RaisedButton(
+                                                              shape:
+                                                                  new RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          new BorderRadius
+                                                                                  .circular(
+                                                                              30.0)),
+                                                              child: Text(
+                                                                'Upload Image',
+                                                                style: TextStyle(
+                                                                    color: Colors.white),
+                                                              ),
+                                                              onPressed: (){
+                                                                setState((){
+                                                                  _loadingWidget =true;
+                                                                });
+                                                                uploadFile().then((bool status){
+                                                                  if(status){
+                                                                  
+                                                                    Fluttertoast.showToast(msg: 'Upload Successful!!');
+                                                                    Navigator.of(context).pop();
+                                                                    setState((){
+                                                                      _loadingWidget = false;
+                                                                    });
+                                                                  }
+                                                                });
+
+                                                              },
+                                                              color: Colors.cyan,
+                                                            )
+                                                          : Container(),
+                                                      _image != null
+                                                          ? RaisedButton(
+                                                              color: Colors.white,
+                                                              shape:
+                                                                  new RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          new BorderRadius
+                                                                                  .circular(
+                                                                              30.0)),
+                                                              child: Text(
+                                                                'Clear Selection',
+                                                                style: TextStyle(
+                                                                    color: Colors.black),
+                                                              ),
+                                                              onPressed: () {
+                                                                print(_image.path);
+                                                                if (_url == null) {
                                                                   setState(() {
                                                                     _image = null;
                                                                     _url = null;
                                                                   });
-                                                                });
-                                                              }
-                                                            })
-                                                        : Container(),
-                                                  ],
-                                                ),
-                                                _loadingWidget?Center(child: CircularProgressIndicator(),):Container(),
-                                              ],
-                                            ),
-                                          ],
+                                                                } else {
+                                                                  StorageReference
+                                                                      storageReference =
+                                                                      FirebaseStorage
+                                                                          .instance
+                                                                          .ref()
+                                                                          .child(
+                                                                              'upload_image/${Path.basename(_image.path)}');
+                                                                  storageReference
+                                                                      .delete()
+                                                                      .then((_) {
+                                                                    Fluttertoast.showToast(
+                                                                        msg:
+                                                                            'Removed Successfully');
+                                                                    setState(() {
+                                                                      _image = null;
+                                                                      _url = null;
+                                                                    });
+                                                                  });
+                                                                }
+                                                              })
+                                                          : Container(),
+                                                    ],
+                                                  ),
+                                                  _loadingWidget?Center(child: CircularProgressIndicator(),):Container(),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       );
                                     },
@@ -716,7 +722,7 @@ class _CreatePostsState extends State<CreatePosts> {
 
   confirmPage() {
     var time = DateFormat('d MMMM, yyyy : kk:mm').format(DateTime.now());
-    return showDialog(
+    return showCupertinoDialog(
         context: context,
         builder: (BuildContext context) {
           return StatefulBuilder(builder: (context,setState){
@@ -726,28 +732,29 @@ class _CreatePostsState extends State<CreatePosts> {
     // print()
     // print(time);
 
-    return  Dialog(
-      shape:
-                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-      child:
+    return  CupertinoAlertDialog(
+      // shape:
+      //                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      title: Text('Preview',
+                      style: TextStyle(
+                        fontSize: 30.0
+                      ),
+                      ),
+      content:
           Container(
             
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16.0),
-              color: Colors.white,
+              
             ),
-            height:420.0,
-            width: 450.0,
+            // height:420.0,
+            // width: 450.0,
             child: Stack(
               children: <Widget>[
                 Column(
                   mainAxisSize: MainAxisSize.max,
                   children: <Widget>[
-                    Title(color: Colors.black, child: Text('Preview',
-                      style: TextStyle(
-                        fontSize: 30.0
-                      ),
-                      )),
+                    
                     Card(
                           elevation: 5.0,
                           margin: EdgeInsets.symmetric(vertical: 16.0),

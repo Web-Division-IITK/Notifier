@@ -210,7 +210,7 @@ class _MessageHandlerState extends State<MessageHandler> {
                     child: Hero(
                       tag: 'image$index',
                       child: CachedNetworkImage(
-                        fit:BoxFit.fill,
+                        fit:BoxFit.fitWidth,
                         placeholder: (context, url) =>
                             Center(child: CircularProgressIndicator()),
                         imageUrl: timenot['url'],

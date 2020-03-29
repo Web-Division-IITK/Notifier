@@ -214,8 +214,8 @@ class _PreferencesState extends State<Preferences> {
                                       });
                                     }
                                   },
-                                  activeTrackColor: Colors.lightGreenAccent,
-                                  activeColor: Colors.green,
+                                  // activeTrackColor: Colors.lightGreenAccent,
+                                  // activeColor: Colors.green,
                                 ),
                               ),
                             )
@@ -292,23 +292,24 @@ class _PreferencesState extends State<Preferences> {
                 SizedBox(height: 10.0),
                 Text(
                   'Note: You will not be able to receive notifications for the unsubscribed topic',
-                  style: TextStyle(fontSize: 10.0, color: Colors.black),
+                  style: TextStyle(fontSize: 10.0,),
                 ),
                 SizedBox(height: 10.0),
                 RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
                         text: 'Type ',
-                        style: TextStyle(color: Colors.black),
+                        // style: TextStyle(color: Colors.black),
                         children: <TextSpan>[
                           TextSpan(
                               text: '$name ',
                               style: TextStyle(
-                                  color: Colors.black,
+                                  // color: Colors.black,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text: 'to continue',
-                              style: TextStyle(color: Colors.black))
+                              // style: TextStyle()
+                              )
                         ])),
                 //  SizedBox(height: 20.0),
                 Material(
@@ -416,22 +417,23 @@ class _PreferencesState extends State<Preferences> {
                 ),
                 Text(
                   'Note: You will not be able to receive notifications for the unsubscribed topics',
-                  style: TextStyle(fontSize: 10.0, color: Colors.black),
+                  style: TextStyle(fontSize: 10.0, ),
                 ),
                 SizedBox(height: 10.0),
                 RichText(
                     text: TextSpan(
                         text: 'Type ',
-                        style: TextStyle(color: Colors.black),
+                        // style: TextStyle(color: Colors.black),
                         children: <TextSpan>[
                       TextSpan(
                           text: 'Yes ',
                           style: TextStyle(
-                              color: Colors.black,
+                              // color: Colors.black,
                               fontWeight: FontWeight.bold)),
                       TextSpan(
                           text: 'to continue',
-                          style: TextStyle(color: Colors.black))
+                          // style: TextStyle(color: Colors.black)
+                          )
                     ])),
                 SizedBox(height: 20.0),
                 Material(

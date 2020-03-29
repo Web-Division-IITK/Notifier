@@ -250,10 +250,10 @@ class _MakeCoordiState extends State<MakeCoordi> {
                                   ),
                                
                          
-                      SizedBox(height: 20.0),
+                      SizedBox(height: 30.0),
                       Container(
-                        // width:120.0,
-                        padding: const EdgeInsets.fromLTRB(80.0, 0.0, 80.0, 0.0),
+                        width:120.0,
+                        // padding: const EdgeInsets.fromLTRB(60.0, 0.0, 60.0, 0.0),
                         child: RaisedButton(
                       shape: new RoundedRectangleBorder(
                           borderRadius: new BorderRadius.circular(30.0)),
@@ -262,7 +262,7 @@ class _MakeCoordiState extends State<MakeCoordi> {
                             style: TextStyle(
                               // fontFamily: 'Comfortaa',
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20.0,
+                                        fontSize: 18.0,
                               color:Colors.white
                             ),
                           ),
