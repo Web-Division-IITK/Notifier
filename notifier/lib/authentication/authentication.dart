@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifier/screens/posts/notification/notification.dart';
 import 'package:notifier/screens/posts/updateposts.dart';
+import 'package:notifier/screens/preferences.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:notifier/services/function.dart';
 abstract class BaseAuth {
@@ -40,6 +41,7 @@ class Auth implements BaseAuth {
     }
   }
   Future<String> signIn(String email, String password) async {
+    // subscribeUnsubsTopic(_prefs + ['Science and Technology Council'], []);
     AuthResult result = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password);
     FirebaseUser user = result.user;
@@ -76,8 +78,9 @@ class Auth implements BaseAuth {
 
   Future<void> signOut() async {
     var v=  await deleteContent('users');
+    if(update!=null){update.clear();}
     if(docById!=null ){docById.clear();}
-    if(sortedarray != null){sortedarray.clear();}
+    // if(sortedarray != null){sortedarray.clear();}
     if(peopleArr != null){peopleArr = null;}
     if(jsonData != null){jsonData = null;}
     if(update != null){update.clear();}

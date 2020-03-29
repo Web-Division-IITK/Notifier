@@ -13,8 +13,8 @@ enum AuthStatus {
 }
 
 class RootPage extends StatefulWidget {
-  RootPage({this.auth});
-
+  RootPage({this.auth,this.darkMode});
+  bool darkMode;
   final BaseAuth auth;
   @override
   _RootPageState createState() => _RootPageState();
@@ -91,6 +91,7 @@ class _RootPageState extends State<RootPage> {
 
   void logoutCallback() {
     setState(() {
+      widget.darkMode = false;
       authStatus = AuthStatus.NOT_LOGGED_IN;
       _userId = "";
     });
@@ -159,6 +160,7 @@ class _RootPageState extends State<RootPage> {
       case AuthStatus.LOGGED_IN:
         if (_userId.length > 0 && _userId != null) {
           return new HomePage(
+            darkMode :widget.darkMode,
             userId: _userId,
             auth: widget.auth,
             logoutCallback: logoutCallback,

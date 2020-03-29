@@ -113,7 +113,7 @@ class _ResetPasswordState extends State<ResetPassword> {
             appBar: AppBar(
               // actionsIconTheme: IconThemeData(),
               // automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
+              // backgroundColor: Colors.white,
               elevation: 0.0,
               leading: IconButton(
                 alignment: Alignment.center,
@@ -122,20 +122,16 @@ class _ResetPasswordState extends State<ResetPassword> {
                 icon: Icon(Icons.arrow_back_ios, color: Colors.black),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-
+              title: Text('Reset Password')
               // title: Text('Reset Password'),
             ),
-            body: Container(
-                color: Colors.white,
-                padding: EdgeInsets.symmetric(
-                  vertical: 20.0,
-                ),
-                child: Stack(
+            body:  Stack(
+              fit: StackFit.expand,
                   children: <Widget>[
                     _showForm(),
                     showCircularProgress(),
                   ],
-                )));
+                ));
 
     //     Form(
     //         key: _formKey,
@@ -277,14 +273,13 @@ class _ResetPasswordState extends State<ResetPassword> {
   }
 
   Widget _showForm() {
-    return new Container(
-        padding: EdgeInsets.all(16.0),
-        child: new Form(
+    return  new Form(
           key: _formKey,
           child: new ListView(
+            padding: EdgeInsets.all(16.0),
             shrinkWrap: true,
             children: <Widget>[
-              showText(),
+              showLogo(),
               showEmailInput(),
               // showPasswordInput(),
               // _isLoginForm? null : showConfirmPasswordInput(),
@@ -293,7 +288,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               showErrorMessage(),
             ],
           ),
-        ));
+        );
   }
 
   Widget showCircularProgress() {
@@ -315,7 +310,7 @@ class _ResetPasswordState extends State<ResetPassword> {
             elevation: 5.0,
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(30.0)),
-            color: Colors.blue,
+            // color: Colors.blue,
             child: new Text('Reset Password',
                 style: new TextStyle(fontSize: 20.0, color: Colors.white)),
             onPressed: validateAndSubmit,
@@ -323,16 +318,19 @@ class _ResetPasswordState extends State<ResetPassword> {
         ));
   }
 
-  Widget showText() {
+  Widget showLogo() {
     return new Hero(
-      tag: 'text',
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 70.0, 0.0, 0.0),
-        child: Text(
-          "Reset   Password",
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.black, fontSize: 55.0),
-        ),
+      tag: 'imagevb',
+      child:  Container(
+        margin: EdgeInsets.only(top:100.0),
+        height: 100.0,
+        // padding: EdgeInsets.fromLTRB(0.0, 70.0, 70.0, 0.0),
+        // child: CircleAvatar(
+        //   backgroundColor: Colors.blue,
+        //   radius: 48.0,
+          // child:Icon(Icons.)
+          child: Center(child: Image.asset('assets/launch.png')),
+        // ),
       ),
     );
   }

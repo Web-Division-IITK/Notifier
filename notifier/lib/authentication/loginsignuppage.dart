@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifier/authentication/authentication.dart';
@@ -92,9 +93,14 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
      context: context,
      builder: (BuildContext context) {
        // return object of type Dialog
-       return AlertDialog(
+       return CupertinoAlertDialog(
          title: new Text("Verify your account"),
-         content: new Text("You need to verify your account in the link sent to email to begin"),
+         content: Column(
+           children: <Widget>[
+             SizedBox(height: 10.0),
+             new Text("You need to verify your account in the link sent to email to begin"),
+           ],
+         ),
          actions: <Widget>[
            new FlatButton(
              child: new Text("Resent link"),
@@ -172,10 +178,13 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
 
   Widget _showForm() {
     return new Container(
-        padding: EdgeInsets.all(16.0),
+        // 
+          height: MediaQuery.of(context).size.height,
         child: new Form(
           key: _formKey,
           child: new ListView(
+            // physics: ScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal :16.0),
             shrinkWrap: true,
             children: <Widget>[
               doneReset
@@ -297,7 +306,10 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
               Icons.lock,
               color: Colors.grey,
             )),
-        validator: (value) => value.isEmpty ? 'Password can\'t be empty' : null,
+            onChanged: (value){
+              _password = value;
+            },
+        validator: (value) => value.isEmpty ? 'Password can\'t be empty' : (value.length<6 ? 'Password length cannot be less than 6' :null),
         onSaved: (value) => _password = value.trim(),
       ),
     );
@@ -316,6 +328,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
               Icons.lock,
               color: Colors.grey,
             )),
+        // onChanged: ,
         validator: (value) => (value != _password || value.isEmpty)
                                 ? 'Passwords does not match':null,
         onSaved: (value) => _password = value.trim(),
@@ -332,8 +345,8 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
             elevation: 5.0,
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(30.0)),
-            color: Colors.black38,
-            splashColor: Colors.black,
+            // color: Colors.black38,
+            // splashColor: Colors.black,
             child: new Text(_isLoginForm ? 'Login' : 'Create account',
                 style: new TextStyle(fontSize: 20.0, color: Colors.white)),
             onPressed: validateAndSubmit,

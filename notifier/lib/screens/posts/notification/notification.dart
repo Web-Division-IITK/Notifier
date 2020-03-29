@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +10,8 @@ import 'package:notifier/services/function.dart';
 
 class MessageHandler extends StatefulWidget {
   final String uid;
-  MessageHandler(this.uid);
+  final Function loadSnt; 
+  MessageHandler(this.uid,this.loadSnt);
   @override
   _MessageHandlerState createState() => _MessageHandlerState();
 }
@@ -75,7 +77,7 @@ class _MessageHandlerState extends State<MessageHandler> {
         print("onMessage :$message" + ' isthe message');
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVE/RY();
+          widget.loadSnt();
           newNotf = true;
           bodyMsg = message['notification']['body'];
           data = message['data']['message'];
@@ -96,7 +98,7 @@ class _MessageHandlerState extends State<MessageHandler> {
         print("onLaunch: $message" + ':is fromLaunch');
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-          loadEVERY();
+          // loadEVERY();
           newNotf = true;
           bodyMsg = message['notification']['body'];
           display = message['notification']['title'];
@@ -125,17 +127,18 @@ class _MessageHandlerState extends State<MessageHandler> {
         Container(
             padding: newNotf ? EdgeInsets.only(top: 30.0) : null,
             child: ListView.builder(
-              shrinkWrap: true,
+              physics: AlwaysScrollableScrollPhysics(),
                 controller: _controller,
                 itemCount: sortedarray.length,
                 itemBuilder: (BuildContext context, int index) {
                   // if(sortedarray[index]['uid'])
                   // print(sortedarray.length);
+                  print(sortedarray[index].value['exists']);
                   return (sortedarray[index].value['exists'] == null ||
                           !sortedarray[index].value['exists'])
                       ? Container()
-                      : Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      : Container(
+                        margin:  const EdgeInsets.symmetric(horizontal: 16.0),
                           child: card(sortedarray[index].value, index),
                         );
                 })),
@@ -144,8 +147,34 @@ class _MessageHandlerState extends State<MessageHandler> {
   }
 
   Widget card(timenot, index) {
-    var time = DateFormat('d MMMM, yyyy : kk:mm')
-        .format(DateTime.parse(timenot['timeStamp']));
+    DateTime postTime= DateTime.parse(timenot['timeStamp']);
+    var time;
+  if(DateTime.now().day == postTime.day && DateTime.now().month == postTime.month && DateTime.now().year == postTime.year ){
+     if( DateTime.now().hour == postTime.hour||(DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch)<3600000){
+       switch (DateTime.now().minute - postTime.minute){
+         case 0: 
+           time = 'now';
+         
+         break;
+         default: 
+           var i = ((DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch) /60000).round();
+           time = '$i minutes ago';
+        
+       }
+     }
+     else{
+       
+       time = 'Today, '+DateFormat('kk:mm').format(postTime);
+     
+     }
+    }
+    else{
+  
+       time = DateFormat('d MMMM, yyyy : kk:mm')
+        .format(postTime);
+    
+    }
+    
     // print((DateTime.parse(timenot['timeStamp']));
     // print()
     // print(time);
@@ -154,8 +183,8 @@ class _MessageHandlerState extends State<MessageHandler> {
       onTap: () {
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (BuildContext context) {
-          return Description(index);
-          // return NotfUpdate(timenot,index);
+          // return Description(index);
+          return NotfDesc(index);
         }));
       },
       child: Card(
@@ -167,8 +196,9 @@ class _MessageHandlerState extends State<MessageHandler> {
           // child: Padding(
           // padding: const EdgeInsets.fromLTRB(16.0, 0.0, 10.0, 0.0),
           child: Container(
-              height: 400.0,
-              width: 300.0,
+              // height: 400.0,
+              height:MediaQuery.of(context).size.height*0.76,
+              // width: 500.0,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16.0),
               ),
@@ -179,122 +209,122 @@ class _MessageHandlerState extends State<MessageHandler> {
                     borderRadius: BorderRadius.circular(16.0),
                     child: Hero(
                       tag: 'image$index',
-                      // child: Image.network(
-                      //   timenot['url'],
+                      child: CachedNetworkImage(
+                        fit:BoxFit.fill,
+                        placeholder: (context, url) =>
+                            Center(child: CircularProgressIndicator()),
+                        imageUrl: timenot['url'],
+                      ),
+                      // child: Image.asset(
+                      //   'assets/ECDC.jpg',
                       //   fit: BoxFit.fill,
                       // ),
-                      child: Image.asset(
-                        'assets/ECDC.jpg',
-                        fit: BoxFit.fill,
-                      ),
                     ),
                   ),
-                  // Positioned(
-                  //     top: 0.0,
-                  //     right: 0.0,
-                  //     child: Chip(
-                  //       label: Row(
-                  //         children: <Widget>[
-                  //           Icon(
-                  //             Icons.attachment,
-                  //             size: 20.0,
-                  //           ),
-                  //           Text(timenot['sub'][0]),
-                  //         ],
-                  //       ),
-                  //     )),
                   Positioned(
-                    top: 20.0,
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(16.0, 0.0, 10.0, 0.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              margin: const EdgeInsets.fromLTRB(
-                                  16.0, 0.0, 10.0, 0.0),
-                              // padding: EdgeInsets.symmetric(horizontal: 10.0),
+                    top: 0.0,
+                    child: Container(
+                      padding: EdgeInsets.fromLTRB(0.0, 10.0, 10000.0, 0.0),
+                      color: Colors.black.withOpacity(0.6),
+                      child: Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                          // color: Colors.black.withOpacity(0.6),
+                          margin: const EdgeInsets.fromLTRB(16.0, 0.0, 10.0, 0.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Container(
+                                // margin: const EdgeInsets.fromLTRB(
+                                //     16.0, 0.0, 10.0, 0.0),
+                                // padding: EdgeInsets.symmetric(horizontal: 10.0),
 
-                              child: Text(
-                                timenot['title'],
-                                style: TextStyle(
-                                    fontSize: 30.0, color: Colors.white),
-                              ),
-                            ),
-                            Chip(
-                              backgroundColor: Colors.green[900],
-                              label: Row(
-                                children: <Widget>[
-                                  // Icon(
-                                  //   Icons.attachment,
-                                  //   size: 20.0,
-                                  // ),
-                                  Text(
-                                    timenot['sub'][0],
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 00.0,
-                    child: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: Container(
-                        padding:
-                            const EdgeInsets.fromLTRB(16.0, 0.0, 10.0, 10.0),
-                        color: Colors.black.withOpacity(0.4),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0),
-                              child: Container(
                                 child: Text(
-                                  timenot['message'],
+                                  timenot['title'],
                                   style: TextStyle(
-                                    fontSize: 20.0,
-                                    color: Colors.white,
-                                  ),
+                                      fontSize: 30.0, color: Colors.white),
                                 ),
                               ),
-                            ),
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                  maxHeight: 100.0,
-                                  minWidth: 300.0,
-                                  maxWidth: 300.0),
-
-                              // color: Colors.blue,
-                              child: Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                    5.0, 5.0, 0.0, 0.0),
-                                child: Wrap(
-                                  // child: Text('jhfgv')
-                                  children: _buildChoice(timenot),
+                              Chip(
+                                backgroundColor: Colors.green[900],
+                                label: Row(
+                                  children: <Widget>[
+                                    // Icon(
+                                    //   Icons.attachment,
+                                    //   size: 20.0,
+                                    // ),
+                                    Text(
+                                      timenot['sub'][0],
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ),
-                            Container(
-                              // color: Colors.black.withOpacity(0.4),
-                              padding: const EdgeInsets.fromLTRB(
-                                  2.0, 15.0, 0.0, 0.0),
-                              child: Text(
-                                time,
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
+                  ),
+                  Positioned(
+                    bottom: 0.0,
+                    // height: 300.0,
+                    // bottom: 0.0,
+                    // left: 20.0,
+                    // width: 300.0,
+                    // child: Align(
+                      // alignment: Alignment.bottomLeft,
+                      // child: ClipRect(
+                        
+                        child: Container(
+                          // width:300.0,
+                          // height: 40.0,
+                          color: Colors.black.withOpacity(0.6),
+                          padding: const EdgeInsets.fromLTRB(16.0, 0.0, 1500.0, 10.0),
+                          
+                          child: Column(
+                            
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            
+                            children: <Widget>[
+                               Container(
+                                 padding: const EdgeInsets.fromLTRB(
+                                      0.0, 5.0, 0.0, 0.0),
+                                  child: Text(
+                                    timenot['message'],
+                                    style: TextStyle(
+                                      fontSize: 20.0,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              
+                               Container(
+                                  constraints: BoxConstraints(
+                                    maxHeight: 100.0,
+                                    minWidth: 300.0,
+                                    maxWidth: 300.0),
+                                  padding: const EdgeInsets.fromLTRB(
+                                      0.0, 5.0, 0.0, 0.0),
+                                  child: Wrap(
+                                    // child: Text('jhfgv')
+                                    children: _buildChoice(timenot),
+                                  ),
+                                ),
+                              Container(
+                                // color: Colors.black.withOpacity(0.4),
+                                padding: const EdgeInsets.fromLTRB(
+                                    0.0, 15.0, 0.0, 0.0),
+                                child: Text(
+                                  time,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // ),
+                    // ),
                   ),
                   // Positioned(
                   //     bottom: 40.0,
@@ -369,145 +399,137 @@ class _DescriptionState extends State<Description> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: Text(sortedarray[widget.index].value['title'])),
+      appBar: AppBar(title: Text(sortedarray[widget.index].value['title'])),
       body: Container(
         // color:Colors.black,
         child: Stack(
-fit: StackFit.expand,
+          fit: StackFit.expand,
           children: <Widget>[
             Positioned(
-              top:20.0,
+              top: 20.0,
               child: Container(
                 // padding: EdgeInsets.symmetric(horizontal: 20.0),
                 // decoration: BoxDecoration(
                 //     borderRadius: BorderRadius.only(
                 //         bottomLeft: Radius.circular(16.0),
                 //         bottomRight: Radius.circular(16.0)),
-                    // color: Colors.black),
+                // color: Colors.black),
                 height: MediaQuery.of(context).size.height * 0.4,
                 width: MediaQuery.of(context).size.width,
                 child: Hero(
-                  tag: 'image$widget.index',
-                  child: Image.asset(
-                    'assets/ECDC.jpg',
-                    fit: BoxFit.fill,
-                    // height: MediaQuery.of(context).size.height * 0.5,
-                  ),
-                ),
+                    tag: 'image$widget.index',
+                    // child: Image.asset(
+                    //   'assets/ECDC.jpg',
+                    //   fit: BoxFit.fill,
+                    //   // height: MediaQuery.of(context).size.height * 0.5,
+                    // ),
+                    child: CachedNetworkImage(
+                      fit: BoxFit.fitWidth,
+                      placeholder: (context, url) =>
+                          Center(child: CircularProgressIndicator()),
+                      imageUrl: sortedarray[widget.index].value['url'],
+                       errorWidget: (context, url, error) => Icon(Icons.error),
+                    )),
+                //     child: Image(
+                // image: CachedNetworkImageProvider(
+                //   sortedarray[widget.index].value['url'],
+                // ),
+                //     ),
+                // ),
               ),
             ),
+           
             Positioned(
-              top:30.0,
-              child: IconButton(icon: Icon(Icons.arrow_back_ios,color: Colors.white,), onPressed: (){
-                Navigator.of(context).pop();
-              })
+              top: MediaQuery.of(context).size.height * 0.31,
+              child: Container(
+                  height: MediaQuery.of(context).size.height * 0.12,
+                  width: MediaQuery.of(context).size.width,
+                  color: Colors.black.withOpacity(0.6)),
             ),
             Positioned(
-              top:MediaQuery.of(context).size.height * 0.31,
-              child: Container(
-                height:MediaQuery.of(context).size.height * 0.12,
-                width:MediaQuery.of(context).size.width,
-                color:Colors.black.withOpacity(0.6)),),
-            Positioned(
-              left: 20.0,
-              top:MediaQuery.of(context).size.height * 0.315,
-              child: Column(
-                // mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(sortedarray[widget.index].value['title'],
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 35.0
+                left: 20.0,
+                top: MediaQuery.of(context).size.height * 0.315,
+                child: Column(
+                  // mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      sortedarray[widget.index].value['title'],
+                      style: TextStyle(color: Colors.white, fontSize: 35.0),
                     ),
-                  ),
-                  Text(sortedarray[widget.index].value['sub'][0],
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20.0
-                    )
-                  ),
-                ],
-              )),
+                    Text(sortedarray[widget.index].value['sub'][0],
+                        style: TextStyle(color: Colors.white, fontSize: 20.0)),
+                  ],
+                )),
             Positioned(
-              top:MediaQuery.of(context).size.height * 0.44,
+              top: MediaQuery.of(context).size.height * 0.44,
               child: Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Card(
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16.0),
-                          topRight: Radius.circular(16.0))
-                  ),
-                  elevation: 6.0,
-                  child: Container(
-                    
-                  padding: EdgeInsets.symmetric(horizontal: 16.0),
-                  decoration: BoxDecoration(
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(16.0),
-                          topRight: Radius.circular(16.0)),
-                      // color: Colors.yellow),
-                  ),
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  width: MediaQuery.of(context).size.width -16.0,
-                  child: ListView(
-                    padding: EdgeInsets.only(top: 8.0),
-                    children: <Widget>[
-                      Wrap(
-                        children: _buildChoice(sortedarray[widget.index].value),
+                          topRight: Radius.circular(16.0))),
+                  elevation: 6.0,
+                  child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16.0),
+                            topRight: Radius.circular(16.0)),
+                        // color: Colors.yellow),
                       ),
-                      Text(sortedarray[widget.index].value['message'],
-                      style: TextStyle(
-                        fontSize: 30.0,
-                        color:Colors.black
-
-                      )),
-                      SizedBox(
-                        height: 20.0
-                      ),
-                       Title(child: Text(sortedarray[widget.index].value['body'],
-                          style: TextStyle(
-                            fontSize:20.0,
-                            // color:Colors.white
+                      height: MediaQuery.of(context).size.height * 0.6,
+                      width: MediaQuery.of(context).size.width - 16.0,
+                      child: ListView(
+                        padding: EdgeInsets.only(top: 8.0),
+                        children: <Widget>[
+                          Wrap(
+                            children:
+                                _buildChoice(sortedarray[widget.index].value),
                           ),
-                        ),
-                    color: Colors.white),
-                      
-                    ],
-                  )
-            ),
+                          Text(sortedarray[widget.index].value['message'],
+                              style: TextStyle(
+                                  fontSize: 30.0, color: Colors.black)),
+                          SizedBox(height: 20.0),
+                          Title(
+                              child: Text(
+                                sortedarray[widget.index].value['body'],
+                                style: TextStyle(
+                                  fontSize: 20.0,
+                                  // color:Colors.white
+                                ),
+                              ),
+                              color: Colors.white),
+                        ],
+                      )),
                 ),
-              ),)
+              ),
+            )
           ],
         ),
       ),
     );
   }
+
   _buildChoice(timenot) {
     List<Widget> _tag = List();
     // List<String> tags = timenot['tags'];
     for (var i in timenot['tags']) {
-      _tag.add(
-        Padding(
-          padding: const EdgeInsets.only(right:8.0),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth:120.0,
-            ),
-            child: Chip(
-              backgroundColor: Colors.teal[900],
-              label: Text(i.toString(),
-              style: TextStyle(
-                color: Colors.white
-              )),
-            
-            ),
+      _tag.add(Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 120.0,
           ),
-        )
-      );
+          child: Chip(
+            backgroundColor: Colors.teal[900],
+            label: Text(i.toString(), style: TextStyle(color: Colors.white)),
+          ),
+        ),
+      ));
     }
-      
+
     return _tag;
   }
 }

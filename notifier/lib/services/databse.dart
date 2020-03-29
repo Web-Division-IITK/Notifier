@@ -160,16 +160,30 @@ var peopleArr;
 var jsonData;
 final databaseReference = Firestore.instance;
 Map<String, dynamic> docById = {};
+Future<bool> loadPostsUsers(var _posts) async{
+  var j=0;
+  for (var i in _posts) {
+   await getDocByID(i).then((bool status){
+     if(status){
+       j++;
+     }
+   }); 
+  }
+  if(j==_posts.length && docById.length == _posts.length ){
+    return true;
+  }else{
+    return false;
+  }
+  
+} 
+
+
 Future<bool> getDocByID(String uid) async {
   // var v;
   return await databaseReference
       .collection('snt')
-      .getDocuments()
-      .then((QuerySnapshot snapshot) {
-    snapshot.documents.forEach((snapshot) {
-      if (snapshot.documentID == uid) {
-        // docById.putIfAbsent(
-        //     snapshot.documentID, () => snapshot.data as dynamic);
+      .document(uid).get()
+      .then((DocumentSnapshot snapshot) {
         docById.update(snapshot.documentID, (v){
           var data = snapshot.data;
               data['timeStamp'] = (data['timeStamp'] as Timestamp).toDate().toIso8601String();
@@ -182,8 +196,6 @@ Future<bool> getDocByID(String uid) async {
               //   .format(DateTime.parse(data['timeStamp'])).toIso8601String();
               return data;
         });
-      }
-    });
     print(docById);
     return true;
   });
@@ -193,71 +205,98 @@ Future<bool> getDocByID(String uid) async {
 Future<bool> populateUsers(String uid, bool loading) async {
   bool people = false;
   // databaseReference.collection('users');
-  await databaseReference
-      .collection('users')
-      .getDocuments()
-      .then((QuerySnapshot snapshots) {
-    snapshots.documents.forEach((f) {
-      // print(f.data['uid']);
-      print(uid);
-      if (f.documentID == uid) {
-        jsonData = json.encode(f.data);
-        print('retreieving data fro  internet');
-        // jsonData = f.data;
-        // print(f.data);
+  // await databaseReference
+  //     .collection('users')
+  //     .getDocuments()
+  //     .then((QuerySnapshot snapshots) {
+  //   snapshots.documents.forEach((f) {
+  //     // print(f.data['uid']);
+  //     print(uid);
+  //     if (f.documentID == uid) {
+  //       jsonData = json.encode(f.data);
+  //       print('retreieving data fro  internet');
+  //       // jsonData = f.data;
+  //       // print(f.data);
+  //     }
+  //   });
+  //   print(jsonData.toString() + ' usersData');
+  //   return people;
+  // });
+
+  // return (jsonData != null)
+  //     ? await writeContent('users', jsonData).whenComplete(() {
+  //         // readContent('users').then((var v){
+  //         //   print(v['id']);
+  //         // });
+  //         print('done!! users');
+
+  //         loading = false;
+  //         people = true;
+  //       })
+  //     : null;
+  return await databaseReference.collection('users').document(uid).get().then((DocumentSnapshot snapshot)async{
+    return await writeContent('users', jsonEncode(snapshot.data)).then((var v){
+      if(v){
+        return true;
+      }else{
+        return false;
       }
     });
-    print(jsonData.toString() + ' usersData');
-    return people;
   });
-
-  return (jsonData != null)
-      ? await writeContent('users', jsonData).whenComplete(() {
-          // readContent('users').then((var v){
-          //   print(v['id']);
-          // });
-          print('done!! users');
-
-          loading = false;
-          people = true;
-        })
-      : null;
-
   // return db;
 }
+// return  await databaseReference.collection('users').document(uid).snapshots().listen((DocumentSnapshot snapshot)async{
+//     print(snapshot.data);
+//     jsonData = jsonEncode(snapshot.data);
+   
+//   },onDone: ()async{
+//     return await writeContent('users', jsonData);
+//   },
+
+//   ).asFuture();
 
 Future<bool> populatePeople(String id) async {
   // bool people =
 
-  var v = await databaseReference
-      .collection('people')
-      .getDocuments()
-      .then((QuerySnapshot snapshots) {
-    snapshots.documents.forEach((f) {
-      if (f.documentID == id) {
+  return await databaseReference
+      .collection('people').document(id).get().then((DocumentSnapshot snapshots) async{
+    // snapshots.documents.forEach((f) {
+      // if (f.documentID == id) {
         print('retreieving people fro  internet');
-        peopleArr = f.data;
-        return true;
-      }
-      return false;
-      // print('doesn\'t need to retreive');
-    });
-    print(peopleArr);
-    // print(json.encode(peopleArr));
-  });
-  return peopleArr != null
+        peopleArr = snapshots.data;
+        print(peopleArr);
+         return peopleArr != null
       ? await writeContent('people', json.encode(peopleArr))
       : false;
+      // }
+      // return false;
+      // print('doesn\'t need to retreive');
+    // });
+    // print(peopleArr);
+    // print(json.encode(peopleArr));
+  });
+  
 }
 
-Future<void> updateInFireBase(String uid, var prefs) async {
+Future<bool> updateInFireBase(String uid, var prefs) async {
   var error;
+  return await databaseReference
+      .collection('users')
+      .document(uid)
+      .updateData({'prefs': prefs}).then((_) => true);
+}
+Future<void> updateNameinFirebase(String uid,String name)async{
   await databaseReference
       .collection('users')
       .document(uid)
-      .updateData({'prefs': prefs});
+      .updateData({'name': name});
 }
-
+Future<void> updateRollNoinFirebase(String uid,String rollno)async{
+  await databaseReference
+      .collection('users')
+      .document(uid)
+      .updateData({'rollno': rollno});
+}
 Future<int> submit(String id, var value) async {
   Map<String, String> headers = {"Content-type": "application/json"};
   value = jsonEncode(value);

@@ -22,6 +22,6 @@ class UpdatePostsFormat{
 class SortDateTime{
   final String uid;
   final int date;
-  final dynamic value;
+ dynamic value;
   SortDateTime(this.uid,this.date,this.value);
 }
