@@ -366,10 +366,11 @@ class _UpdateNState extends State<UpdateN> {
   File _image;
   bool _loadSubmit = false;
   
-  bool _firstSelected = true;
+  // bool _firstSelected = true;
   bool _loadingWidget = false;
   List<DropdownMenuItem<String>>_selectSub=[];
   void buildsubs(){
+    _selectSub.clear();
     for (var i in widget._subs) {
       _selectSub.add(DropdownMenuItem(child: Text(i),
       value: i,
@@ -534,7 +535,6 @@ class _UpdateNState extends State<UpdateN> {
   }
 @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     buildsubs();
   }
@@ -574,7 +574,7 @@ class _UpdateNState extends State<UpdateN> {
                   padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                   child: new TextFormField(
                     maxLines: 1,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.text,
                     autofocus: false,
                     initialValue: widget._update.value['title'],
                     decoration: new InputDecoration(
@@ -617,7 +617,7 @@ class _UpdateNState extends State<UpdateN> {
                 //       padding: const EdgeInsets.fromLTRB(20.0, 10.0, 100.0, 0.0),
                 //       child: new TextFormField(
                 //         maxLines: 1,
-                //         keyboardType: TextInputType.emailAddress,
+                //         keyboardType: TextInputType.text,
                 //         autofocus: false,
                 //          readOnly: true,
                 //         enabled: false,
@@ -653,7 +653,7 @@ class _UpdateNState extends State<UpdateN> {
                           //   readOnly: true,
                           //   enabled: false,
                           //   initialValue: 'ghjjg',
-                          //   keyboardType: TextInputType.emailAddress,
+                          //   keyboardType: TextInputType.text,
                           //   autofocus: false,
                           //   // onChanged: (_url) {
                           //   //   return _url;
@@ -947,7 +947,7 @@ class _UpdateNState extends State<UpdateN> {
                           : null,
                       onSaved: (value) => _council = value,
                     )),
-                     _firstSelected ?Padding(
+                    Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
                 child: DropdownButtonFormField(
                   items: _selectSub, 
@@ -965,7 +965,7 @@ class _UpdateNState extends State<UpdateN> {
                    value ==null || value.isEmpty ? 'Club Field can\'t be empty' : null,
                   onSaved: (value)=>_subs = value,
                 )
-            ):Container(),
+            ),
                 //tags to made
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
@@ -993,7 +993,7 @@ class _UpdateNState extends State<UpdateN> {
                   padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                   child: new TextFormField(
                     maxLines: 1,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.text,
                     autofocus: false,
                     initialValue: widget._update.value['message'],
                     decoration: new InputDecoration(
@@ -1014,7 +1014,7 @@ class _UpdateNState extends State<UpdateN> {
                   padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                   child: new TextFormField(
                     maxLines: 1,
-                    keyboardType: TextInputType.emailAddress,
+                    keyboardType: TextInputType.text,
                     autofocus: false,
                     initialValue: widget._update.value['author'],
                     decoration: new InputDecoration(

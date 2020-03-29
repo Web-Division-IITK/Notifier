@@ -264,7 +264,7 @@ Future<bool> populatePeople(String id) async {
       // if (f.documentID == id) {
         print('retreieving people fro  internet');
         peopleArr = snapshots.data;
-        print(peopleArr);
+        print(snapshots.data);
          return peopleArr != null
       ? await writeContent('people', json.encode(peopleArr))
       : false;

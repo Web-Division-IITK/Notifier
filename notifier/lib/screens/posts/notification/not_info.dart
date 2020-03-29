@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sliding_up_panel/sliding_up_panel.dart';
@@ -48,14 +49,19 @@ import 'package:notifier/screens/posts/notification/notification.dart';
                    child: Column(
                      crossAxisAlignment: CrossAxisAlignment.start,
                      children: <Widget>[
-                       Center(
-                         child: Text(
+                       Align(
+                         alignment: Alignment.center,
+                         child: AutoSizeText(
                             sortedarray[widget.index].value['title'],
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
                             style: TextStyle( fontSize: 35.0),
                       ),
                        ),
                       Center(
-                        child: Text(sortedarray[widget.index].value['sub'][0],
+                        child: Text(
+                          sortedarray[widget.index].value['sub'][0],
+                          // 'Science and Technology Council',
                             style: TextStyle( fontSize: 20.0)),
                       ),
                           Wrap(
@@ -67,16 +73,13 @@ import 'package:notifier/screens/posts/notification/notification.dart';
                             //     style: TextStyle(
                             //         fontSize: 30.0, color: Colors.black)),
                             // SizedBox(height: 20.0),
-                            Title(
-                                child: Text(
+                            Text(
                                   sortedarray[widget.index].value['body'],
                                   style: TextStyle(
                                     fontSize: 20.0,
                                     // color:Colors.white
                                   ),
-                                ),
-                                color: Colors.white),
-                      
+                            ),
                      ],
                    ),
                  )

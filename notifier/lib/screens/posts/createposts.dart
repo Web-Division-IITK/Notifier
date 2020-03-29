@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -219,22 +220,33 @@ class _CreatePostsState extends State<CreatePosts> {
     // StorageUploadTask uploadTask = storageReference.putFile(_image);
   }
   // void buildsubs(){
-    
+
   // }
   @override
   Widget build(BuildContext context) {
     _selectSub.clear();
+    // print(widget._subs);
     for (var i in widget._subs) {
+      // print(i);
+      if(_selectSub.length!= 0){
+        _selectSub.forEach((f){
+        if(f.value != i){
+          
+      print(i);
       
+          // _selectSub.remove(f);
+        }
+      });
+      }
       if(!_selectSub.contains(DropdownMenuItem(child: Text(i),
       value: i,
       ))){
-        print(i);
         _selectSub.add(DropdownMenuItem(child: Text(i),
-      value: i,
-      ));
+      value: i,));
       }
     }
+  
+    
     List<DropdownMenuItem<String>>_selectItem =[];
     
     for (var i in selectCouncil) {
@@ -261,7 +273,7 @@ class _CreatePostsState extends State<CreatePosts> {
                 padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                 child: new TextFormField(
                   maxLines: 1,
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.text,
                   autofocus: false,
                   decoration: new InputDecoration(
                     labelText: 'Title',
@@ -651,7 +663,7 @@ class _CreatePostsState extends State<CreatePosts> {
                 padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                 child: new TextFormField(
                   maxLines: 1,
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.text,
                   autofocus: false,
                   onChanged: (value){
                     _message = value;
@@ -674,7 +686,7 @@ class _CreatePostsState extends State<CreatePosts> {
                 padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                 child: new TextFormField(
                   maxLines: 1,
-                  keyboardType: TextInputType.emailAddress,
+                  keyboardType: TextInputType.text,
                   autofocus: false,
                   decoration: new InputDecoration(
                     labelText: 'Uploader',
@@ -791,35 +803,70 @@ class _CreatePostsState extends State<CreatePosts> {
                                       child: Align(
                                         alignment: Alignment.topLeft,
                                         child: Container(
-                                          margin: const EdgeInsets.fromLTRB(16.0, 0.0, 10.0, 0.0),
+                                          margin: const EdgeInsets.fromLTRB(10.0, 0.0, 0.0, 0.0),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: <Widget>[
                                               Container(
-                                                
-                                                // padding: EdgeInsets.symmetric(horizontal: 10.0),
-
-                                                child: Text(
-                                                  _title,
-                                                  style: TextStyle(
-                                                      fontSize: 20.0, color: Colors.white),
+                                                width: 250 -48.0,
+                                                // height: 40.0,
+                                                constraints: BoxConstraints(
+                                                  maxHeight:40.0
                                                 ),
+                                                // padding: EdgeInsets.symmetric(horizontal: 10.0),
+                                                // child: FittedBox(
+                                                //   fit: BoxFit.scaleDown,
+                                                  // child: RichText(
+                                                  //   // textScaleFactor: ,
+                                                  //   text: TextSpan(
+                                                  //     text:_title,
+                                                  //     style: TextStyle(
+                                                  //       color: Colors.white),
+                                                  //     ),
+                                                  //   maxLines: 2,
+                                                  //   // softWrap: false,
+                                                  //   overflow: TextOverflow.ellipsis
+                                                  // ),
+                                                // ),
+                                                  
+                                                
+                                                
+                                                
+                                  //               child: FittedBox(
+                                  //                 alignment: Alignment.topLeft,
+                                  // fit: BoxFit.scaleDown,
+                                                  child: AutoSizeText(
+                                                    _title,
+                                                    maxFontSize: 18.0,
+                                                    minFontSize: 8.0,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines:2,
+                                                    style: TextStyle(
+                                                        fontSize: 18.0, color: Colors.white),
+                                                  ),
+                                                // ),
                                               ),
-                                              Chip(
-                                                backgroundColor: Colors.green[900],
-                                                label: Row(
-                                                  children: <Widget>[
-                                                    // Icon(
-                                                    //   Icons.attachment,
-                                                    //   size: 20.0,
-                                                    // ),
-                                                    Text(
-                                                      widget._subs[0],
-                                                      style: TextStyle(color: Colors.white,
-                                                        fontSize: 10.0
+                                              FittedBox(
+                                                alignment: Alignment.topLeft,
+                                                fit: BoxFit.scaleDown,
+                                                child: Chip(
+                                                  padding: EdgeInsets.all(0),
+                                                  backgroundColor: Colors.green[900],
+                                                  label: 
+                                                      // Icon(
+                                                      //   Icons.attachment,
+                                                      //   size: 20.0,
+                                                      // ),
+                                                      Text(
+                                                        widget._subs[0],
+                                                        maxLines:1,
+                                                        style: TextStyle(color: Colors.white,
+                                                          fontSize: 10.0
+                                                          
+                                                        ),
                                                       ),
-                                                    ),
-                                                  ],
+                                                   
+                                                 
                                                 ),
                                               )
                                             ],
@@ -834,17 +881,21 @@ class _CreatePostsState extends State<CreatePosts> {
                                       alignment: Alignment.bottomLeft,
                                       child: Container(
                                         padding:
-                                            const EdgeInsets.fromLTRB(16.0, 0.0, 1000.0, 10.0),
+                                            const EdgeInsets.fromLTRB(10.0, 0.0, 1000.0, 10.0),
                                         color: Colors.black.withOpacity(0.4),
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: <Widget>[
                                             Container(
+                                               width: 252 - 64.0,
                                                 padding: const EdgeInsets.only(top: 5.0),
-                                                child: Text(
+                                                child: AutoSizeText(
                                                   _message,
+                                                  maxLines: 1,
+                                                  minFontSize: 10.0,
+                                                  overflow: TextOverflow.ellipsis,
                                                   style: TextStyle(
-                                                    fontSize: 15.0,
+                                                    fontSize: 13.0,
                                                     color: Colors.white,
                                                   ),
                                                 ),
@@ -853,27 +904,30 @@ class _CreatePostsState extends State<CreatePosts> {
                                             Container(
                                               constraints: BoxConstraints(
                                                   maxHeight: 100.0,
-                                                  minWidth: 300.0,
-                                                  maxWidth: 300.0),
+                                                  minWidth: 250.0-48,
+                                                  maxWidth: 250.0-48),
 
                                               // color: Colors.blue,
                                               // child: Container(
                                                 padding: const EdgeInsets.fromLTRB(
                                                     0.0, 5.0, 0.0, 0.0),
-                                                child: Text('Tags : ' + _tag,
+                                                child: AutoSizeText('Tags : ' + _tag,
+                                                    maxLines: 3,
+                                                    maxFontSize: 10.0,
+                                                    minFontSize: 8.0,
                                                     style: TextStyle(color: Colors.white,
-                                                    fontSize: 12.0)),
+                                                    fontSize: 10.0)),
                                                 // ),
                                               ),
                                            
                                             Container(
                                               // color: Colors.black.withOpacity(0.4),
                                               padding: const EdgeInsets.fromLTRB(
-                                                  0.0, 15.0, 0.0, 0.0),
+                                                  0.0, 10.0, 0.0, 0.0),
                                               child: Text(
                                                 time,
                                                 style: TextStyle(color: Colors.white,
-                                                fontSize: 10.0),
+                                                fontSize: 8.0),
                                               ),
                                             ),
                                           ],

@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -198,7 +199,7 @@ class _MessageHandlerState extends State<MessageHandler> {
           child: Container(
               // height: 400.0,
               height:MediaQuery.of(context).size.height*0.76,
-              // width: 500.0,
+              width:double.infinity,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16.0),
               ),
@@ -224,26 +225,36 @@ class _MessageHandlerState extends State<MessageHandler> {
                   Positioned(
                     top: 0.0,
                     child: Container(
-                      padding: EdgeInsets.fromLTRB(0.0, 10.0, 10000.0, 0.0),
+                      // width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(0.0, 10.0,10000.0, 0.0),
                       color: Colors.black.withOpacity(0.6),
                       child: Align(
                         alignment: Alignment.topLeft,
                         child: Container(
                           // color: Colors.black.withOpacity(0.6),
-                          margin: const EdgeInsets.fromLTRB(16.0, 0.0, 10.0, 0.0),
+                          margin: const EdgeInsets.fromLTRB(16.0, 5.0, 0.0, 0.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Container(
+                                width: MediaQuery.of(context).size.width -64.0,
+                                constraints: BoxConstraints(
+                                  maxHeight: 60.0
+                                ),
                                 // margin: const EdgeInsets.fromLTRB(
                                 //     16.0, 0.0, 10.0, 0.0),
                                 // padding: EdgeInsets.symmetric(horizontal: 10.0),
 
-                                child: Text(
-                                  timenot['title'],
-                                  style: TextStyle(
-                                      fontSize: 30.0, color: Colors.white),
-                                ),
+                                // child: FittedBox(
+                                //   alignment: Alignment.topLeft,
+                                //   fit: BoxFit.scaleDown,
+                                  child: AutoSizeText(
+                                    timenot['title'],
+                                    maxLines:2,
+                                    style: TextStyle(
+                                        fontSize: 30.0, color: Colors.white),
+                                  ),
+                                // ),
                               ),
                               Chip(
                                 backgroundColor: Colors.green[900],
@@ -288,13 +299,23 @@ class _MessageHandlerState extends State<MessageHandler> {
                             
                             children: <Widget>[
                                Container(
+                                 constraints: BoxConstraints(
+                                   minHeight: 30.0
+
+                                 ),
+                                 width: MediaQuery.of(context).size.width - 64.0,
                                  padding: const EdgeInsets.fromLTRB(
                                       0.0, 5.0, 0.0, 0.0),
-                                  child: Text(
+                                  child: AutoSizeText(
                                     timenot['message'],
+                                    // 'LoremReprehenderit aliquip do deserunt quis enim.Aute enim quis est incididunt.',
+                                    maxFontSize: 20.0,
+                                    minFontSize: 15.0,
+                                    maxLines:2,
                                     style: TextStyle(
                                       fontSize: 20.0,
                                       color: Colors.white,
+                                      
                                     ),
                                   ),
                                 ),
@@ -302,10 +323,32 @@ class _MessageHandlerState extends State<MessageHandler> {
                                Container(
                                   constraints: BoxConstraints(
                                     maxHeight: 100.0,
-                                    minWidth: 300.0,
-                                    maxWidth: 300.0),
+                                    // minWidth: 300.0,
+                                    maxWidth: MediaQuery.of(context).size.width -60.0
+                                    ),
                                   padding: const EdgeInsets.fromLTRB(
                                       0.0, 5.0, 0.0, 0.0),
+                                  // child: ListView.builder(
+                                  //   scrollDirection: Axis.horizontal,
+                                  //   itemCount: timenot['tags'].length,
+                                  //   itemBuilder: (BuildContext context,int index){
+                                  //     return  AutoSizeText(
+                                  //   // 'Consequat excepteur ',
+                                  //   timenot['tags'][index],
+                                  //   style: TextStyle(color: Colors.white),
+                                  //   maxLines: 3,
+                                  //   // minFontSize: 8.0,
+                                  //   // maxFontSize: ,
+                                  // );
+                                  //   })
+                                  
+                                  // child: AutoSizeText(
+                                  //   'Consequat excepteur ',
+                                  //   style: TextStyle(color: Colors.white),
+                                  //   maxLines: 3,
+                                  //   // minFontSize: 8.0,
+                                  //   // maxFontSize: ,
+                                  // )
                                   child: Wrap(
                                     // child: Text('jhfgv')
                                     children: _buildChoice(timenot),
@@ -359,6 +402,7 @@ class _MessageHandlerState extends State<MessageHandler> {
   _buildChoice(timenot) {
     List<Widget> _tag = List();
     // List<String> tags = timenot['tags'];
+    // timenot['tags'] = ['lecture','hello','juke','nbvjvj','jhhgv','ghgffhgf','hjfjhgfghfcgjc','hjgj','vdgc'];
     _tag.add(
       Text('Tags : ', style: TextStyle(color: Colors.white, fontSize: 15.0)),
     );
@@ -366,21 +410,11 @@ class _MessageHandlerState extends State<MessageHandler> {
       var index = timenot['tags'].indexOf(i);
       if (index != (timenot['tags'].length - 1)) {
         _tag.add(
-          ConstrainedBox(
-              constraints: BoxConstraints(
-                  // maxWidth: 120.0,
-                  minWidth: 50.0),
-              // padding: const EdgeInsets.all(2.0),
-              child: Text(i + ' ,', style: TextStyle(color: Colors.white))),
+          Text(timenot['tags'][index] + ' , ', style: TextStyle(color: Colors.white)),
         );
       } else {
         _tag.add(
-          ConstrainedBox(
-              constraints: BoxConstraints(
-                  // maxWidth: 120.0,
-                  minWidth: 50.0),
-              // padding: const EdgeInsets.all(2.0),
-              child: Text(i, style: TextStyle(color: Colors.white))),
+           Text(i, style: TextStyle(color: Colors.white)),
         );
       }
     }
