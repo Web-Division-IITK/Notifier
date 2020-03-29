@@ -87,8 +87,8 @@ class Auth implements BaseAuth {
     v != null ? print('deletion success'): print('deletefailed');
     var vf = await deleteContent('people');
      vf != null ? print('deletion success'): print('deletefailed');
-    // var vh = await deleteContent('snt');
-    //  vh != null ? print('deletion success'): print('deletefailed');
+    var vh = await deleteContent('snt');
+     vh != null ? print('deletion success'): print('deletefailed');
      var vhj = await deleteContent('posts');
      vhj != null ? print('deletion success'): print('deletefailed');
     var h = await removeValues();
