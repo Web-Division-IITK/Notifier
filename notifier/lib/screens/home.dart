@@ -2,16 +2,22 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/data/data.dart';
 import 'package:notifier/main.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/model/todo.dart';
+import 'package:notifier/screens/about.dart';
+import 'package:notifier/screens/posts/drafts/drafts.dart';
 import 'package:notifier/screens/posts/notification/notification.dart';
 import 'package:notifier/screens/posts/createposts.dart';
 import 'package:notifier/screens/make_coordi.dart';
-import 'package:notifier/screens/posts/updateposts.dart';
+import 'package:notifier/screens/posts/notification/prefs_home.dart';
+import 'package:notifier/screens/posts/update/updateposts.dart';
+// import 'package:notifier/screens/posts/updateposts.dart';
 import 'package:notifier/screens/preferences.dart';
 import 'package:notifier/screens/profile.dart';
 import 'dart:async';
@@ -20,7 +26,8 @@ import 'package:notifier/services/databse.dart';
 import 'package:notifier/services/function.dart';
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key,this.darkMode, this.auth, this.userId, this.logoutCallback})
+  HomePage(
+      {Key key, this.darkMode, this.auth, this.userId, this.logoutCallback})
       : super(key: key);
   bool darkMode;
   final BaseAuth auth;
@@ -38,11 +45,14 @@ bool admin;
 class _HomePageState extends State<HomePage> {
   // List<Todo> _todoList;
   var id;
+  final FirebaseMessaging _fcm = FirebaseMessaging();
   String _name;
   String _rollno;
   List<String> ids = List();
   List<dynamic> _prefs = List();
-
+  String display;
+  String bodyMsg;
+  String data;
   String uid;
   var load = false;
   List<String> _subs = List();
@@ -58,58 +68,37 @@ class _HomePageState extends State<HomePage> {
         });
         return await readContent('snt').then((var val) {
           print('snt values line56 of home.dart:' + val.toString());
-          print(sortedarray);
+          // print(sortedarray);
           sortedarray.clear();
           if (val != null) {
-            print(val.keys.length);
+            // print(val.keys.length);
             val.keys.forEach((key) {
               // var v = DateTime.parse('2020-03-23T17:26:56.295');
               if (val[key]['exists'] == false) {
                 // print('values whoose esists is false line57 home.dart:'+val[key].toString());
                 // val.remove(key);
               } else {
-                // print('values whoose esists is true line57 home.dart:' +
-                // val[key].toString());
-                // if(!sortedarray.contains(UpdatePostsFormat(uid: key,value:val[key]))){
-                //   sortedarray.add(UpdatePostsFormat(uid: key,value:val[key]));
-                // }
-                if (!sortedarray.contains(SortDateTime(
-                    key,
-                    DateTime.parse(val[key]['timeStamp'])
-                        .toUtc()
-                        .millisecondsSinceEpoch,
-                    val[key]))) {
+                DateTime postTime = DateTime.parse(val[key]['timeStamp']);
+                var time;
+                if (DateTime.now().month == postTime.month &&DateTime.now().year == postTime.year) {
+                  if(DateTime.now().day == postTime.day){
+                    time= 'Today';
+                  }
+                  else{
+                    time = 'Yesterday';
+                  }
+                } else {
+                  time = DateFormat('d MMMM, yyyy').format(postTime);
+                }
+                if (!sortedarray.contains(SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                  val[key],val[key]['sub'][0],time
+                ))) {
                   // sortedarray.insert(0, element);
-                  sortedarray.insert(
-                      0,
-                      SortDateTime(
-                          key,
-                          DateTime.parse(val[key]['timeStamp'])
-                              .toUtc()
-                              .millisecondsSinceEpoch,
-                          val[key]));
+                  sortedarray.insert(0,
+                      SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                          val[key],val[key]['sub'][0],time));
                   // print(sortedarray[0].date);
                 }
-                print('\'whileSavinh\''+sortedarray[0].value.toString());
-                //         sortedarray.forEach((array){
-                //           if(array.uid == key){
-                //             if(array.value['sub'] == val[key]['sub'] &&
-                // array.value['esists'] == val[key]['exists'] &&
-                // array.value['title'] == val[key]['title'] &&
-                // array.value['url'] == val[key]['url'] &&
-                // array.value['body'] == val[key]['body'] &&
-                // array.value['tags'] == val[key]['tags'] &&
-                // array.value['council'] == val[key]['council'] &&
-                // array.value['message'] == val[key]['message'] &&
-                // array.value['owner'] == val[key]['owner'] &&
-                // array.value['timeStamp'] == val[key]['timeStamp'] &&
-                // array.value['author'] == val[key]['author']){
-                //   sortedarray.remove(array);
-                //   // continue;
-                // }
-                //   }
-                // });
-
               }
             });
             return true;
@@ -158,7 +147,7 @@ class _HomePageState extends State<HomePage> {
           // print(sortedarray.length);
           sortarrayWithTime();
           sortedarray.forEach((f) {
-            print('\'sortedarray\':'+f.value.toString());
+            // print('\'sortedarray\':'+f.value.toString());
           });
           if (sortedarray != null) {
             load = false;
@@ -171,6 +160,40 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _fcm.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print("onMessage :$message" + ' isthe message');
+        setState(() {
+          // addStringToSF(DateTime.now().toIso8601String());
+        loadSnt();
+          // newNotf = true;
+          bodyMsg = message['notification']['body'];
+          data = message['data']['message'];
+          display = message['notification']['title'];
+        });
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print("onResume : $message" + 'is fromResume');
+        setState(() {
+          // addStringToSF(DateTime.now().toIso8601String());
+          // loadEVERY();
+          // newNotf = true;
+          bodyMsg = message['notification']['body'];
+          display = message['notification']['title'];
+        });
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        print("onLaunch: $message" + ':is fromLaunch');
+        setState(() {
+          // addStringToSF(DateTime.now().toIso8601String());
+          // loadEVERY();
+          // newNotf = true;
+          bodyMsg = message['notification']['body'];
+          display = message['notification']['title'];
+        });
+        // onUpdate(prefsel)
+      },
+    );
     readContent('users').then((var value) async {
       print(value.toString() + ' readinng value from users');
       if (value != null) {
@@ -279,6 +302,8 @@ class _HomePageState extends State<HomePage> {
       }
     });
     loadSnt();
+    
+
   }
 
   signOut() async {
@@ -301,21 +326,29 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    darkMode = Theme.of(context).brightness == Brightness.light ?false: true;
-    return Scaffold(
-          appBar: new AppBar(title: new Text('Home'), actions: <Widget>[
-            new FlatButton(
-                child: new Text('Logout',
-                    style: new TextStyle(fontSize: 17.0, color: Colors.white)),
-                onPressed: signOut)
-          ]
-              //   IconButton(
-              //       icon: Icon(Icons.refresh),
-              //       onPressed: () {
-              //         loadEVERY();
-              //       })
-              // ],
+    darkMode = Theme.of(context).brightness == Brightness.light ? false : true;
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+          appBar: new AppBar(
+            title: new Text('Home'),
+            bottom: TabBar(
+              labelColor: Colors.white,
+              tabs: [
+              Tab(
+                text: 'Posts',
+
               ),
+              Tab(text: 'All'),
+            ]),
+            //   IconButton(
+            //       icon: Icon(Icons.refresh),
+            //       onPressed: () {
+            //         loadEVERY();
+            //       })
+            // ],
+            // flexibleSpace: ,
+          ),
           drawer: Drawer(
               child: ListView(
             children: <Widget>[
@@ -324,12 +357,12 @@ class _HomePageState extends State<HomePage> {
                   Navigator.of(context).pop();
                   Navigator.of(context)
                       .push(MaterialPageRoute(builder: (BuildContext context) {
-                    return ProfilePage(uid,id);
+                    return ProfilePage(uid, id);
                   }));
                 },
                 child: Container(
                     height: MediaQuery.of(context).size.width * 0.7,
-                    color: darkMode ?Colors.deepPurple :Colors.amber,
+                    color: darkMode ? Colors.deepPurple : Colors.amber,
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -451,6 +484,28 @@ class _HomePageState extends State<HomePage> {
                           )),
                     )
                   : Container(),
+                  (admin == true)
+                  ? Container(
+                      height: 55.0,
+                      child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) {
+                              return Drafts(id, _subs);
+                            }));
+                          },
+                          child: Container(
+                            padding: EdgeInsets.only(
+                                left: 15.0, top: 15.0, bottom: 15.0),
+                            child: Text(
+                              'Saved Posts',
+                              style: TextStyle(
+                                  fontSize: 20.0, fontFamily: 'Nunito'),
+                            ),
+                          )),
+                    )
+                  : Container(),
               Container(
                 height: 55.0,
                 padding: EdgeInsets.only(left: 15.0, top: 15.0, bottom: 15.0),
@@ -463,22 +518,42 @@ class _HomePageState extends State<HomePage> {
                     ),
                     // SizedBox(width: 40.0),
                     Container(
-                      padding: EdgeInsets.only(left:50.0),
+                      padding: EdgeInsets.only(left: 50.0),
                       child: Switch(
-                        value: darkMode, onChanged: (value){
-                          setState(() {
-                            darkMode = value;
-                          });
+                          value: darkMode,
+                          onChanged: (value) {
+                            setState(() {
+                              darkMode = value;
+                            });
                             DynamicTheme.of(context).setBrightness(
-              Theme.of(context).brightness == Brightness.light
-                  ? Brightness.dark
-                  : Brightness.light);
-                          
-                        }),
+                                Theme.of(context).brightness == Brightness.light
+                                    ? Brightness.dark
+                                    : Brightness.light);
+                          }),
                     )
                   ],
                 ),
               ),
+              Container(
+                      height: 55.0,
+                      child: InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) {
+                              return AboutPage();
+                            }));
+                          },
+                          child: Container(
+                            padding: EdgeInsets.only(
+                                left: 15.0, top: 15.0, bottom: 15.0),
+                            child: Text(
+                              'About Us',
+                              style: TextStyle(
+                                  fontSize: 20.0, fontFamily: 'Nunito'),
+                            ),
+                          )),
+                    ),
               Divider(),
               Container(
                 height: 55.0,
@@ -499,69 +574,104 @@ class _HomePageState extends State<HomePage> {
           )),
           body: load
               ? buildWaitingScreen()
-              : RefreshIndicator(
-                  child:
-                      /*SingleChildScrollView(
-                        physics: AlwaysScrollableScrollPhysics(),
-                        child:*/
-                      Container(
-                    // constraints: BoxConstraints(
-
-                    // ),
-                    height: MediaQuery.of(context).size.height,
-                    child: sortedarray.length == 0
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                Text('No posts to display'),
-                                FlatButton(
-                                    onPressed: () async {
-                                      if (timeofRefresh[0] != null) {
-                                        if ((DateTime.now()
-                                                    .millisecondsSinceEpoch -
-                                                timeofRefresh[0]
-                                                    .millisecondsSinceEpoch) <
-                                            30000) {
-                                          // Duration()
-                                          return sortarrayWithTime();
-                                          // return print('nofresh');
-                                        }
-                                        print(true.toString() +
-                                            'timeoofreferesh');
-                                      }
-                                      await loadSnt();
-                                      setState(() {
-                                        // t2 =DateTime.now();
-                                        timeofRefresh[0] = DateTime.now();
-                                      });
-                                    },
-                                    child: Text('Refresh'))
-                              ],
-                            ),
-                          )
-                        : MessageHandler(widget.userId, loadSnt),
-                  ),
-                  // ),
-
-                  onRefresh: () async {
-                    if (timeofRefresh[0] != null) {
-                      if ((DateTime.now().millisecondsSinceEpoch -
-                              timeofRefresh[0].millisecondsSinceEpoch) <
-                          5000) {
-                        // Duration()
-                        return sortarrayWithTime();
-                        // return print('nofresh');
-                      }
-                      print(true.toString() + 'timeoofreferesh');
-                    }
-                    await loadSnt();
-                    setState(() {
-                      // t2 =DateTime.now();
-                      timeofRefresh[0] = DateTime.now();
-                    });
-                  }),
+              : TabBarView(children: [
+                  RefreshIndicator(
+                    onRefresh: () async {
+                        if (timeofRefresh[0] != null) {
+                          if ((DateTime.now().millisecondsSinceEpoch -
+                                  timeofRefresh[0].millisecondsSinceEpoch) <
+                              5000) {
+                            // Duration()
+                            return sortarrayWithTime();
+                            // return print('nofresh');
+                          }
+                          print(true.toString() + 'timeoofreferesh');
+                        }
+                        await loadSnt();
+                        setState(() {
+                          // t2 =DateTime.now();
+                          timeofRefresh[0] = DateTime.now();
+                        });
+                      },
+                    child: sortedarray.length == 0?
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: <Widget>[
+                          Text('No posts to display'),
+                          FlatButton(
+                            onPressed: () async {
+                              if (timeofRefresh[0] != null) {
+                                if ((DateTime.now().millisecondsSinceEpoch -
+                                                    timeofRefresh[0]
+                                                        .millisecondsSinceEpoch) <
+                                                30000) {
+                                              return sortarrayWithTime();
+                                            }
+                                          }
+                                          await loadSnt();
+                                          setState(() {
+                                            // t2 =DateTime.now();
+                                            timeofRefresh[0] = DateTime.now();
+                                          });
+                                        },
+                                        child: Text('Refresh'))
+                                  ],
+                                ),
+                              )
+                            :PrefsHome()),
+                  RefreshIndicator(
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        child: sortedarray.length == 0
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: <Widget>[
+                                    Text('No posts to display'),
+                                    FlatButton(
+                                        onPressed: () async {
+                                          if (timeofRefresh[0] != null) {
+                                            if ((DateTime.now()
+                                                        .millisecondsSinceEpoch -
+                                                    timeofRefresh[0]
+                                                        .millisecondsSinceEpoch) <
+                                                30000) {
+                                              return sortarrayWithTime();
+                                            }
+                                          }
+                                          await loadSnt();
+                                          setState(() {
+                                            // t2 =DateTime.now();
+                                            timeofRefresh[0] = DateTime.now();
+                                          });
+                                        },
+                                        child: Text('Refresh'))
+                                  ],
+                                ),
+                              )
+                            : MessageHandlerNotf(widget.userId, loadSnt),
+                      ),
+                      onRefresh: () async {
+                        if (timeofRefresh[0] != null) {
+                          if ((DateTime.now().millisecondsSinceEpoch -
+                                  timeofRefresh[0].millisecondsSinceEpoch) <
+                              5000) {
+                            // Duration()
+                            return sortarrayWithTime();
+                            // return print('nofresh');
+                          }
+                          print(true.toString() + 'timeoofreferesh');
+                        }
+                        await loadSnt();
+                        setState(() {
+                          // t2 =DateTime.now();
+                          timeofRefresh[0] = DateTime.now();
+                        });
+                      }),
+                ])),
     );
   }
 }

@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,381 +10,16 @@ import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/screens/posts/createposts.dart';
-import 'package:notifier/screens/posts/notification/notification.dart';
+import 'package:notifier/screens/posts/update/updateposts.dart';
+import 'package:notifier/services/databse.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:path/path.dart' as Path;
-import 'package:notifier/services/databse.dart';
-
-List<UpdatePostsFormat> update = List();
-
-class UpDatePosts extends StatefulWidget {
-  final String _id;
-  final List<String> _subs;
-  UpDatePosts(this._id, this._subs);
-  @override
-  _UpDatePostsState createState() => _UpDatePostsState();
-}
-
-class _UpDatePostsState extends State<UpDatePosts> {
-  bool _load;
-  Map<String, dynamic> _post;
-  // String _title;
-  // String _body;
-  bool _loadingDelete = false;
-
-  makeUpdatePost() async {
-    return await readPeople().then((var v) {
-      print(v);
-      if (v != null && v['posts'] != null && v['posts'].length != 0) {
-        // for (var i in v['posts']) {
-        // docById.clear();
-        loadPostsUsers(v['posts']).then((bool status) {
-          print(status.toString() + 'stauts line39 upadate.dart');
-          if (docById != null) {
-            setState(() {
-              var i = 0;
-              // print(docById['exists'].toString() + 'dobyid line43 update.dart');
-              docById.keys.forEach((key) {
-                
-                if (docById[key]['exists']!=null && docById[key]['exists']) {
-                  update.insert(
-                      0, UpdatePostsFormat(uid: key, value: docById[key]));
-                      i++;
-                } else if (update.contains(
-                    UpdatePostsFormat(uid: key, value: docById[key]))) {
-                  update
-                      .remove(UpdatePostsFormat(uid: key, value: docById[key]));
-                }
-                // print(update[i]);
-                // i++;
-              });
-               if (docById != null &&
-                update != null &&
-                docById.length == v['posts'].length) {
-              setState(() {
-                writeContent('posts', json.encode(docById)).then((var v) {
-                  if (v) {
-                    print('writing posts done line87 in updatepost.dart');
-                  } else {
-                    print('writing posts failed line87 in updatepost.dart');
-                  }
-                });
-               if(i!=0){
-                  _post = docById;
-                _load = false;
-               }
-               else if(i == 0){
-                 _post = null;
-                 _load = false;
-               }
-              });
-            }
-            });
-           
-          }
-        });
-        // }
-        // print(docById);
-
-      } else {
-        setState(() {
-          _post = null;
-          _load = false;
-        });
-      }
-    });
-  }
-
-  updateposts() async {
-    setState(() {
-      _load = true;
-    });
-    return await fileExists('posts').then((var _exists) async {
-      print(_exists.toString() + 'exists in update.dart line 87');
-      if (_exists) {
-        await readContent('posts').then((var value) {
-          print(value);
-
-          if (value != null && value.length != 0) {
-            update.clear();
-            var i=0;
-            value.keys.forEach((key) {
-              if (value[key]['exists']) {
-                update.insert(0,
-                    UpdatePostsFormat(uid: key, value: value[key] as dynamic));
-                    i++;
-              } else if (update
-                  .contains(UpdatePostsFormat(uid: key, value: value[key]))) {
-                update.remove(UpdatePostsFormat(uid: key, value: value[key]));
-              }
-            });
-            // print(update[0].value);
-            print(i);
-            if (update != null && i!=0) {
-              setState(() {
-                _post = value;
-                _load = false;
-              });
-            } else if (update == null|| i==0) {
-              setState(() {
-                _post = null;
-                _load = false;
-              });
-            }
-          } else {
-            setState(() {
-                _post = null;
-                _load = false;
-              });
-          }
-        });
-      } else {
-        return makeUpdatePost();
-      }
-    });
-  }
-
-  Future<int> deletePost(
-    UpdatePostsFormat _update,
-    String _id,
-    List<String> _subs,
-  ) async {
-    setState(() {
-      _loadingDelete = true;
-    });
-    Map<String, String> headers = {"Content-type": "application/json"};
-    var value = jsonEncode({
-      'title': _update.value['title'],
-      'tags': _update.value['tags'],
-      'council': _update.value['council'].toString().toLowerCase(),
-      'sub': _subs,
-      'body': _update.value['body'],
-      'author': _update.value['author'],
-      'url': _update.value['url'],
-      'owner': _id,
-      'message': _update.value['message'],
-      'id': _update.uid,
-    });
-    print(value);
-    String json = '$value';
-    String url =
-        'https://us-central1-notifier-snt.cloudfunctions.net/deletePost';
-    try {
-      Response response = await post(url, headers: headers, body: json);
-      int statusCode = response.statusCode;
-      print(statusCode);
-
-      return statusCode;
-    } catch (e) {
-      print(e);
-      return null;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    setState(() {
-      _load = true;
-    });
-    updateposts();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: new AppBar(
-          title: new Text('Update Posts'),
-        ),
-        body: _load
-            ? Container(
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            : _post == null
-                ? Container(
-                    child: Center(
-                      child: Text('You have not created any posts'),
-                    ),
-                  )
-                : Stack(
-                  children: <Widget>[
-                    Container(
-                        child: ListView.builder(
-                        itemCount: update.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          // _post.
-                          // print(_exists);
-                          // print(_load);
-                          return update[index].value['exists'] != null &&
-                                  update[index].value['exists'] == true
-                              ? Column(
-                                  children: <Widget>[
-                                    ListTile(
-                                      // dense: ,
-                                      title: Text(
-                                          update[index].value['title'].toString()),
-                                      subtitle: Text(update[index]
-                                          .value['message']
-                                          .toString()),
-                                      trailing: Wrap(
-                                        direction: Axis.vertical,
-                                        children: <Widget>[
-                                          IconButton(
-                                            icon: Icon(Icons.edit),
-                                            tooltip: 'Edit Post',
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(builder:
-                                                      (BuildContext context) {
-                                                return UpdateN(
-                                                    update[index],
-                                                    widget._id,
-                                                    widget._subs,
-                                                    index);
-                                              }));
-                                            },
-                                          ),
-                                          IconButton(
-                                              icon: Icon(Icons.delete),
-                                              tooltip: 'Delete Post',
-                                              onPressed: () async {
-                                                showCupertinoDialog(context: context, builder:(context){
-                                                  return  CupertinoAlertDialog(
-                                                  title: Text(
-                                                      'Delete Confirmation'),
-                                                  content: Column(
-                                                    children: <Widget>[
-                                                      SizedBox(height: 10.0),
-                                                      Text(
-                                                          'Do you really want to permanently delete this file'),
-                                                      SizedBox(height: 5.0),
-                                                      Text(
-                                                          'Note: You will not be able to recover this file later',
-                                                            style:TextStyle(
-                                                              fontSize: 10.0
-                                                            )
-                                                          ),
-                                                    ],
-                                                  ),
-                                                  actions: <Widget>[
-                                                    FlatButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context),
-                                                      child: Text('Dismiss'),
-                                                    ),
-                                                    RaisedButton(
-                                                      onPressed: () async {
-                                                        setState(() {
-                                                  _loadingDelete = true;
-                                                });
-                                                int statusCode = await deletePost(
-                                                  update[index],
-                                                  widget._id,
-                                                  widget._subs,
-                                                );
-                                                if (statusCode == 200) {
-                                                    // if (sortedarray.contains(sortedarray.indexOf(SortDateTime(
-                                                    //             update[index].uid,
-                                                    //             DateTime.parse(update[index].value['timeStamp']).toUtc().millisecondsSinceEpoch,
-                                                    //             update[index].value, update[index].value['sub'][0],'')))) {
-                                                    //   setState(() {
-                                                    //     sortedarray[sortedarray.indexOf(SortDateTime(
-                                                    //                 update[index].uid,
-                                                    //                 update[index].value['timeStamp'],
-                                                    //                 update[index].value,update[index].value['sub'][0]))].value['exists'] = false;
-                                                    //   });
-                                                    // }
-                                                    setState(() {
-                                                    update[index].value['exists'] =
-                                                        false;
-                                                    if(update.length ==1){
-                                                      _post =null;
-                                                    }
-                                                    else{
-                                                      _post[update[index].uid]['exists'] = false;
-                                                      print(_post[update[index].uid]);
-                                                    }
-//
-
-                                                    writeContent('posts',
-                                                            json.encode(_post))
-                                                        .then((var v) {
-                                                      if (v) {
-                                                        setState((){
-                                                          _loadingDelete = false;
-                                                        });
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                'Delete Successful');
-                                                      } else {
-                                                        setState((){
-                                                          _loadingDelete = false;
-                                                        });
-                                                        Fluttertoast.showToast(
-                                                            msg: 'Delete Failed');
-                                                      }
-                                                    });
-                                                    // setState(() {
-                                                    //   _loadingDelete =false;
-                                                    // });
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    _loadingDelete = false;
-                                                    Fluttertoast.showToast(
-                                                        msg: 'Deletion Failed!!');
-                                                  });
-                                                }
-                                                      },
-                                                      child: Text('Confirm'),
-                                                    ),
-                                                    // CupertinoDialogAction(child: Text('Confirm')),
-                                                    // CupertinoDialogAction(child: Text('Dismiss'))
-                                                  ],
-                                                );
-                                                });
-                                                
-                                              })
-                                        ],
-                                      ),
-                                    ),
-                                    Divider(
-                                      color: Colors.grey,
-                                    )
-                                  ],
-                                )
-                              : Container();
-                        },
-                      )),
-                      _loadingDelete ? Center(child: CircularProgressIndicator(),) :Container()
-                  ],
-                ));
-  }
-
-  // Widget cardForUpdate() {}
-}
-
-converToString(List<dynamic> tags) {
-  String v = '';
-  for (var i = 0; i < tags.length; i++) {
-    if (i == 0) {
-      v = tags[i].toString();
-      continue;
-    }
-    v = v + ';' + tags[i].toString();
-    // print(i);
-  }
-  print(v);
-  return v;
-}
 
 class UpdateN extends StatefulWidget {
   final String _id;
   final UpdatePostsFormat _update;
   final int index;
+  
   final List<String> _subs;
   UpdateN(this._update, this._id, this._subs, this.index);
   @override
@@ -395,7 +31,6 @@ class _UpdateNState extends State<UpdateN> {
   String _title;
   String _body;
   List<dynamic> tags = List();
-  // String _subtitile;
   String _tag;
   String _url;
   String _council;
@@ -496,9 +131,13 @@ class _UpdateNState extends State<UpdateN> {
             _council,
             _author,
             _message,
-            widget._subs,
+            [_subs],
+            // widget._subs,
             widget._update.uid);
         if (_response.statusCode != 200) {
+          setState(() {
+            _loadSubmit = false;
+          });
           return Fluttertoast.showToast(
               msg: 'Can\'t process request at this time');
         } else {
@@ -576,11 +215,13 @@ class _UpdateNState extends State<UpdateN> {
   void initState() {
     super.initState();
     buildsubs();
-    _tagController.addListener((){
-      _tagController.value = _tagController.value.copyWith(
-        text:converToString(widget._update.value['tags'])
-      );
-    });
+    // _tagController.addListener((){
+      _tagController.text = converToString(widget._update.value['tags']);
+      // _tagController.value = _tagController.value.copyWith(
+      //   text:converToString(widget._update.value['tags'])
+      //   selection: 
+      // );
+    // });
   }
   @override
   Widget build(BuildContext context) {
@@ -621,10 +262,6 @@ class _UpdateNState extends State<UpdateN> {
                       decoration: new InputDecoration(
                         labelText: 'Title',
                         hintText: 'Title of the Post',
-                        // icon: new Icon(
-                        //   Icons.mail,
-                        //   color: Colors.grey,
-                        // )
                       ),
                       validator: (value) =>
                           value.isEmpty ? 'Title can\'t be empty' : null,
@@ -651,32 +288,6 @@ class _UpdateNState extends State<UpdateN> {
                       onSaved: (value) => _body = value,
                     ),
                   ),
-                  // Row(
-                  //   children: <Widget>[
-                  //     Container(
-                  //       width: 60.0,
-                  //       padding: const EdgeInsets.fromLTRB(20.0, 10.0, 100.0, 0.0),
-                  //       child: new TextFormField(
-                  //         maxLines: 1,
-                  //         keyboardType: TextInputType.text,
-                  //         autofocus: false,
-                  //          readOnly: true,
-                  //         enabled: false,
-                  //         initialValue: widget._update.value['url'],
-                  //         decoration: new InputDecoration(
-                  //           labelText: 'Image Url',
-                  //           // icon: new Icon(
-                  //           //   Icons.mail,
-                  //           //   color: Colors.grey,
-                  //           // )
-                  //         ),
-                  //         validator: (value) =>
-                  //             value.isEmpty ? 'Images Field can\'t be empty' : null,
-                  //         onSaved: (value) => _url = value,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
                   Container(
                     // width: 100.0,
                     // height: 100.0,
@@ -689,46 +300,20 @@ class _UpdateNState extends State<UpdateN> {
                             //image url to displayed and image tobe uploaded
                             padding:
                                 const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                            // child: new TextFormField(
-                            //   maxLines: 1,
-                            //   readOnly: true,
-                            //   enabled: false,
-                            //   initialValue: 'ghjjg',
-                            //   keyboardType: TextInputType.text,
-                            //   autofocus: false,
-                            //   // onChanged: (_url) {
-                            //   //   return _url;
-                            //   // },
-                            //   decoration: new InputDecoration(
-                            //     labelText: 'Image Url',
-                            //     // icon: new Icon(
-                            //     //   Icons.mail,
-                            //     //   color: Colors.grey,
-                            //     // )
-                            //   ),
-                            //   validator: (value) =>
-                            //       value.isEmpty ? 'Images Field can\'t be empty' : null,
-                            //   onSaved: (_url) => _url,
-                            // ),
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   _url != null
-                                      ? SizedBox(
-                                          height: 15.0,
-                                        )
+                                      ? SizedBox(height: 15.0,)
                                       : SizedBox(height: 5.0),
                                   _url != null
                                       ? Text('Image Url',
                                           style: TextStyle(
                                               fontSize: 12.0, color: Colors.grey))
                                       : Text(''),
-                                  SizedBox(
-                                    height: 5.0,
-                                  ),
+                                  SizedBox(height: 5.0,),
                                   _url == null
-                                      ? Text(
-                                          'Image Url',
+                                      ? Text('Image Url',
                                           style: TextStyle(
                                               color: Colors.grey, fontSize: 16),
                                         )
@@ -739,9 +324,7 @@ class _UpdateNState extends State<UpdateN> {
                                           style: TextStyle(fontSize: 16),
                                         ),
                                   _url != null
-                                      ? SizedBox(
-                                          height: 5.0,
-                                        )
+                                      ? SizedBox(height: 5.0,)
                                       : SizedBox(height: 10.0),
                                   Divider(color: Colors.grey)
                                 ])),
@@ -872,10 +455,17 @@ class _UpdateNState extends State<UpdateN> {
                                                                     if(status){
                                                                       setState((){
                                                                         _loadingWidget =false;
+                                                                        
+                                                                      });
+                                                                      if(_url!=null){
                                                                         Fluttertoast.showToast(msg: 'Upload Successful!!');
                                                                         Navigator.of(context).pop();
-                                                                      });
+                                                                      }
+                                                                      else{
+                                                                        Fluttertoast.showToast(msg: 'Can\'t process request at this time');
+                                                                      }
                                                                     }
+                                                                    
                                                                   });
                                                                 },
                                                                 color: Colors.cyan,
@@ -946,30 +536,6 @@ class _UpdateNState extends State<UpdateN> {
                   //council dropdown to make
                   Padding(
                       padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
-                      // child: ListView.builder(
-                      //     shrinkWrap: true,
-                      //     itemCount: selectCouncil.length,
-                      //     itemBuilder: (BuildContext context, int index) {
-                      //       // var _selected;
-                      //       _council = 'SnT';
-                      //       return DropdownButton(
-                      //         itemHeight: 60.0,
-                      //         hint: Text(
-                      //             'Choose Council'), // Not necessary for Option 1
-                      //         value: _council,
-                      //         onChanged: (newValue) {
-                      //           setState(() {
-                      //             _council = newValue;
-                      //           });
-                      //         },
-                      //         items: selectCouncil.map((location) {
-                      //           return DropdownMenuItem(
-                      //             child: new Text(location),
-                      //             value: location,
-                      //           );
-                      //         }).toList(),
-                      //       );
-                      //     })
                       child: DropdownButtonFormField(
                         isDense: true,
                         items: _selectItem,
@@ -1275,7 +841,7 @@ class _UpdateNState extends State<UpdateN> {
 Future<Res> upPostForNotifs(
     String _title,
     String _body,
-    List<String> tags,
+    List<dynamic> tags,
     // String _subtitile,
     String _id,
     String _url,

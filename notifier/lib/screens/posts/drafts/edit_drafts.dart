@@ -5,392 +5,26 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/screens/posts/createposts.dart';
-import 'package:notifier/screens/posts/notification/notification.dart';
+import 'package:notifier/screens/posts/update/updateposts.dart';
+// import 'package:notifier/screens/posts/updateposts.dart';
+import 'package:notifier/services/databse.dart';
+import 'package:notifier/shared/preview.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:path/path.dart' as Path;
-import 'package:notifier/services/databse.dart';
-
-List<UpdatePostsFormat> update = List();
-
-class UpDatePosts extends StatefulWidget {
-  final String _id;
-  final List<String> _subs;
-  UpDatePosts(this._id, this._subs);
-  @override
-  _UpDatePostsState createState() => _UpDatePostsState();
-}
-
-class _UpDatePostsState extends State<UpDatePosts> {
-  bool _load;
-  Map<String, dynamic> _post;
-  // String _title;
-  // String _body;
-  bool _loadingDelete = false;
-
-  makeUpdatePost() async {
-    return await readPeople().then((var v) {
-      print(v);
-      if (v != null && v['posts'] != null && v['posts'].length != 0) {
-        // for (var i in v['posts']) {
-        // docById.clear();
-        loadPostsUsers(v['posts']).then((bool status) {
-          print(status.toString() + 'stauts line39 upadate.dart');
-          if (docById != null) {
-            setState(() {
-              var i = 0;
-              // print(docById['exists'].toString() + 'dobyid line43 update.dart');
-              docById.keys.forEach((key) {
-                
-                if (docById[key]['exists']!=null && docById[key]['exists']) {
-                  update.insert(
-                      0, UpdatePostsFormat(uid: key, value: docById[key]));
-                      i++;
-                } else if (update.contains(
-                    UpdatePostsFormat(uid: key, value: docById[key]))) {
-                  update
-                      .remove(UpdatePostsFormat(uid: key, value: docById[key]));
-                }
-                // print(update[i]);
-                // i++;
-              });
-               if (docById != null &&
-                update != null &&
-                docById.length == v['posts'].length) {
-              setState(() {
-                writeContent('posts', json.encode(docById)).then((var v) {
-                  if (v) {
-                    print('writing posts done line87 in updatepost.dart');
-                  } else {
-                    print('writing posts failed line87 in updatepost.dart');
-                  }
-                });
-               if(i!=0){
-                  _post = docById;
-                _load = false;
-               }
-               else if(i == 0){
-                 _post = null;
-                 _load = false;
-               }
-              });
-            }
-            });
-           
-          }
-        });
-        // }
-        // print(docById);
-
-      } else {
-        setState(() {
-          _post = null;
-          _load = false;
-        });
-      }
-    });
-  }
-
-  updateposts() async {
-    setState(() {
-      _load = true;
-    });
-    return await fileExists('posts').then((var _exists) async {
-      print(_exists.toString() + 'exists in update.dart line 87');
-      if (_exists) {
-        await readContent('posts').then((var value) {
-          print(value);
-
-          if (value != null && value.length != 0) {
-            update.clear();
-            var i=0;
-            value.keys.forEach((key) {
-              if (value[key]['exists']) {
-                update.insert(0,
-                    UpdatePostsFormat(uid: key, value: value[key] as dynamic));
-                    i++;
-              } else if (update
-                  .contains(UpdatePostsFormat(uid: key, value: value[key]))) {
-                update.remove(UpdatePostsFormat(uid: key, value: value[key]));
-              }
-            });
-            // print(update[0].value);
-            print(i);
-            if (update != null && i!=0) {
-              setState(() {
-                _post = value;
-                _load = false;
-              });
-            } else if (update == null|| i==0) {
-              setState(() {
-                _post = null;
-                _load = false;
-              });
-            }
-          } else {
-            setState(() {
-                _post = null;
-                _load = false;
-              });
-          }
-        });
-      } else {
-        return makeUpdatePost();
-      }
-    });
-  }
-
-  Future<int> deletePost(
-    UpdatePostsFormat _update,
-    String _id,
-    List<String> _subs,
-  ) async {
-    setState(() {
-      _loadingDelete = true;
-    });
-    Map<String, String> headers = {"Content-type": "application/json"};
-    var value = jsonEncode({
-      'title': _update.value['title'],
-      'tags': _update.value['tags'],
-      'council': _update.value['council'].toString().toLowerCase(),
-      'sub': _subs,
-      'body': _update.value['body'],
-      'author': _update.value['author'],
-      'url': _update.value['url'],
-      'owner': _id,
-      'message': _update.value['message'],
-      'id': _update.uid,
-    });
-    print(value);
-    String json = '$value';
-    String url =
-        'https://us-central1-notifier-snt.cloudfunctions.net/deletePost';
-    try {
-      Response response = await post(url, headers: headers, body: json);
-      int statusCode = response.statusCode;
-      print(statusCode);
-
-      return statusCode;
-    } catch (e) {
-      print(e);
-      return null;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    setState(() {
-      _load = true;
-    });
-    updateposts();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: new AppBar(
-          title: new Text('Update Posts'),
-        ),
-        body: _load
-            ? Container(
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
-              )
-            : _post == null
-                ? Container(
-                    child: Center(
-                      child: Text('You have not created any posts'),
-                    ),
-                  )
-                : Stack(
-                  children: <Widget>[
-                    Container(
-                        child: ListView.builder(
-                        itemCount: update.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          // _post.
-                          // print(_exists);
-                          // print(_load);
-                          return update[index].value['exists'] != null &&
-                                  update[index].value['exists'] == true
-                              ? Column(
-                                  children: <Widget>[
-                                    ListTile(
-                                      // dense: ,
-                                      title: Text(
-                                          update[index].value['title'].toString()),
-                                      subtitle: Text(update[index]
-                                          .value['message']
-                                          .toString()),
-                                      trailing: Wrap(
-                                        direction: Axis.vertical,
-                                        children: <Widget>[
-                                          IconButton(
-                                            icon: Icon(Icons.edit),
-                                            tooltip: 'Edit Post',
-                                            onPressed: () {
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(builder:
-                                                      (BuildContext context) {
-                                                return UpdateN(
-                                                    update[index],
-                                                    widget._id,
-                                                    widget._subs,
-                                                    index);
-                                              }));
-                                            },
-                                          ),
-                                          IconButton(
-                                              icon: Icon(Icons.delete),
-                                              tooltip: 'Delete Post',
-                                              onPressed: () async {
-                                                showCupertinoDialog(context: context, builder:(context){
-                                                  return  CupertinoAlertDialog(
-                                                  title: Text(
-                                                      'Delete Confirmation'),
-                                                  content: Column(
-                                                    children: <Widget>[
-                                                      SizedBox(height: 10.0),
-                                                      Text(
-                                                          'Do you really want to permanently delete this file'),
-                                                      SizedBox(height: 5.0),
-                                                      Text(
-                                                          'Note: You will not be able to recover this file later',
-                                                            style:TextStyle(
-                                                              fontSize: 10.0
-                                                            )
-                                                          ),
-                                                    ],
-                                                  ),
-                                                  actions: <Widget>[
-                                                    FlatButton(
-                                                      onPressed: () =>
-                                                          Navigator.pop(
-                                                              context),
-                                                      child: Text('Dismiss'),
-                                                    ),
-                                                    RaisedButton(
-                                                      onPressed: () async {
-                                                        setState(() {
-                                                  _loadingDelete = true;
-                                                });
-                                                int statusCode = await deletePost(
-                                                  update[index],
-                                                  widget._id,
-                                                  widget._subs,
-                                                );
-                                                if (statusCode == 200) {
-                                                    // if (sortedarray.contains(sortedarray.indexOf(SortDateTime(
-                                                    //             update[index].uid,
-                                                    //             DateTime.parse(update[index].value['timeStamp']).toUtc().millisecondsSinceEpoch,
-                                                    //             update[index].value, update[index].value['sub'][0],'')))) {
-                                                    //   setState(() {
-                                                    //     sortedarray[sortedarray.indexOf(SortDateTime(
-                                                    //                 update[index].uid,
-                                                    //                 update[index].value['timeStamp'],
-                                                    //                 update[index].value,update[index].value['sub'][0]))].value['exists'] = false;
-                                                    //   });
-                                                    // }
-                                                    setState(() {
-                                                    update[index].value['exists'] =
-                                                        false;
-                                                    if(update.length ==1){
-                                                      _post =null;
-                                                    }
-                                                    else{
-                                                      _post[update[index].uid]['exists'] = false;
-                                                      print(_post[update[index].uid]);
-                                                    }
-//
-
-                                                    writeContent('posts',
-                                                            json.encode(_post))
-                                                        .then((var v) {
-                                                      if (v) {
-                                                        setState((){
-                                                          _loadingDelete = false;
-                                                        });
-                                                        Fluttertoast.showToast(
-                                                            msg:
-                                                                'Delete Successful');
-                                                      } else {
-                                                        setState((){
-                                                          _loadingDelete = false;
-                                                        });
-                                                        Fluttertoast.showToast(
-                                                            msg: 'Delete Failed');
-                                                      }
-                                                    });
-                                                    // setState(() {
-                                                    //   _loadingDelete =false;
-                                                    // });
-                                                  });
-                                                } else {
-                                                  setState(() {
-                                                    _loadingDelete = false;
-                                                    Fluttertoast.showToast(
-                                                        msg: 'Deletion Failed!!');
-                                                  });
-                                                }
-                                                      },
-                                                      child: Text('Confirm'),
-                                                    ),
-                                                    // CupertinoDialogAction(child: Text('Confirm')),
-                                                    // CupertinoDialogAction(child: Text('Dismiss'))
-                                                  ],
-                                                );
-                                                });
-                                                
-                                              })
-                                        ],
-                                      ),
-                                    ),
-                                    Divider(
-                                      color: Colors.grey,
-                                    )
-                                  ],
-                                )
-                              : Container();
-                        },
-                      )),
-                      _loadingDelete ? Center(child: CircularProgressIndicator(),) :Container()
-                  ],
-                ));
-  }
-
-  // Widget cardForUpdate() {}
-}
-
-converToString(List<dynamic> tags) {
-  String v = '';
-  for (var i = 0; i < tags.length; i++) {
-    if (i == 0) {
-      v = tags[i].toString();
-      continue;
-    }
-    v = v + ';' + tags[i].toString();
-    // print(i);
-  }
-  print(v);
-  return v;
-}
-
-class UpdateN extends StatefulWidget {
+class EditDraft extends StatefulWidget {
   final String _id;
   final UpdatePostsFormat _update;
   final int index;
   final List<String> _subs;
-  UpdateN(this._update, this._id, this._subs, this.index);
+  EditDraft(this._update, this._id, this._subs, this.index);
   @override
-  _UpdateNState createState() => _UpdateNState();
+  _EditDraftState createState() => _EditDraftState();
 }
 
-class _UpdateNState extends State<UpdateN> {
+class _EditDraftState extends State<EditDraft> {
   final _formKey = GlobalKey<FormState>();
   String _title;
   String _body;
@@ -405,6 +39,7 @@ class _UpdateNState extends State<UpdateN> {
   File _image;
   bool _loadSubmit = false;
   final _tagController = TextEditingController();  
+  final _imgController = TextEditingController();  
   // bool _firstSelected = true;
   bool _loadingWidget = false;
   List<DropdownMenuItem<String>>_selectSub=[];
@@ -417,56 +52,7 @@ class _UpdateNState extends State<UpdateN> {
     }
   }
   // String _uid;
-  createMake(var _response) async {
-    await readContent('posts').then((var v) async {
-      if (v != null) {
-        if (v.containsKey(_response.uid)) {
-          v[_response.uid] = _response.value as dynamic;
-          setState(() {
-            update[widget.index] =
-                UpdatePostsFormat(uid: _response.uid, value: _response.value);
-          });
-        } else {
-          v.putIfAbsent(_response.uid, () {
-            return _response.value as dynamic;
-          });
-        }
-        await writeContent('posts', jsonEncode(v)).then((bool mk) {
-          if (mk) {
-            readContent('posts').then((var v) {
-              print(v[_response.uid]);
-            });
-            setState(() {
-              _loadSubmit = false;
-            });
-            Navigator.of(context).pop();
-            return Fluttertoast.showToast(msg: 'Success');
-          } else {
-            setState(() {
-              _loadSubmit = false;
-            });
-            return Fluttertoast.showToast(msg: 'Failed!');
-          }
-        });
-      } else {
-        Map<String, dynamic> _value = {_response.uid: _response.value};
-        await writeContent('posts', jsonEncode(_value)).then((var v) {
-          if (v) {
-            setState(() {
-              _loadSubmit = false;
-            });
-            Navigator.of(context).pop();
-            return Fluttertoast.showToast(msg: 'Success');
-          } else {
-            setState(() {
-              _loadSubmit = false;
-            });
-            return Fluttertoast.showToast(msg: 'Failed!');
-          }
-        });
-      }
-    });
-  }
+  
 
   bool validateAndSave() {
     final form = _formKey.currentState;
@@ -486,36 +72,55 @@ class _UpdateNState extends State<UpdateN> {
     if (validateAndSave()) {
       // String userId = "";widget._
       try {
-        // tags = _tag.split(';');
-        var _response = await upPostForNotifs(
-            _title,
-            _body,
-            tags,
-            widget._id,
-            _url,
-            _council,
-            _author,
-            _message,
-            widget._subs,
-            widget._update.uid);
-        if (_response.statusCode != 200) {
-          return Fluttertoast.showToast(
-              msg: 'Can\'t process request at this time');
-        } else {
-          var fileExis = await fileExists('posts');
-          if (!fileExis) {
-            Map<String, dynamic> _value = {_response.uid: _response.value};
-            print(_value);
-            await writeContent('posts', jsonEncode(_value));
-            setState(() {
-              _loadSubmit = false;
-            });
-            Navigator.of(context).pop();
-            return Fluttertoast.showToast(msg: 'Success');
-          } else {
-            createMake(_response);
+        tags = _tag.split(';');
+       Fluttertoast.showToast(msg: 'Svaing file');
+  return await fileExists('drafts').then((var _exists) async {
+      print(_exists.toString() + 'exists in drafts.dart line 87');
+      if (_exists) {
+        return await readContentDrafts('drafts').then((var val) async{
+          print(val);
+
+          if (val != null && val.length != 0) {
+            val.add(widget._update.value);
           }
-        }
+          else{
+            val =[widget._update.value];
+          }
+          return await writeContentDrafts(json.encode(val)).then((var b){
+            if(b){
+
+              Fluttertoast.showToast(msg: 'File Saved successfully');
+              Navigator.pop(context);
+              Navigator.pop(context);
+              return true;
+            }else{
+              Fluttertoast.showToast(msg: 'Failed');
+              return false;
+              // Navigator.pop(context);
+              // Navigator.pop(context);
+            }
+
+            
+          });
+        });
+      }
+      else{
+        return await writeContentDrafts(json.encode(widget._update.value)).then((var b){
+            if(b){
+
+              Fluttertoast.showToast(msg: 'File Saved successfully');
+              Navigator.pop(context);
+              Navigator.pop(context);
+              return true;
+            }else{
+              Fluttertoast.showToast(msg: 'Failed');
+              return false;
+              // Navigator.pop(context);
+              // Navigator.pop(context);
+            }
+        });
+      }
+  });
       } catch (e) {
         print('Error: $e');
         setState(() {
@@ -558,6 +163,7 @@ class _UpdateNState extends State<UpdateN> {
     return storageReference.getDownloadURL().then((fileURL) {
       setState(() {
         print(fileURL);
+        _imgController.text = fileURL;
         _url = fileURL;
       });
       return true;
@@ -576,11 +182,12 @@ class _UpdateNState extends State<UpdateN> {
   void initState() {
     super.initState();
     buildsubs();
-    _tagController.addListener((){
-      _tagController.value = _tagController.value.copyWith(
-        text:converToString(widget._update.value['tags'])
-      );
-    });
+    // _tagController.addListener((){
+         _url = widget._update.value['url'];
+      _tagController.text = converToString(widget._update.value['tags']);
+      _imgController.text = (widget._update.value['url']);
+    //   );
+    // });
   }
   @override
   Widget build(BuildContext context) {
@@ -597,12 +204,17 @@ class _UpdateNState extends State<UpdateN> {
     // else{
     //   _firstSelected = false;
     // }
-    _url = widget._update.value['url'];
-    
+ 
     tags = widget._update.value['tags'];
     return Scaffold(
         appBar: new AppBar(
-          title: new Text('Edit Posts'),
+          title: new Text('Edit Drafts'),
+          // actions: <Widget>[
+          //   new FlatButton(
+          //       child: new Text('Logout',
+          //           style: new TextStyle(fontSize: 17.0, color: Colors.white)),
+          //       onPressed: signOut)
+          // ],
         ),
         body: Stack(
           children: <Widget>[
@@ -689,62 +301,65 @@ class _UpdateNState extends State<UpdateN> {
                             //image url to displayed and image tobe uploaded
                             padding:
                                 const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                            // child: new TextFormField(
-                            //   maxLines: 1,
-                            //   readOnly: true,
-                            //   enabled: false,
-                            //   initialValue: 'ghjjg',
-                            //   keyboardType: TextInputType.text,
-                            //   autofocus: false,
-                            //   // onChanged: (_url) {
-                            //   //   return _url;
-                            //   // },
-                            //   decoration: new InputDecoration(
-                            //     labelText: 'Image Url',
-                            //     // icon: new Icon(
-                            //     //   Icons.mail,
-                            //     //   color: Colors.grey,
-                            //     // )
-                            //   ),
-                            //   validator: (value) =>
-                            //       value.isEmpty ? 'Images Field can\'t be empty' : null,
-                            //   onSaved: (_url) => _url,
-                            // ),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  _url != null
-                                      ? SizedBox(
-                                          height: 15.0,
-                                        )
-                                      : SizedBox(height: 5.0),
-                                  _url != null
-                                      ? Text('Image Url',
-                                          style: TextStyle(
-                                              fontSize: 12.0, color: Colors.grey))
-                                      : Text(''),
-                                  SizedBox(
-                                    height: 5.0,
-                                  ),
-                                  _url == null
-                                      ? Text(
-                                          'Image Url',
-                                          style: TextStyle(
-                                              color: Colors.grey, fontSize: 16),
-                                        )
-                                      : Text(
-                                          _url,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                  _url != null
-                                      ? SizedBox(
-                                          height: 5.0,
-                                        )
-                                      : SizedBox(height: 10.0),
-                                  Divider(color: Colors.grey)
-                                ])),
+                            child: new TextFormField(
+                              maxLines: 1,
+                              readOnly: true,
+                              enabled: false,
+                              controller: _imgController,
+                              // initialValue: 'ghjjg',
+                              keyboardType: TextInputType.text,
+                              autofocus: false,
+                              // onChanged: (value) {
+                              //   // return _url;
+                              //   _url = value;
+                              // },
+                              decoration: new InputDecoration(
+                                labelText: 'Image Url',
+                                // icon: new Icon(
+                                //   Icons.mail,
+                                //   color: Colors.grey,
+                                // )
+                              ),
+                              // validator: (value) =>
+                              //     value.isEmpty ? 'Images Field can\'t be empty' : null,
+                              onSaved: (_url) => _url,
+                            ),
+                        ),
+                            // child: Column(
+                            //     crossAxisAlignment: CrossAxisAlignment.start,
+                            //     children: <Widget>[
+                            //       _url != null
+                            //           ? SizedBox(
+                            //               height: 15.0,
+                            //             )
+                            //           : SizedBox(height: 5.0),
+                            //       _url != null
+                            //           ? Text('Image Url',
+                            //               style: TextStyle(
+                            //                   fontSize: 12.0, color: Colors.grey))
+                            //           : Text(''),
+                            //       SizedBox(
+                            //         height: 5.0,
+                            //       ),
+                            //       _url == null
+                            //           ? Text(
+                            //               'Image Url',
+                            //               style: TextStyle(
+                            //                   color: Colors.grey, fontSize: 16),
+                            //             )
+                            //           : Text(
+                            //               _url,
+                            //               maxLines: 1,
+                            //               overflow: TextOverflow.ellipsis,
+                            //               style: TextStyle(fontSize: 16),
+                            //             ),
+                            //       _url != null
+                            //           ? SizedBox(
+                            //               height: 5.0,
+                            //             )
+                            //           : SizedBox(height: 10.0),
+                            //       Divider(color: Colors.grey)
+                            //     ])),
                         Padding(
                           padding: const EdgeInsets.only(
                             top: 15.0,
@@ -815,6 +430,17 @@ class _UpdateNState extends State<UpdateN> {
                                                                           Colors.white),
                                                                 ),
                                                                 onPressed: () async {
+                                                                  
+                                                                  await ImagePicker.pickImage(
+                                                                          source:
+                                                                              ImageSource
+                                                                                  .gallery)
+                                                                      .then((image) {
+                                                                    setState(() {
+                                                                      _image = image;
+                                                                      print(_image);
+                                                                    });
+                                                                  });
                                                                   if (_url != null) {
                                                                     StorageReference
                                                                         storageReference =
@@ -834,24 +460,11 @@ class _UpdateNState extends State<UpdateN> {
                                                                       });
                                                                     });
                                                                   }
-                                                                  await ImagePicker.pickImage(
-                                                                          source:
-                                                                              ImageSource
-                                                                                  .gallery)
-                                                                      .then((image) {
-                                                                    setState(() {
-                                                                      _image = image;
-                                                                      print(_image);
-                                                                    });
-                                                                    // setState(() {
-
-                                                                    // });
-                                                                  });
                                                                 },
                                                                 color: Colors.cyan,
                                                               )
                                                             : Container(),
-                                                        _image != null || _url != null
+                                                        _image != null || _url == null
                                                             ? RaisedButton(
                                                                 shape: new RoundedRectangleBorder(
                                                                     borderRadius:
@@ -871,6 +484,7 @@ class _UpdateNState extends State<UpdateN> {
                                                                   uploadFile().then((bool status){
                                                                     if(status){
                                                                       setState((){
+                                                                        // _url ='mnkfb';
                                                                         _loadingWidget =false;
                                                                         Fluttertoast.showToast(msg: 'Upload Successful!!');
                                                                         Navigator.of(context).pop();
@@ -898,8 +512,7 @@ class _UpdateNState extends State<UpdateN> {
                                                                 onPressed: () async {
                                                                   print(_image);
                                                                   print(_url);
-                                                                  if (_image != null &&
-                                                                      _url == null) {
+                                                                  if ( _image != null &&_url == null) {
                                                                     setState(() {
                                                                       _image = null;
                                                                       _url = null;
@@ -1013,14 +626,14 @@ class _UpdateNState extends State<UpdateN> {
                     child: Row(
                       children: <Widget>[
                         Container(
-                          width: MediaQuery.of(context).size.width - 150.0,
+                         width: MediaQuery.of(context).size.width - 150.0,
                           child: new TextFormField(
-                            
                             maxLines: null,
                             controller: _tagController,
                             readOnly: true,
                             keyboardType: TextInputType.multiline,
                             autofocus: false,
+                            enabled: false,
                             // initialValue: converToString(widget._update.value['tags']),
                             decoration: new InputDecoration(
                               labelText: 'Tags',
@@ -1105,14 +718,30 @@ class _UpdateNState extends State<UpdateN> {
                             borderRadius: new BorderRadius.circular(30.0)),
                         // color: Colors.blue,
                         onPressed: () {
-                          Fluttertoast.showToast(msg: 'Updating post');
+                          // Fluttertoast.showToast(msg: 'Updating post');
                           // Fluttertoast.cancel();
-                          setState(() {
-                            _loadSubmit = true;
-                          });
-                          validateAndSubmit();
+                          // setState(() {
+                          //   _loadSubmit = true;
+                          // });
+                          if(validateAndSave()){
+                            Navigator.of(context).push(
+                            MaterialPageRoute(builder: (BuildContext context) {
+                          return Preview(0, {
+                            'title': _title,
+                            'tags': tags,
+                            'council': _council.toLowerCase(),
+                            'sub': [_subs],
+                            'body': _body,
+                            'author': _author,
+                            'url': _url,
+                            'owner': widget._id,
+                            'message': _message,
+                          },'create');
+                        }));
+                          }
+                          
                         },
-                        child: Text('Update Post',
+                        child: Text('Preview',
                             style: TextStyle(color: Colors.white,
                             
                                         fontFamily: 'Comfortaa',
@@ -1137,7 +766,7 @@ class _UpdateNState extends State<UpdateN> {
         builder: (BuildContext context) {
           final _formKey = GlobalKey<FormState>();
           String addTag;
-          
+          print(tags);
           return CupertinoActionSheet(
             actions: <Widget>[
               Container(
@@ -1149,8 +778,7 @@ class _UpdateNState extends State<UpdateN> {
                     child: Text('Add Tags',
                     style: TextStyle(
                       color: Colors.white
-                    )
-                    ),
+                    ),),
                     onPressed: () {
                       showDialog(context: context, builder: (BuildContext context){
                         return CupertinoAlertDialog(
@@ -1262,9 +890,10 @@ class _UpdateNState extends State<UpdateN> {
                     Navigator.of(context).pop();
                   },
                   child: Text('Done',
-                  style: TextStyle(
+                    style: TextStyle(
                       color: Colors.white
-                    ),),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -1272,63 +901,4 @@ class _UpdateNState extends State<UpdateN> {
         });
 }
 
-Future<Res> upPostForNotifs(
-    String _title,
-    String _body,
-    List<String> tags,
-    // String _subtitile,
-    String _id,
-    String _url,
-    String _council,
-    String _author,
-    String _message,
-    List<String> _subs,
-    String uid) async {
-  Map<String, String> headers = {"Content-type": "application/json"};
-  // value = jsonEncode(value);
-  var value = jsonEncode({
-    'title': _title,
-    'tags': tags,
-    'council': _council.toLowerCase(),
-    'sub': _subs,
-    'body': _body,
-    'author': _author,
-    'url': _url,
-    'owner': _id,
-    'message': _message,
-    // 'exists':true,
-    // 'timeStamp': DateTime.now().toIso8601String(),
-    'id': uid,
-  });
-  print(value);
-  String json = '$value';
-  String url = 'https://us-central1-notifier-snt.cloudfunctions.net/editPost';
-  try {
-    Response response = await post(url, headers: headers, body: json);
-    int statusCode = response.statusCode;
-    print(statusCode);
-    print(response.body.toString());
-    var value = jsonEncode({
-      'title': _title,
-      'tags': tags,
-      'council': _council,
-      'sub': _subs,
-      'body': _body,
-      'author': _author,
-      'url': _url,
-      'owner': _id,
-      'message': _message,
-      'exists': true,
-      'timeStamp': DateTime.now().toIso8601String(),
-      'id': response.body.toString(),
-    });
-    return Res(
-        uid: response.body.toString(),
-        statusCode: statusCode,
-        value: jsonDecode(value));
-  } catch (e) {
-    print(e);
-    return null;
-  }
-}
 }

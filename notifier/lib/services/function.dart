@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/screens/home.dart';
@@ -126,155 +127,59 @@ Future<bool>p1(Map<String,dynamic> notification) async{
   });
 }
 
-
-/*
-Future<bool> p1(Map<String, dynamic> notfication) async {
-  var db = Firestore.instance;
-  String v;
-  return await getStringValuesSF().then((String value) async {
-    var error;
-    print(value.toString() + ' latTme');
-
-    if (value == '0') {
-      return await db
-              .collection('snt')
-              .getDocuments()
-              .then((QuerySnapshot snapshot) async {
-        snapshot.documents.forEach((f) {
-          print('getting from internet');
-          if (notfication.containsKey(f.documentID)) {
-            notfication.update(f.documentID, (var v) {
-              var v = f.data;
-              v['timeStamp'] =
-                  (v['timeStamp'] as Timestamp).toDate().toIso8601String();
-              //  print(v['timeStamp']);
-              return v;
-            });
-          }
-          notfication.putIfAbsent(f.documentID, () {
-            var v = f.data;
-            v['timeStamp'] =
-                (v['timeStamp'] as Timestamp).toDate().toIso8601String();
-            return v;
-          });
-        });
-        print('retreieving notfs fro  internet');
-        // });
-        return error == null && notfication != null
-            ? await writeContent('snt', json.encode(notfication))
-            : false;
-        // print(notfs);
-      }).catchError((e) {
-        print(e.toString() + ' error while retreieving notfs fro  internet');
-        error = 'Error';
-        return false;
-      }) /*.whenComplete(() {
-        // print(notfication);
-        // return error == null && notfication != null?  writeContent('snt',json.encode(notfication)).whenComplete(() => v= 'true')  : v = 'Error'; 
-      })*/
-          ;
-    } else {
-     return  await db
-              .collection('snt')
-              .where('timeStamp', isGreaterThanOrEqualTo: DateTime.parse(value))
-              .getDocuments()
-              .then((QuerySnapshot snapshot) async {
-        print('getting from internet with lasttime');
-        snapshot.documents.forEach((f) {
-          print(f.documentID);
-          if (notfication.containsKey(f.documentID)) {
-            notfication.update(f.documentID, (var v) {
-              var v = f.data;
-              v['timeStamp'] =
-                  (v['timeStamp'] as Timestamp).toDate().toIso8601String();
-              //  print(v['timeStamp']);
-              return v;
-            });
-          }
-          notfication.putIfAbsent(f.documentID, () {
-            var v = f.data;
-
-            v['timeStamp'] =
-                (v['timeStamp'] as Timestamp).toDate().toIso8601String();
-            //  print(v['timeStamp']);
-            return v;
-          });
-        });
-        return error == null
-            ? await writeContent('snt', json.encode(notfication))
-            : false;
-        // }
-        // print(f.data);
-        // print('doesn\'t need to retreive notfs');
-        //  });
-      }).catchError((e) {
-        print(e.toString() + ' error while retreieving notfs fro  internet');
-        error = 'Error';
-        return false;
-      }); /*.whenComplete(() {
-        // for (var i in post) {
-        //   if(notfication.containsKey(i.uid)){
-        //     notfication.update(i.uid, i.value);
-        //   }
-        //   else{
-        //     notfication., ifAbsent)
-        //   }
-        // print(notfication);
-        return error == null ?  writeContent('snt',json.encode(notfication)).whenComplete(() => v= 'true')  : v = 'Error'; 
-        
-        
-      })*/
-          // ;
-    }
-    // return v;
-  }).catchError((var e) {
-    print(e);
-     v = 'Error';
-     return false;
+Future<Res> createPostForNotifs(
+  String _title,
+  String _body,
+  List<dynamic> tags,
+  // String _subtitile,
+  String _id,
+  String _url,
+  String _council,
+  String _author,
+  String _message,
+  List<dynamic> _subs,
+) async {
+  Map<String, String> headers = {"Content-type": "application/json"};
+  // value = jsonEncode(value);
+  var value = jsonEncode({
+    'title': _title,
+    'tags': tags,
+    'council': _council.toLowerCase(),
+    'sub': _subs,
+    'body': _body,
+    'author': _author,
+    'url': _url,
+    'owner': _id,
+    'message': _message,
   });
-  // print(getDoc);
-
-  /*return getDoc != 'Error'?await writeContent('snt', json.encode(notfication))/*.whenComplete((){
-    readContent('snt').then((var value){
-      // print(value);
-      // var v = value['timeStamp'];
-      
-      
-      value.keys.forEach((key){
-        // if(timenots.containsKey(DateTime.parse(value[key]['timeStamp'].toString()))){
-        //    timenots.update(DateTime.parse(value[key]['timeStamp'].toString()), (var v) {
-        //    var v = value[key];
-        //   //  v['timeStamp'] = (v['timeStamp'] as Timestamp).toDate().toIso8601String();
-        //   //  print(v['timeStamp']);
-        //    return v;
-        //  } );
-        //  }
-        //  timenots.putIfAbsent(DateTime.parse(value[key]['timeStamp'].toString()), () {
-        //    var v = value[key];
-           
-        //   //  v['timeStamp'] = (v['timeStamp'] as Timestamp).toDate().toIso8601String();
-        //   //  print(v['timeStamp']);
-        //    return v;
-        //  });
-        // v = value[key]
-       var v= DateTime.parse('2020-03-23T17:26:56.295')  ;
-        if(v.compareTo(DateTime.parse(value[key]['timeStamp'].toString() )) > 0 ){
-          // print((value[key]['timeStamp']).toString() + 'timeStamp');
-        }
-        
-        if(value.containsKey(key)){
-          if(value[key]['exists'] == false){
-            print(value[key]);
-            value.remove(key);
-          }
-        }
-        // timenots = value;
-      });
+  print(value);
+  String json = '$value';
+  String url = 'https://us-central1-notifier-snt.cloudfunctions.net/makePost';
+  try {
+    Response response = await post(url, headers: headers, body: json);
+    int statusCode = response.statusCode;
+    print(statusCode);
+    print(response.body.toString());
+    var value = jsonEncode({
+      'title': _title,
+      'tags': tags,
+      'council': _council,
+      'sub': _subs,
+      'body': _body,
+      'author': _author,
+      'url': _url,
+      'owner': _id,
+      'message': _message,
+      'exists': true,
+      'timeStamp': DateTime.now().toIso8601String(),
+      'uid': response.body.toString(),
     });
-  })*/:false;*/
-}*/
-//  2020-03-23T17:26:18.261timeStamp
-// I/flutter (28706): 2020-03-23T17:26:52.087timeStamp
-// I/flutter (28706): 2020-03-23T17:26:56.295timeStamp
-// I/flutter (28706): 2020-03-23T17:26:58.423timeStamp
-// I/flutter (28706): 2020-03-23T17:27:00.400timeStamp
+    return Res(
+        uid: response.body.toString(),
+        statusCode: statusCode,
+        value: jsonDecode(value));
+  } catch (e) {
+    print(e);
+    return null;
+  }
+}

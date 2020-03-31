@@ -29,6 +29,8 @@ dependencies:
   firebase_storage: 
   cached_network_image: ^2.0.0-rc
   auto_size_text: ^2.1.0
+  url_launcher: 
+  flutter_linkify: 
   sliding_up_panel: 
   firebase_core:
   firebase_messaging:
@@ -60,7 +62,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/launch.png
-    - assets/ECDC.jpg
+    - assets/Aditya.png
   #  - images/a_dot_burr.jpeg
   #  - images/a_dot_ham.jpeg
 

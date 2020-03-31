@@ -39,6 +39,11 @@ Future<File> get _localFilePosts async {
   final path = await _localPath;
   return File('$path' + '/' + 'posts' + '.txt');
 }
+Future<File> get _localFileDrafts async {
+  print('drafts');
+  final path = await _localPath;
+  return File('$path' + '/' + 'drafts' + '.txt');
+}
 
 Future<bool> fileExists(String fileName) async {
   final path = await _localPath;
@@ -73,12 +78,23 @@ Future<Map<String, dynamic>> readPeople() async {
     return null;
   }
 }
+Future<List<dynamic>> readContentDrafts(String fileName)async{
+  try{
+    final file = await _localFileDrafts;
+    var contents=  await file.readAsString();
+    return await json.decode(contents);
 
+  }
+  catch(e){
+    print(e);
+    return null;
+  }
+}
 Future<Map<String, dynamic>> readContent(String fileName) async {
   try {
     final file = (fileName == 'snt')
         ? await _localFileSNT
-        : (fileName == 'posts' ? await _localFilePosts : await _localFile);
+        : (fileName == 'posts' ? await _localFilePosts : (fileName == 'drafts' ? await _localFileDrafts :await _localFile));
     // Read the file
     String content = await file.readAsString();
     // print(content);
@@ -92,7 +108,19 @@ Future<Map<String, dynamic>> readContent(String fileName) async {
     return null;
   }
 }
-
+Future<bool> writeContentDrafts(var content)async{
+  return await fileExists('drafts').then((var v)async{
+    if(v){
+      final file = await _localFileDrafts;
+      var val=  await file.writeAsString(content);
+      return val!=null?true:false;
+    }else{
+       final file = await createFile('drafts');
+    var v = file != null ? await file.writeAsString(content) : null;
+    return v != null ? true : false;
+    }
+  });
+}
 Future<bool> writeContent(String fileName, var contentToWrite) async {
   final existence = await fileExists(fileName);
   // print(existence);
@@ -110,6 +138,10 @@ Future<bool> writeContent(String fileName, var contentToWrite) async {
         break;
       case 'snt':
         final file = await _localFileSNT;
+        v = await file.writeAsString(contentToWrite);
+        break;
+      case 'drafts':
+        final file = await _localFileDrafts;
         v = await file.writeAsString(contentToWrite);
         break;
       default:
@@ -141,7 +173,9 @@ Future<File> deleteContent(String fileName) async {
               ? await _localFile
               : (fileName == 'posts'
                   ? await _localFilePosts
-                  : await _localFileSNT)));
+                  : (fileName =='drafts'?
+                    await _localFileDrafts:
+                    await _localFileSNT))));
       return await file.delete();
     } else {
       return null;

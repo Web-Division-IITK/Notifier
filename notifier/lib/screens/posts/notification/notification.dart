@@ -9,144 +9,337 @@ import 'package:notifier/screens/posts/notification/not_info.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:notifier/services/function.dart';
 
-class MessageHandler extends StatefulWidget {
+List<SortDateTime> sortedarray = List();
+class MessageHandlerNotf extends StatefulWidget {
   final String uid;
   final Function loadSnt; 
-  MessageHandler(this.uid,this.loadSnt);
+  MessageHandlerNotf(this.uid,this.loadSnt);
   @override
-  _MessageHandlerState createState() => _MessageHandlerState();
+  _MessageHandlerNotfState createState() => _MessageHandlerNotfState();
 }
 
-List<SortDateTime> sortedarray = List();
-
-class _MessageHandlerState extends State<MessageHandler> {
+class _MessageHandlerNotfState extends State<MessageHandlerNotf> {
   final FirebaseMessaging _fcm = FirebaseMessaging();
   List<String> title = List();
   List<String> body = List();
-  String display;
-  String bodyMsg;
-  String data;
+  
   List<TableRow> tableRows = List();
   ScrollController _controller;
   bool newNotf = false;
 
   // bool load = true;
-  void loadEVERY() async {
-    // load = true;
-    await procedure().then((var v) {
-      print(v.toString() + ':procedure line29 notification.dart');
-      if (v != null && v) {
-        setState(() {
-          addStringToSF(DateTime.now().toIso8601String());
-          readContent('snt').then((var val) {
-            print('snt values line34 of not.dart:' + val.toString());
-            val.keys.forEach((key) {
-              if (val[key]['exists'] == false) {
-                // print('values whoose esists is false line46 not.dart:'+val[key].toString());
-                // val.remove(key);
-              } else {
-                if (!sortedarray.contains(SortDateTime(
-                    key,
-                    DateTime.parse(val[key]['timeStamp'])
-                        .toUtc()
-                        .millisecondsSinceEpoch,
-                    val[key]))) {
-                  sortedarray.add(SortDateTime(
-                      key,
-                      DateTime.parse(val[key]['timeStamp'])
-                          .toUtc()
-                          .millisecondsSinceEpoch,
-                      val[key]));
+  // void loadEVERY() async {
+  //   // load = true;
+  //   await procedure().then((var v) {
+  //     print(v.toString() + ':procedure line29 notification.dart');
+  //     if (v != null && v) {
+  //       setState(() {
+  //         addStringToSF(DateTime.now().toIso8601String());
+  //         readContent('snt').then((var val) {
+  //           print('snt values line34 of not.dart:' + val.toString());
+  //           val.keys.forEach((key) {
+  //             if (val[key]['exists'] == false) {
+  //               // print('values whoose esists is false line46 not.dart:'+val[key].toString());
+  //               // val.remove(key);
+  //             } else {
+  //               if (!sortedarray.contains(SortDateTime(
+  //                   key,
+  //                   DateTime.parse(val[key]['timeStamp'])
+  //                       .toUtc()
+  //                       .millisecondsSinceEpoch,
+  //                   val[key]))) {
+  //                 sortedarray.add(SortDateTime(
+  //                     key,
+  //                     DateTime.parse(val[key]['timeStamp'])
+  //                         .toUtc()
+  //                         .millisecondsSinceEpoch,
+  //                     val[key]));
+  //               }
+  //             }
+  //           });
+  //         });
+  //       });
+  //     }
+
+  //     // print(v);
+  //   });
+  // }
+
+  // @override
+  // void initState() {
+  //   _controller = ScrollController();
+  //   super.initState();
+  //   newNotf = false;
+  //   _fcm.configure(
+  //     onMessage: (Map<String, dynamic> message) async {
+  //       print("onMessage :$message" + ' isthe message');
+  //       setState(() {
+  //         // addStringToSF(DateTime.now().toIso8601String());
+  //         widget.loadSnt();
+  //         newNotf = true;
+  //         bodyMsg = message['notification']['body'];
+  //         data = message['data']['message'];
+  //         display = message['notification']['title'];
+  //       });
+  //     },
+  //     onResume: (Map<String, dynamic> message) async {
+  //       print("onResume : $message" + 'is fromResume');
+  //       setState(() {
+  //         // addStringToSF(DateTime.now().toIso8601String());
+  //         // loadEVERY();
+  //         newNotf = true;
+  //         bodyMsg = message['notification']['body'];
+  //         display = message['notification']['title'];
+  //       });
+  //     },
+  //     onLaunch: (Map<String, dynamic> message) async {
+  //       print("onLaunch: $message" + ':is fromLaunch');
+  //       setState(() {
+  //         // addStringToSF(DateTime.now().toIso8601String());
+  //         // loadEVERY();
+  //         newNotf = true;
+  //         bodyMsg = message['notification']['body'];
+  //         display = message['notification']['title'];
+  //       });
+  //       // onUpdate(prefsel)
+  //     },
+  //     // onBackgroundMessage: (Map<String,dynamic> message) async{
+  //     //    print("onLaunch: $message"+ ':is fromLaunch');
+  //     //    setState(() {
+  //     //       bodyMsg = message['notification']['body'];
+  //     //     display = message['notification']['title'];
+
+  //     //   });
+  //     // }
+  //   );
+  // }
+  Iterable<Widget> get arrayofTime sync*{
+    for (var i in sortedarray) {
+      DateTime postTime = DateTime.parse(i.value['timeStamp']);
+      var time;var day;
+      // var dayTime = DateFormat('d mm yyyy').format;
+      if (DateTime.now().day == postTime.day && DateTime.now().month == postTime.month && DateTime.now().year == postTime.year) {
+                if (DateTime.now().hour == postTime.hour ||
+                    (DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch) < 3600000) {
+                  switch (DateTime.now().minute - postTime.minute) {
+                    case 0:
+                      time = 'now';
+                      day = 'Today';
+                      break;
+                    default:
+                      var i = ((DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch) /60000)
+                          .round();
+                      time = '$i minutes ago';
+                      day = 'Today';
+                  }
+                } else {
+                  time = DateFormat('kk:mm').format(postTime);
+                  day = 'Today';
                 }
+              } else {
+                time = DateFormat('d MMMM, yyyy : kk:mm').format(postTime);
+                day = DateFormat('d MMMM, yyyy').format(postTime);
               }
-            });
-          });
-        });
-      }
-
-      // print(v);
-    });
+      switch(i.dateasString){
+        case 'Today':{
+          if (sortedarray.firstWhere((test){
+            return (test.dateasString == 'Today' && (test.value['exists'] == null || test.value['exists']))?
+            true : false;
+          }) == i) {
+            yield Column(
+               children: <Widget>[
+                 Container(child: Text('Today'),),
+                  Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
+                    )
+               ],
+             );
+          } else {
+            yield (i.value['exists'] == null ||
+                      !i.value['exists'])
+                  ? Container()
+                  // : time ==  ?
+                  : Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
+                    );
+          }
+        } 
+          break;
+        case 'Yesterday' : {
+          if (sortedarray.firstWhere((test){
+            return (test.dateasString == 'Yesterday' && (test.value['exists'] == null || test.value['exists']))?true:false;
+          }) == i) {
+             yield Column(
+               children: <Widget>[
+                 Container(child: Text('Yesterday'),),
+                  Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
+                    )
+               ],
+             );
+          } else {
+            yield (i.value['exists'] == null ||
+                      !i.value['exists'])
+                  ? Container()
+                  // : time ==  ?
+                  : Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
+                    );
+          }
+        }
+          break;
+        default: if (sortedarray.firstWhere((test){
+          return (test.dateasString == day && (test.value['exists'] == null || test.value['exists']))?true:false;
+        }) == i) {
+          yield Column(
+               children: <Widget>[
+                 Container(child: Text(day),),
+                  Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
+                    )
+               ],
+             );
+        } else {
+          yield (i.value['exists'] == null ||
+                      !i.value['exists'])
+                  ? Container()
+                  // : time ==  ?
+                  : Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
+                    );
+        }
+        break;
+      } 
+    }
   }
-
-  @override
-  void initState() {
-    _controller = ScrollController();
-    super.initState();
-    newNotf = false;
-    _fcm.configure(
-      onMessage: (Map<String, dynamic> message) async {
-        print("onMessage :$message" + ' isthe message');
-        setState(() {
-          // addStringToSF(DateTime.now().toIso8601String());
-          widget.loadSnt();
-          newNotf = true;
-          bodyMsg = message['notification']['body'];
-          data = message['data']['message'];
-          display = message['notification']['title'];
-        });
-      },
-      onResume: (Map<String, dynamic> message) async {
-        print("onResume : $message" + 'is fromResume');
-        setState(() {
-          // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
-          newNotf = true;
-          bodyMsg = message['notification']['body'];
-          display = message['notification']['title'];
-        });
-      },
-      onLaunch: (Map<String, dynamic> message) async {
-        print("onLaunch: $message" + ':is fromLaunch');
-        setState(() {
-          // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
-          newNotf = true;
-          bodyMsg = message['notification']['body'];
-          display = message['notification']['title'];
-        });
-        // onUpdate(prefsel)
-      },
-      // onBackgroundMessage: (Map<String,dynamic> message) async{
-      //    print("onLaunch: $message"+ ':is fromLaunch');
-      //    setState(() {
-      //       bodyMsg = message['notification']['body'];
-      //     display = message['notification']['title'];
-
-      //   });
-      // }
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: <Widget>[
-        newNotf
-            ? Text('You May have new Notifications please pull to referesh')
-            : Container(),
+    return 
         Container(
-            padding: newNotf ? EdgeInsets.only(top: 30.0) : null,
-            child: ListView.builder(
-              physics: AlwaysScrollableScrollPhysics(),
-                controller: _controller,
-                itemCount: sortedarray.length,
-                itemBuilder: (BuildContext context, int index) {
-                  // if(sortedarray[index]['uid'])
-                  // print(sortedarray.length);
-                  print(sortedarray[index].value['exists']);
-                  return (sortedarray[index].value['exists'] == null ||
-                          !sortedarray[index].value['exists'])
-                      ? Container()
-                      : Container(
-                        margin:  const EdgeInsets.symmetric(horizontal: 16.0),
-                          child: card(sortedarray[index].value, index),
-                        );
-                })),
-      ],
-    );
+            padding: EdgeInsets.only(top: 10.0) ,
+            child: ListView(
+              children: arrayofTime.toList(),
+            )
+            // child: ListView.builder(
+            //   physics: AlwaysScrollableScrollPhysics(),
+            //     controller: _controller,
+            //     itemCount: sortedarray.length,
+            //     itemBuilder: (BuildContext context, int index) {
+            //       // if(sortedarray[index]['uid'])
+            //       // print(sortedarray.length);
+            //       DateTime postTime = DateTime.parse(sortedarray[index].value['timeStamp']);
+            // var time;
+            // var day;
+            // if (DateTime.now().day == postTime.day && DateTime.now().month == postTime.month && DateTime.now().year == postTime.year) {
+            //   if (DateTime.now().hour == postTime.hour || (DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch) < 3600000) {
+            //     switch (DateTime.now().minute - postTime.minute) {
+            //       case 0:
+            //         time = 'now';
+            //         day = 'Today';
+            //         break;
+            //       default:
+            //         var i = ((DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch) /60000).round();
+            //         time = '$i minutes ago';
+            //         day = 'Today';
+            //     }
+            //   } else {
+            //     time = 'Today, ' + DateFormat('kk:mm').format(postTime);
+            //     day = 'Today';
+            //   }
+            // } else {
+            //   time = DateFormat('d MMMM, yyyy : kk:mm').format(postTime);
+            //   day = DateFormat('d MMMM, yyyy').format(postTime);
+            // }
+            // return (sortedarray[index].value['exists'] == null ||
+            //         !sortedarray[index].value['exists'])
+            //     ? Container()
+            //     // : time ==  ? 
+            //     :Container(
+            //         margin: const EdgeInsets.symmetric(horizontal: 16.0),
+            //         child: tile(sortedarray[index].value, index,time),
+            //       );
+            //     })
+            );
+     
   }
-
+  Widget tile(timenot, index,time) {
+    return Card(
+      elevation: 5.0,
+      margin: EdgeInsets.symmetric(vertical: 10.0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16.0),
+        onTap: () {
+          return Navigator.of(context)
+              .push(MaterialPageRoute(builder: (BuildContext context) {
+            return NotfDesc(index);
+          }));
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
+              child: AutoSizeText(timenot['sub'][0],
+                  // 'Science and Texhnology Council',
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.blueGrey
+                        : Colors.white70,
+                    // fontWeight: FontStyle.italic,
+                    fontSize: 13.0,
+                  )),
+            ),
+            Container(
+              // alignment: Alignment.center,
+              padding: EdgeInsets.fromLTRB(16.0, 5.0, 16.0, 10.0),
+              child: AutoSizeText(timenot['title'],
+                  // 'Sit commodo fugiat duis consectetur sunt ipsum cupidatat adipisicing mollit et magna duis.',
+                  minFontSize: 18.0,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 2,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20.0,
+                  )),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 5.0),
+              child: AutoSizeText(
+                timenot['message'],
+                // 'Dolor consectetur in dolore anim reprehenderit velit pariatur veniam nostrud id ex exercitation.',
+                maxLines: 2,
+                style: TextStyle(
+                  fontSize: 16.0,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.grey[850]
+                      : Colors.white70,
+                ),
+              ),
+            ),
+            Container(
+                padding: EdgeInsets.fromLTRB(0.0, 0.0, 16.0, 5.0),
+                alignment: Alignment.bottomRight,
+                child: Text(
+                  time,
+                  style: TextStyle(
+                    fontSize: 10.0,
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey
+                        : Colors.white70,
+                  ),
+                )),
+          ],
+        ),
+      ),
+    );}
   Widget card(timenot, index) {
     DateTime postTime= DateTime.parse(timenot['timeStamp']);
     var time;

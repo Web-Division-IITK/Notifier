@@ -57,9 +57,24 @@ class _PreferencesState extends State<Preferences> {
           //   for (var i in (selectionData[0].name)) {
           //   select.add(false);
           // }
-          for (var i in r) {
-            var index = selectionData[0].name.indexOf(i);
-            selectionData[0].isSelected[index] = true;
+          // for (var i in r) {
+          //   var index = selectionData[0].name.indexOf(i);
+          //   selectionData[0].isSelected[index] = true;
+          
+          for (var j in selectionData[0].name) {
+            if(!_prefs.contains(j)){
+              var index = selectionData[0].name.indexOf(j);
+              selectionData[0].isSelected[index] = false;
+            }
+            else{
+              var index = selectionData[0].name.indexOf(j);
+              selectionData[0].isSelected[index] = true;
+            }
+            // if(!j.contains(i)){
+            //   var index = selectionData[0].name.indexOf(j);
+            //   selectionData[0].isSelected[index] = false;
+            // }
+          // }
           }
        });
       }
@@ -154,102 +169,120 @@ class _PreferencesState extends State<Preferences> {
           title: new Text('Preferences'),
         ),
         body: Stack(
+          fit:StackFit.expand,
           children: <Widget>[
             // ListView(
             // shrinkWrap: true,
             // physics: AlwaysScrollableScrollPhysics(),
             // children: list,
-            ListView.builder(
-                // physics: AlwaysScrollableScrollPhysics(),
-                // shrinkWrap: true,
-                itemCount: selectionData[0].name.length +1,
-                itemBuilder: (BuildContext context, int index) {
-                  //  for (var i in (selectionData[0].name)){
-                  //    select.add(false);
-                  //  }
-                  // select.insert(index, false);
-                  return index != selectionData[0].name.length?
-                      Container(
-                        child: Row(
-                          children: <Widget>[
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.7,
-                              // decoration: Decoration(),
-                              padding: EdgeInsets.only(left: 30.0),
-                              child: Text(
-                                selectionData[0].name[index],
-                                style: TextStyle(
-                                  fontFamily: 'Nunito',
-                                  // fontWeight: FontWeight.bold,
-                                  fontSize: 15.0,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * 0.3,
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Switch(
-                                  value: selectionData[0].isSelected[index],
-                                  onChanged: (value) {
-                                    if (!value) {
-                                      setState(() {
-                                        confirmdialogForPrefs(
-                                            index,
-                                            selectionData[0].name[index],
-                                            value);
-                                      });
-                                      print(value.toString() +
-                                          ':' +
-                                          selectionData[0].name[index]);
+            SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                   height: MediaQuery.of(context).size.height-130.0,
+                    child: ListView.builder(
+                        // physics: AlwaysScrollableScrollPhysics(),
+                        // shrinkWrap: true,
+                        itemCount: selectionData[0].name.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          //  for (var i in (selectionData[0].name)){
+                          //    select.add(false);
+                          //  }
+                          // select.insert(index, false);
+                          return Container(
+                                child: Row(
+                                  children: <Widget>[
+                                    Container(
+                                      width: MediaQuery.of(context).size.width * 0.7,
+                                      // decoration: Decoration(),
+                                      padding: EdgeInsets.only(left: 30.0),
+                                      child: Text(
+                                        selectionData[0].name[index],
+                                        style: TextStyle(
+                                          fontFamily: 'Nunito',
+                                          // fontWeight: FontWeight.bold,
+                                          fontSize: 15.0,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      width: MediaQuery.of(context).size.width * 0.3,
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Switch(
+                                          value: selectionData[0].isSelected[index],
+                                          onChanged: (value) {
+                                            if (!value) {
+                                              setState(() {
+                                                confirmdialogForPrefs(
+                                                    index,
+                                                    selectionData[0].name[index],
+                                                    value);
+                                              });
+                                              print(value.toString() +
+                                                  ':' +
+                                                  selectionData[0].name[index]);
 
-                                      // }
-                                    } else {
-                                      setState(() {
-                                        selectionData[0].isSelected[index] =
-                                            value;
-                                        print(value.toString() +
-                                            ':' +
-                                            selectionData[0].name[index]);
-                                      });
-                                    }
-                                  },
-                                  // activeTrackColor: Colors.lightGreenAccent,
-                                  // activeColor: Colors.green,
+                                              // }
+                                            } else {
+                                              setState(() {
+                                                selectionData[0].isSelected[index] =
+                                                    value;
+                                                print(value.toString() +
+                                                    ':' +
+                                                    selectionData[0].name[index]);
+                                              });
+                                            }
+                                          },
+                                          // activeTrackColor: Colors.lightGreenAccent,
+                                          // activeColor: Colors.green,
+                                        ),
+                                      ),
+                                    )
+                                  ],
                                 ),
-                              ),
-                            )
-                          ],
-                        ),
-                      ):Container(
-                              width: 150.0,
-                              padding:
-                                  EdgeInsets.fromLTRB(100.0, 0.0, 100.0, 0.0),
-                              child: RaisedButton(
-                                shape: new RoundedRectangleBorder(
-                                    borderRadius:
-                                        new BorderRadius.circular(30.0)),
-                                // color: Colors.blue,
-                                onPressed: () {
-                                  confirmdialog(0);
-                                },
-                                child: Text(
-                                  'Update',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontFamily: 'Comfortaa',
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15.0,
+                              );
+                           
+                        }),
+                  ), 
+                  Container(
+                  height:50.0,
+                  width:MediaQuery.of(context).size.width,
+                  // color: Theme.of(context).brightness == Brightness.dark?Colors.black38: Colors.white,
+                  child: Container(
+                    alignment: Alignment.bottomCenter,
+                                  width: 150.0,
+                                  padding:
+                                      EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 5.0),
+                                  child: RaisedButton(
+                                    shape: new RoundedRectangleBorder(
+                                        borderRadius:
+                                            new BorderRadius.circular(30.0)),
+                                    // color: Colors.blue,
+                                    onPressed: () {
+                                      confirmdialog(0);
+                                    },
+                                    child: Text(
+                                      'Update',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontFamily: 'Comfortaa',
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15.0,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                   
-                }),
+                ),
+                
+                  
+                ],
+              ),
+            ),
             // ),
 
             // )
-
+            
             _loading
                 ? Center(
                     child: CircularProgressIndicator(),
@@ -299,16 +332,16 @@ class _PreferencesState extends State<Preferences> {
                     textAlign: TextAlign.center,
                     text: TextSpan(
                         text: 'Type ',
-                        // style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: Theme.of(context).brightness ==Brightness.dark ? Colors.white:Colors.black),
                         children: <TextSpan>[
                           TextSpan(
                               text: '$name ',
                               style: TextStyle(
-                                  // color: Colors.black,
+                                 color: Theme.of(context).brightness ==Brightness.dark ? Colors.white:Colors.black,
                                   fontWeight: FontWeight.bold)),
                           TextSpan(
                               text: 'to continue',
-                              // style: TextStyle()
+                              style: TextStyle(color: Theme.of(context).brightness ==Brightness.dark ? Colors.white:Colors.black)
                               )
                         ])),
                 //  SizedBox(height: 20.0),
@@ -423,16 +456,16 @@ class _PreferencesState extends State<Preferences> {
                 RichText(
                     text: TextSpan(
                         text: 'Type ',
-                        // style: TextStyle(color: Colors.black),
+                        style: TextStyle(color: Theme.of(context).brightness ==Brightness.dark ? Colors.white:Colors.black),
                         children: <TextSpan>[
                       TextSpan(
                           text: 'Yes ',
                           style: TextStyle(
-                              // color: Colors.black,
+                              color: Theme.of(context).brightness ==Brightness.dark ? Colors.white:Colors.black,
                               fontWeight: FontWeight.bold)),
                       TextSpan(
                           text: 'to continue',
-                          // style: TextStyle(color: Colors.black)
+                          style: TextStyle(color: Theme.of(context).brightness ==Brightness.dark ? Colors.white:Colors.black)
                           )
                     ])),
                 SizedBox(height: 20.0),
@@ -538,6 +571,8 @@ Future<bool> onUpdate(List<String> prefsel) async {
   Fluttertoast.showToast(msg: 'Saving Preferences');
   return await readContent('users').then((var value) async {
     var prefs = value['prefs'];
+    prefs.remove('Science and Technology Council');
+    prefs.remove('Techkriti');
     uid = value['uid'];
     print(uid);
     val = value;
@@ -578,7 +613,8 @@ Future<bool> onUpdate(List<String> prefsel) async {
         }
       });
     }
-    return await updateInFireBase(uid, prefsel).then((v) {
+    print(prefsel.toString() +'prefsel');
+    return await updateInFireBase(uid, prefsel + ['Techkriti','Science and Technology Council']).then((v) {
       Fluttertoast.showToast(msg: 'Done!!!');
       return true;
     });

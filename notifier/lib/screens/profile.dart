@@ -191,7 +191,7 @@ class _ProfilePageState extends State<ProfilePage> {
                               fontFamily: 'Comfortaa',
                               fontWeight: FontWeight.bold,
                               fontSize: 17.0,
-                              color: Colors.black),
+                              ),
                         ),
                   SizedBox(height: 10.0),
                   Row(

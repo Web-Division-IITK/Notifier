@@ -23,5 +23,7 @@ class SortDateTime{
   final String uid;
   final int date;
  dynamic value;
-  SortDateTime(this.uid,this.date,this.value);
+  final String club;
+  final String dateasString;
+  SortDateTime(this.uid,this.date,this.value,this.club,this.dateasString);
 }
