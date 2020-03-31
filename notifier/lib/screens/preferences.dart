@@ -302,8 +302,9 @@ class _PreferencesState extends State<Preferences> {
           String typed;
           final _formKey = GlobalKey<FormState>();
           //  TextFormField _unsubscribe = GlobalKey<TextS>;
-          return CupertinoAlertDialog(
+          return AlertDialog(
             title: Text('Alert',
+            // textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.red,
                   // fontFamily: 'Comfortaa',
@@ -312,9 +313,9 @@ class _PreferencesState extends State<Preferences> {
                 )),
             content: Column(
               mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                SizedBox(height: 20.0),
                 Text('Do you really want to unsubscribe',
                     style: TextStyle(
                       color: Colors.red,
@@ -423,7 +424,7 @@ class _PreferencesState extends State<Preferences> {
         builder: (context) {
           String typed;
           final _formKey = GlobalKey<FormState>();
-          return CupertinoAlertDialog(
+          return AlertDialog(
             title: Text('Alert',
                 style: TextStyle(
                   color: Colors.red,
@@ -432,10 +433,9 @@ class _PreferencesState extends State<Preferences> {
                   fontSize: 20.0,
                 )),
             content: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
-                SizedBox(
-                  height: 20.0,
-                ),
                 Text(
                   'Do you really want to save changes',
                   style: TextStyle(

@@ -263,11 +263,12 @@ List<String> tagsForChips =[];
                                           return Navigator.of(context)
                                               .pop(_loadingWidget);
                                         },
-                                        child: CupertinoAlertDialog(
+                                        child: AlertDialog(
                                           //                 shape:
                                           // RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
                                           content: Column(
                                             mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.end,
                                             children: <Widget>[
                                               Stack(
                                                 alignment:
@@ -593,34 +594,34 @@ List<String> tagsForChips =[];
                   onChanged: (value) => _author = value,
                 ),
               ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0,0.0),
-                child :RaisedButton(onPressed: (){
-                  return showDatePicker(context: context,
-                   initialDate: DateTime.now(),
-                    firstDate: DateTime(2020), lastDate: DateTime(2030),
-                    builder: (BuildContext context,Widget wigd){
-                      // return Theme(data: ThemeData.dark(), 
-                      // child: wigd);
-                      return CupertinoActionSheet(
-                        title:Text('Select Date'),
-                        message: Container(
-                          height:MediaQuery.of(context).size.height*0.4,
-                          child: CupertinoDatePicker(
-                            minimumDate: DateTime.now(),
-                            initialDateTime: DateTime.now(),
-                            onDateTimeChanged: (v){
+              // Padding(
+              //   padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0,0.0),
+              //   child :RaisedButton(onPressed: (){
+              //     return showDatePicker(context: context,
+              //      initialDate: DateTime.now(),
+              //       firstDate: DateTime(2020), lastDate: DateTime(2030),
+              //       builder: (BuildContext context,Widget wigd){
+              //         // return Theme(data: ThemeData.dark(), 
+              //         // child: wigd);
+              //         return CupertinoActionSheet(
+              //           title:Text('Select Date'),
+              //           message: Container(
+              //             height:MediaQuery.of(context).size.height*0.4,
+              //             child: CupertinoDatePicker(
+              //               minimumDate: DateTime.now(),
+              //               initialDateTime: DateTime.now(),
+              //               onDateTimeChanged: (v){
 
-                          }),
-                        ),
-                      );
-                    }
-                    );
-                })
+              //             }),
+              //           ),
+              //         );
+              //       }
+              //       );
+              //   })
                 
                 
                  
-              ),
+              // ),
               // Padding(padding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0,0.0),
               //   child : CupertinoDatePicker(
               //     initialDateTime: DateTime.now(),
@@ -693,7 +694,7 @@ List<String> tagsForChips =[];
                     )),
                     onPressed: () {
                       showDialog(context: context, builder: (BuildContext context){
-                        return CupertinoAlertDialog(
+                        return AlertDialog(
                           title: Text('Add tag'),
                           content: Form(
                             key: _formKey,
@@ -704,7 +705,7 @@ List<String> tagsForChips =[];
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                       child: Material(
                         color: Colors.transparent,
                           child: TextFormField(
@@ -712,7 +713,7 @@ List<String> tagsForChips =[];
                             keyboardType: TextInputType.text,
                             autofocus: false,
                             decoration: new InputDecoration(
-                              hintText: 'Tag',
+                              labelText: 'Tag',
                             ),
                             validator: (value) => value.isEmpty
                               ?'Tags can\'t be empty'
@@ -726,7 +727,7 @@ List<String> tagsForChips =[];
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.only(bottom: 5.0, top: 25.0),
+                      padding: EdgeInsets.only(bottom: 0.0, top: 25.0,left:0.0),
                       // height: 100.0,
                       child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -741,7 +742,7 @@ List<String> tagsForChips =[];
                                   },
                                   child: Text('Dismiss')),
                               Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
+                                padding: const EdgeInsets.only(left: 5.0),
                                 child: RaisedButton(
                                     shape: new RoundedRectangleBorder(
                                         borderRadius:

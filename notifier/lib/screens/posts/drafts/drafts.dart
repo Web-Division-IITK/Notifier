@@ -148,14 +148,17 @@ class _DraftsState extends State<Drafts> {
                                           showCupertinoDialog(
                                               context: context,
                                               builder: (context) {
-                                                return CupertinoAlertDialog(
+                                                return AlertDialog(
                                                   title: Text(
                                                       'Delete Confirmation'),
                                                   content: Column(
+                                                    mainAxisAlignment: MainAxisAlignment.end,
+                                                    mainAxisSize: MainAxisSize.min,
                                                     children: <Widget>[
-                                                      SizedBox(height: 10.0),
                                                       Text(
-                                                          'Do you really want to permanently delete this file'),
+                                                          'Do you really want to permanently delete this file',
+                                                            textAlign: TextAlign.center,
+                                                          ),
                                                           SizedBox(height: 5.0),
                                                       Text(
                                                           'Note: You will not be able to recover this file',

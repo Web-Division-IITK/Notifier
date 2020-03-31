@@ -349,6 +349,7 @@ class _UpdateNState extends State<UpdateN> {
                                                     BorderRadius.circular(16.0)),
                                             content: Column(
                                               mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.end,
                                               children: <Widget>[
                                                 Stack(
                                                   alignment: AlignmentDirectional.center,
@@ -434,7 +435,7 @@ class _UpdateNState extends State<UpdateN> {
                                                                 color: Colors.cyan,
                                                               )
                                                             : Container(),
-                                                        _image != null || _url != null
+                                                        _image != null && _url != null
                                                             ? RaisedButton(
                                                                 shape: new RoundedRectangleBorder(
                                                                     borderRadius:
@@ -719,7 +720,8 @@ class _UpdateNState extends State<UpdateN> {
                     ),
                     onPressed: () {
                       showDialog(context: context, builder: (BuildContext context){
-                        return CupertinoAlertDialog(
+                        return AlertDialog(
+                          title: Text('Add tag'),
                           content: Form(
                             key: _formKey,
                               child:  Container(
@@ -728,7 +730,7 @@ class _UpdateNState extends State<UpdateN> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                       child: Material(
                         color: Colors.transparent,
                           child: TextFormField(
@@ -765,7 +767,7 @@ class _UpdateNState extends State<UpdateN> {
                                   },
                                   child: Text('Dismiss')),
                               Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
+                                padding: const EdgeInsets.only(left: 5.0),
                                 child: RaisedButton(
                                     shape: new RoundedRectangleBorder(
                                         borderRadius:

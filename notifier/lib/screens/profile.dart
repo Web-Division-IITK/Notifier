@@ -397,21 +397,33 @@ class _ProfilePageState extends State<ProfilePage> {
           final _formKey = GlobalKey<FormState>();
           String _name;
           // return Container(
-          return Dialog(
+          return AlertDialog(
             elevation: 5.0,
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(30.0)),
-            child: Form(
+                title: Center(child: Text('Add Name')),
+            content: Form(
               key: _formKey,
               child: Container(
                 // height: 300.0,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
+                    Container(
+                      alignment: Alignment.center,
+                      child: Text('Alert: You will not be able to change you $type again',
+                      textAlign: TextAlign.center,
+                      style:TextStyle(
+                        fontSize: 12.0,
+                        color: Colors.red
+                      )
+                    )),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                      padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
                       child: Material(
+                        color: Colors.transparent,
                         child: TextFormField(
                           maxLines: 1,
                           keyboardType: type == 'name'
@@ -437,7 +449,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.only(bottom: 5.0, top: 25.0),
+                      padding: EdgeInsets.only( top: 25.0,left: 0.0),
                       // height: 100.0,
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -459,7 +471,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 },
                                 child: Text('Dismiss')),
                             Padding(
-                              padding: const EdgeInsets.only(right: 15.0),
+                              padding: const EdgeInsets.only(right: 0.0),
                               child: RaisedButton(
                                   shape: new RoundedRectangleBorder(
                                       borderRadius:

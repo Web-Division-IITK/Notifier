@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifier/authentication/authentication.dart';
 // import 'package:flutter_spinkit/flutter_spinkit.dart';
 // import 'package:notifier/color/decoration.dart';
@@ -65,6 +66,7 @@ class _ResetPasswordState extends State<ResetPassword> {
           });
         }
         if (doneReset) {
+          Fluttertoast.showToast(msg:'Reset password email has been sent to your mail id');
           Navigator.of(context).pop();
         }
         // setState(() {
@@ -78,9 +80,13 @@ class _ResetPasswordState extends State<ResetPassword> {
         print('Error: $e');
         setState(() {
           _isLoading = false;
-          _errorMessage =
-              'Couldn\'t process your request, please try again later!!';
-          // _errorMessage = e.message;
+           _errorMessage = e.message;
+          Fluttertoast.showToast(
+            backgroundColor: Colors.grey[300],
+              timeInSecForIos: 3,
+              msg: _errorMessage,
+              textColor: Colors.red,
+              fontSize: 13.0);
           _formKey.currentState.reset();
         });
       }
@@ -285,7 +291,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               // _isLoginForm? null : showConfirmPasswordInput(),
               showPrimaryButton(),
               // showSecondaryButton(),
-              showErrorMessage(),
+              // showErrorMessage(),
             ],
           ),
         );
@@ -349,7 +355,7 @@ class _ResetPasswordState extends State<ResetPassword> {
               color: Colors.grey,
             )),
         validator: (value) => value.isEmpty ? 'Email can\'t be empty' : null,
-        onSaved: (value) => _email = value.trim(),
+        onSaved: (value) => _email = value.trim() + '@iitk.ac.in',
       ),
     );
   }

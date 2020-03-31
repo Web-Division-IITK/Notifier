@@ -46,10 +46,15 @@ class _MyAppState extends State<MyApp> {
             )
           ),
           toggleableActiveColor: brightness == Brightness.dark ? Colors.teal:Colors.green,
-          dialogTheme: brightness == Brightness.dark?DialogTheme(backgroundColor: Colors.black):DialogTheme(backgroundColor: Colors.white),
+          dialogTheme: DialogTheme(backgroundColor: brightness == Brightness.dark?Colors.black:Colors.white,
+            elevation: 5.0,
+            shape: new RoundedRectangleBorder(
+                borderRadius: new BorderRadius.circular(16.0)
+                ),
+          ),
           cupertinoOverrideTheme: CupertinoThemeData(
             brightness: brightness,
-            primaryContrastingColor: brightness == Brightness.dark ? Colors.deepPurple: Colors.amber,
+            // primaryContrastingColor: brightness == Brightness.dark ? Colors.deepPurple: Colors.amber,
             scaffoldBackgroundColor: brightness == Brightness.dark ? Colors.black:Colors.white,
             // primaryColor:  brightness == Brightness.dark ? Colors.deepPurple: Colors.amber,
             barBackgroundColor: brightness == Brightness.dark ? Colors.pink: Colors.deepOrange,

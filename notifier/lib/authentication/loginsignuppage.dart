@@ -93,16 +93,17 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
      context: context,
      builder: (BuildContext context) {
        // return object of type Dialog
-       return CupertinoAlertDialog(
+       return AlertDialog(
          title: new Text("Verify your account"),
          content: Column(
+           mainAxisAlignment: MainAxisAlignment.end,
+           mainAxisSize: MainAxisSize.min,
            children: <Widget>[
-             SizedBox(height: 10.0),
              new Text("You need to verify your account in the link sent to email to begin"),
            ],
          ),
          actions: <Widget>[
-           new FlatButton(
+           new RaisedButton(
              child: new Text("Resent link"),
              onPressed: () {
                Navigator.of(context).pop();
@@ -187,51 +188,6 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
             padding: EdgeInsets.symmetric(horizontal :16.0),
             shrinkWrap: true,
             children: <Widget>[
-              doneReset
-                  ? Container(
-                      color: Colors.yellow,
-                      width: double.infinity,
-                      height: 70.0,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          // Padding(
-                          // padding: EdgeInsets.only(left: 18.0),
-                          Row(
-                            // cro = CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Icon(Icons.info_outline),
-                              Container(
-                                height: 45.0,
-                                width: 265.0,
-                                padding: EdgeInsets.only(left: 8.0, top: 5.0),
-                                child: Text(
-                                  "Reset password link has been sent to your email account",
-                                  maxLines: 2,
-                                  textAlign: TextAlign.left,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    // fontSize: 16.0
-                                  ),
-                                ),
-                                // ),
-                              ),
-                            ],
-                          ),
-                          // ),
-                          IconButton(
-                            alignment: Alignment.centerRight,
-                            icon: Icon(Icons.close),
-                            onPressed: () {
-                              setState(() {
-                                doneReset = false;
-                              });
-                            },
-                          )
-                        ],
-                      ))
-                  : SizedBox(),
               showLogo(),
               showEmailInput(),
               showPasswordInput(),

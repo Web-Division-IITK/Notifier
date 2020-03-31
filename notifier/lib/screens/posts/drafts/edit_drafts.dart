@@ -366,7 +366,7 @@ class _EditDraftState extends State<EditDraft> {
                           ),
                           child: IconButton(
                               icon: Icon(
-                                Icons.add,
+                                Icons.add_a_photo,
                                 size: 30.0,
                               ),
                               onPressed: () {
@@ -381,6 +381,7 @@ class _EditDraftState extends State<EditDraft> {
                                                     BorderRadius.circular(16.0)),
                                             content: Column(
                                               mainAxisSize: MainAxisSize.min,
+                                              mainAxisAlignment: MainAxisAlignment.end,
                                               children: <Widget>[
                                                 Stack(
                                                   alignment: AlignmentDirectional.center,
@@ -464,7 +465,7 @@ class _EditDraftState extends State<EditDraft> {
                                                                 color: Colors.cyan,
                                                               )
                                                             : Container(),
-                                                        _image != null || _url == null
+                                                        _image != null && _url == null
                                                             ? RaisedButton(
                                                                 shape: new RoundedRectangleBorder(
                                                                     borderRadius:
@@ -781,7 +782,8 @@ class _EditDraftState extends State<EditDraft> {
                     ),),
                     onPressed: () {
                       showDialog(context: context, builder: (BuildContext context){
-                        return CupertinoAlertDialog(
+                        return AlertDialog(
+                          title: Text('Add tag'),
                           content: Form(
                             key: _formKey,
                               child:  Container(
@@ -790,7 +792,7 @@ class _EditDraftState extends State<EditDraft> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                       child: Material(
                         color: Colors.transparent,
                           child: TextFormField(
@@ -812,7 +814,7 @@ class _EditDraftState extends State<EditDraft> {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.only(bottom: 5.0, top: 25.0),
+                      padding: EdgeInsets.only(bottom: 0.0, top: 25.0),
                       // height: 100.0,
                       child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
@@ -827,7 +829,7 @@ class _EditDraftState extends State<EditDraft> {
                                   },
                                   child: Text('Dismiss')),
                               Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
+                                padding: const EdgeInsets.only(left: 5.0),
                                 child: RaisedButton(
                                     shape: new RoundedRectangleBorder(
                                         borderRadius:
