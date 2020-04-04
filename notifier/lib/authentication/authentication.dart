@@ -42,34 +42,35 @@ class Auth implements BaseAuth {
     }
   }
   Future<String> signIn(String email, String password) async {
-    // subscribeUnsubsTopic(_prefs + ['Science and Technology Council'], []);
     AuthResult result = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password);
     FirebaseUser user = result.user;
-    // return user.uid;
-    if (user.isEmailVerified) {
-  return user.uid;
-}else{
-  Fluttertoast.showToast(msg: 'Please verify account in the link sent to email to begin',
-  textColor: Colors.red,
-  backgroundColor: Colors.grey[300]);
-  return null;
-}
+    // if (user.isEmailVerified) {
+      return await allData().then((var v){
+        return user.uid;
+      });
+      
+    // }else{
+    //   Fluttertoast.showToast(msg: 'Please verify account in the link sent to email to begin',
+    //   textColor: Colors.red,
+    //   backgroundColor: Colors.grey[300]);
+    //   return null;
+    // }
   }
 
   Future<String> signUp(String email, String password) async {
     AuthResult result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password);
     FirebaseUser user = result.user;
-    await user.sendEmailVerification();
-    if (user.isEmailVerified) {
+    // await user.sendEmailVerification();
+    // if (user.isEmailVerified) {
   return user.uid;
-}else{
-  Fluttertoast.showToast(msg: 'Please verify account in the link sent to email to begin',
-  textColor: Colors.red,
-  backgroundColor: Colors.grey[300]);
-  return null;
-}
+// }else{
+//   Fluttertoast.showToast(msg: 'Please verify account in the link sent to email to begin',
+//   textColor: Colors.red,
+//   backgroundColor: Colors.grey[300]);
+//   return null;
+// }
   }
 
   Future<FirebaseUser> getCurrentUser() async {
@@ -88,8 +89,8 @@ class Auth implements BaseAuth {
     v != null ? print('deletion success'): print('deletefailed');
     var vf = await deleteContent('people');
      vf != null ? print('deletion success'): print('deletefailed');
-    var vh = await deleteContent('snt');
-     vh != null ? print('deletion success'): print('deletefailed');
+    // var vh = await deleteContent('snt');
+    //  vh != null ? print('deletion success'): print('deletefailed');
      var vhj = await deleteContent('posts');
      vhj != null ? print('deletion success'): print('deletefailed');
     var h = await removeValues();
