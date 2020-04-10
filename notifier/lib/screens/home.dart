@@ -671,22 +671,22 @@ class _HomePageState extends State<HomePage> {
                           onTap: () async{
                             // var v = proc();
                             // print(v);
-                            var db = Firestore.instance;
-                            await db.collectionGroup('posts/council').getDocuments().then((var v){
-                              print(v);
-                              v.documents.forEach((f){
-                                print(f.documentID);
-                              });
-                            });
-                            await db.collection('posts').document('council').collection('gnc').getDocuments().then((onValue){
-                              print(onValue.documents.iterator.current);
-                            });
+                            // var db = Firestore.instance;
+                            // await db.collectionGroup('posts/council').getDocuments().then((var v){
+                            //   print(v);
+                            //   v.documents.forEach((f){
+                            //     print(f.documentID);
+                            //   });
+                            // });
+                            // await db.collection('posts').document('council').collection('gnc').getDocuments().then((onValue){
+                            //   print(onValue.documents.iterator.current);
+                            // });
                             // print(_councilDataForMe["ss"].entity);
-                            // Navigator.of(context).pop();
-                            // Navigator.of(context).push(MaterialPageRoute(
-                            //     builder: (BuildContext context) {
-                            //   return AboutPage();
-                            // }));
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) {
+                              return AboutPage();
+                            }));
                           },
                           child: Container(
                             padding: EdgeInsets.only(

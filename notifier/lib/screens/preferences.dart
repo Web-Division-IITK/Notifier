@@ -458,8 +458,8 @@ class _PreferencesState extends State<Preferences> {
                                     name.entity[key].toString().toLowerCase()) {
                               setState(() {
                                 print(typed.toLowerCase());
-                                selectionData[0].isSelected[key] = value;
-                                Navigator.pop(context);
+                                name.select[key] = value;
+                                // Navigator.pop(context);
                               });
                               Navigator.pop(context);
                             }
