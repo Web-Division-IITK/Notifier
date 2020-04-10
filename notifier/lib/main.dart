@@ -29,50 +29,50 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]);
-    _fcm.setAutoInitEnabled(true);
+    // _fcm.setAutoInitEnabled(true);
     
-    _fcm.configure(
-      onMessage: (Map<String, dynamic> message) async {
-        print("onMessage :$message" + ' isthe message');
-         showNotification(message['data']);
-        setState(() {
-          // addStringToSF(DateTime.now().toIso8601String());
-        // loadSnt();
-          // newNotf = true;
-          bodyMsg = message['notification']['body'];
-          data = message['data']['message'];
-          display = message['notification']['title'];
-        });
-      },
-      onResume: (Map<String, dynamic> message) async {
-        showNotification(message['data']);
-        _fcm.autoInitEnabled();
-        // AndroidNotificationDetails(channelId, channelName, channelDescription);
-        print("onResume : $message" + 'is fromResume');
-        setState(() {
-          // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
-          // newNotf = true;
-          bodyMsg = message['notification']['body'];
-          display = message['notification']['title'];
-        });
-      },
-      onLaunch: (Map<String, dynamic> message) async {
-        showNotification(message['data']);
-        print("onLaunch: $message" + ':is fromLaunch');
-        setState(() {
-          // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
-          // newNotf = true;
-          bodyMsg = message['notification']['body'];
-          display = message['notification']['title'];
-        });
-        // onUpdate(prefsel)
-      },
-      onBackgroundMessage: myBackgroundMessageHandler,
-      // onBackgroundMessage: 
-    );
-    configLocalNotification();
+    // _fcm.configure(
+    //   onMessage: (Map<String, dynamic> message) async {
+    //     print("onMessage :$message" + ' isthe message');
+    //      showNotification(message['data']);
+    //     setState(() {
+    //       // addStringToSF(DateTime.now().toIso8601String());
+    //     // loadSnt();
+    //       // newNotf = true;
+    //       bodyMsg = message['notification']['body'];
+    //       data = message['data']['message'];
+    //       display = message['notification']['title'];
+    //     });
+    //   },
+    //   onResume: (Map<String, dynamic> message) async {
+    //     showNotification(message['data']);
+    //     _fcm.autoInitEnabled();
+    //     // AndroidNotificationDetails(channelId, channelName, channelDescription);
+    //     print("onResume : $message" + 'is fromResume');
+    //     setState(() {
+    //       // addStringToSF(DateTime.now().toIso8601String());
+    //       // loadEVERY();
+    //       // newNotf = true;
+    //       bodyMsg = message['notification']['body'];
+    //       display = message['notification']['title'];
+    //     });
+    //   },
+    //   onLaunch: (Map<String, dynamic> message) async {
+    //     showNotification(message['data']);
+    //     print("onLaunch: $message" + ':is fromLaunch');
+    //     setState(() {
+    //       // addStringToSF(DateTime.now().toIso8601String());
+    //       // loadEVERY();
+    //       // newNotf = true;
+    //       bodyMsg = message['notification']['body'];
+    //       display = message['notification']['title'];
+    //     });
+    //     // onUpdate(prefsel)
+    //   },
+    //   onBackgroundMessage: myBackgroundMessageHandler,
+    //   // onBackgroundMessage: 
+    // );
+    // configLocalNotification();
   }
   void configLocalNotification() {
     var initializationSettingsAndroid =
