@@ -10,6 +10,8 @@ import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:notifier/model/notification.dart';
+import 'package:notifier/model/options.dart';
+import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:notifier/shared/preview.dart';
 import 'package:notifier/widget/chips.dart';
@@ -44,8 +46,9 @@ List<String> tagsForChips =[];
   bool _firstSelected = false;
   bool _loadingWidget = false;
   bool _loadingSubmit = false;
-  // String
-  // Map<String, dynamic> preview = Map();
+  Repository repo = Repository(allCouncilData);
+  List<String> _councilList = [];
+  List<String> _entityList = [];
   List<DropdownMenuItem<String>> _selectSub = [];
   bool validateAndSave() {
     final form = _formKey.currentState;
@@ -98,7 +101,7 @@ List<String> tagsForChips =[];
   // void buildsubs(){
 @override
   void initState() {
-    // TODO: implement initState
+    _councilList = List.from(_councilList)..addAll(repo.getCoordiCouncil());
     super.initState();
     _tagController.addListener((){
       _tagController.value = _tagController.value.copyWith(
@@ -108,7 +111,6 @@ List<String> tagsForChips =[];
   }
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _tagController.dispose();
   }
@@ -468,42 +470,40 @@ List<String> tagsForChips =[];
               Padding(
                   padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                   child: DropdownButtonFormField(
-                    items: _selectItem,
+                    items: _councilList.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(convertToCouncilName(location)),
+                      value: location,
+                    );
+                  }).toList(),
                     isDense: true,
-                    onChanged: (newValue) {
-                      setState(() {
-                        // buildsubs();
-                        if (newValue != null && _council != newValue) {
-                          _firstSelected = true;
-                        }
-                        _council = newValue;
-                      });
-                    },
+                    onChanged: (newValue) => _onSelectedCouncil(convertFromCouncilName(newValue)),
                     hint: Text('Choose Council'),
                     value: _council,
                     validator: (value) => value == null || value.isEmpty
                         ? 'Council Field can\'t be empty'
                         : null,
-                    onSaved: (value) => _council = value,
+                    onSaved: (value) => _council = convertFromCouncilName(value),
                   )),
               // _firstSelected ?
-              Padding(
+              _council!=null ?Padding(
                   padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
                   child: DropdownButtonFormField(
-                    items: _firstSelected ? _selectSub : null,
+                    items: _entityList.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(location),
+                      value: location,
+                    );
+                  }).toList(),
                     isDense: true,
-                    onChanged: (newValue) {
-                      setState(() {
-                        _subs = newValue;
-                      });
-                    },
-                    hint: Text('Choose Club'),
+                    onChanged: (newValue) => _onSelectedEntity(newValue),
+                    hint: Text('Choose Entity'),
                     value: _subs,
                     validator: (value) => value == null || value.isEmpty
-                        ? 'Club Field can\'t be empty'
+                        ? 'This field is required'
                         : null,
                     onSaved: (value) => _subs = value,
-                )),
+                )):Container(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
                 child: Row(
@@ -672,7 +672,26 @@ List<String> tagsForChips =[];
           ),
         ));
   }
+   void _onSelectedCouncil(String value) {
+    if( _council!=value){
+      setState(() {
+      // _selectedEntity = "Choose ..";
+      // _entity = ["Choose .."];
+      _council = value;
+      _subs = null;
+      if(_entityList.length!=0){
+        _entityList.clear();
+      }
+      _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(value));
+    });
+    }
+  }
 
+  void _onSelectedEntity(String value) {
+    setState(() {
+      _subs = value;
+    });
+  }
   addingTag() {
     return showModalBottomSheet(
         context: (context),

@@ -14,7 +14,7 @@ description: A new Flutter application.
 version: 1.0.0+2
 
 environment:
-  sdk: ">=2.1.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
@@ -29,11 +29,13 @@ dependencies:
   firebase_storage: 
   cached_network_image: ^2.0.0-rc
   auto_size_text: ^2.1.0
+  google_maps_flutter: ^0.5.25+3
+  flutter_local_notifications: ^1.4.0
   url_launcher: 
   flutter_linkify: 
   sliding_up_panel: 
   firebase_core:
-  firebase_messaging:
+  firebase_messaging: ^6.0.9
   fluttertoast: 
   http:
   dynamic_theme: 
@@ -61,6 +63,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/data.json
     - assets/launch.png
     - assets/Aditya.png
   #  - images/a_dot_burr.jpeg

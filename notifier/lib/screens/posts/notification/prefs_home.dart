@@ -13,7 +13,7 @@ class PrefsHome extends StatefulWidget {
 
 class _PrefsHomeState extends State<PrefsHome> {
 
-  List<dynamic> _prefs;
+  List<dynamic> _prefs = [];
   List<SortDateTime> arrayWithclub=[];
   bool prefsHome;
   bool load;
@@ -25,6 +25,10 @@ class _PrefsHomeState extends State<PrefsHome> {
     });
     readContent('users').then((var value){
       if(value!=null){
+        var councilData = value["council"];
+        // councilData.forEach((key){
+        //   _prefs += (councilData[key]["entity"].cast<String>() + councilData[key]["misc"].cast<String>());
+        // });
         _prefs = value['prefs'];
         print(_prefs);
         if(_prefs !=null && _prefs.length!=0){

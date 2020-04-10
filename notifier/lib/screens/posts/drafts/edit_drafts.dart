@@ -7,10 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notifier/model/notification.dart';
+import 'package:notifier/model/options.dart';
+import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/posts/createposts.dart';
 import 'package:notifier/screens/posts/update/updateposts.dart';
 // import 'package:notifier/screens/posts/updateposts.dart';
 import 'package:notifier/services/databse.dart';
+import 'package:notifier/services/function.dart';
 import 'package:notifier/shared/preview.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:path/path.dart' as Path;
@@ -42,6 +45,9 @@ class _EditDraftState extends State<EditDraft> {
   final _imgController = TextEditingController();  
   // bool _firstSelected = true;
   bool _loadingWidget = false;
+  Repository repo = Repository(allCouncilData);
+  List<String> _councilList = [];
+  List<String> _entityList = [];
   List<DropdownMenuItem<String>>_selectSub=[];
   void buildsubs(){
     _selectSub.clear();
@@ -180,6 +186,8 @@ class _EditDraftState extends State<EditDraft> {
   }
 @override
   void initState() {
+    _councilList = List.from(_councilList)..addAll(repo.getCoordiCouncil());
+     _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(widget._update.value['council']));
     super.initState();
     buildsubs();
     // _tagController.addListener((){
@@ -559,7 +567,7 @@ class _EditDraftState extends State<EditDraft> {
                   ),
                   //council dropdown to make
                   Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
+                      padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
                       // child: ListView.builder(
                       //     shrinkWrap: true,
                       //     itemCount: selectCouncil.length,
@@ -586,36 +594,34 @@ class _EditDraftState extends State<EditDraft> {
                       //     })
                       child: DropdownButtonFormField(
                         isDense: true,
-                        items: _selectItem,
-                        onChanged: (newValue) {
-                          setState(() {
-                            print(widget._update.value['council']);
-                            // buildsubs();
-                            // _firstSelected = true;
-                            _council = newValue;
-                          });
-                        },
+                        items: _councilList.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(convertToCouncilName(location)),
+                      value: location,
+                    );
+                  }).toList(),
+                        onChanged: (newValue) => _onSelectedCouncil(convertFromCouncilName(newValue)),
                         hint: Text('Choose Council'),
-                        value: widget._update.value['council'] == 'snt'||widget._update.value['council'] =='SnT' ? 'SnT' : null,
+                        value:  _council = widget._update.value['council'],
                         validator: (value) => value == null || value.isEmpty
                             ? 'Council Field can\'t be empty'
                             : null,
-                        onSaved: (value) => _council = value,
+                        onSaved: (value) => _council = convertFromCouncilName(value),
                       )),
                       Padding(
                   padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
                   child: DropdownButtonFormField(
-                    items: _selectSub, 
+                    items: _entityList.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(location),
+                      value: location,
+                    );
+                  }).toList(), 
                     isDense: true,
-                    onChanged: (newValue){
-                      // print(_council);
-                      setState(() {
-                        _subs = newValue;
-                      });
-                    },
+                    onChanged: (newValue)=> _onSelectedEntity(newValue),
                     hint: Text(
                               'Choose Club'),
-                    value: widget._update.value['sub']!=null? widget._update.value['sub'][0]:_subs,
+                    value: _subs = widget._update.value['sub'][0],
                     validator: (value) =>
                      value ==null || value.isEmpty ? 'Club Field can\'t be empty' : null,
                     onSaved: (value)=>_subs = value,
@@ -760,6 +766,26 @@ class _EditDraftState extends State<EditDraft> {
                 : Container()
           ],
         ));
+  }
+  void _onSelectedCouncil(String value) {
+    if( _council!=value){
+      setState(() {
+      // _selectedEntity = "Choose ..";
+      // _entity = ["Choose .."];
+      _council = value;
+      _subs = null;
+      if(_entityList.length!=0){
+        _entityList.clear();
+      }
+      _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(value));
+    });
+    }
+  }
+
+  void _onSelectedEntity(String value) {
+    setState(() {
+      _subs = value;
+    });
   }
   addingTag() {
     return showModalBottomSheet(
