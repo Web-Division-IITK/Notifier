@@ -39,7 +39,7 @@ class HomePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new _HomePageState();
 }
-
+String name;
 bool admin;
 
 // List<dynamic> sortedarray = List();
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   var id;
   final FirebaseMessaging _fcm = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flnp = FlutterLocalNotificationsPlugin();
-  String _name;
+  // String _name;
   String _rollno;
   List<dynamic> ids = List();
   List<dynamic> _prefs = [];
@@ -62,9 +62,13 @@ class _HomePageState extends State<HomePage> {
   var load = false;
   List<String> _subs = List();
   bool darkMode;
+  bool _loadNew = false;
   bool error = false;
   Future<bool> loadEVERY() async {
     load = true;
+    setState(() {
+      // _loadNew = load? false:true;
+    });
 
     return await procedure().then((bool v) async {
       print(v.toString() + ':procedure line45 home.dart');
@@ -75,38 +79,80 @@ class _HomePageState extends State<HomePage> {
         return await readContent('snt').then((var val) {
           print('snt values line56 of home.dart:' + val.toString());
           // print(sortedarray);
-          sortedarray.clear();
+          // sortedarray.clear();
           if (val != null) {
+            Map<String,SortDateTime> arr = {};
             // print(val.keys.length);
             val.keys.forEach((key) {
               // var v = DateTime.parse('2020-03-23T17:26:56.295');
               if (val[key]['exists'] == false) {
+                if(arr.containsKey(key)){
+                  arr.remove(key);
+                }
                 // print('values whoose esists is false line57 home.dart:'+val[key].toString());
                 // val.remove(key);
               } else {
                 DateTime postTime = DateTime.parse(val[key]['timeStamp']);
+                // postTime = DateTime.now();
+                // postTime = DateTime(year)
                 var time;
-                if (DateTime.now().month == postTime.month &&DateTime.now().year == postTime.year) {
-                  if(DateTime.now().day == postTime.day){
-                    time= 'Today';
-                  }
-                  else{
-                    time = 'Yesterday';
-                  }
-                } else {
-                  time = DateFormat('d MMMM, yyyy').format(postTime);
-                }
-                if (!sortedarray.contains(SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
-                  val[key],val[key]['sub'][0],time
-                ))) {
-                  // sortedarray.insert(0, element);
-                  sortedarray.insert(0,
-                      SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
-                          val[key],val[key]['sub'][0],time));
-                  // print(sortedarray[0].date);
-                }
+                time = checkTime(postTime).toString();
+                arr.update(key, (v)=> SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                          val[key],val[key]['sub'][0],time),
+                          ifAbsent: ()=>SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                          val[key],val[key]['sub'][0],time)
+                          );
+                          // print(arr);
+                // if (DateTime.now().millisecondsSinceEpoch - postTime.millisecondsSinceEpoch>) {
+                //   if(DateTime.now().day == postTime.day){
+                //     time= 'Today';
+                //   }
+                //   else{
+                //     time = 'Yesterday';
+                //   }
+                // } else {
+                //   time = DateFormat('d MMMM, yyyy').format(postTime);
+                // }
+                // if(sortedarray.length!=0){
+                //   // sortedarray.forEach((item) {
+                //   // if(item.uid == key){
+                //   //   item = SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                //   //         val[key],val[key]['sub'][0],time);
+                //   // }
+                //   // else{
+                //   //   sortedarray.insert(0,
+                //   //     SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                //   //         val[key],val[key]['sub'][0],time));
+                //   // }
+                // });
+                // }else{
+                  // if(sortedarray.length!=0 ){
+                  //   sortedarray.where((item)=> item.uid == key).forEach((f){
+                  //     if(f.uid == key){f = SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                  //         val[key],val[key]['sub'][0],time);}
+                  //   });
+                  // }else{
+                  //   sortedarray.insert(0,
+                  //     SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                  //         val[key],val[key]['sub'][0],time));
+                  // }
+                  
+                  // arr.values.toList()
+                // }
+                  // 
+                
+                // if (!sortedarray.contains(SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                //   val[key],val[key]['sub'][0],time
+                // ))) {
+                //   // sortedarray.insert(0, element);
+                //   sortedarray.insert(0,
+                //       SortDateTime( key, DateTime.parse(val[key]['timeStamp']).toUtc().millisecondsSinceEpoch,
+                //           val[key],val[key]['sub'][0],time));
+                //   // print(sortedarray[0].date);
+                // }
               }
             });
+            sortedarray= arr.values.toList();
             return true;
           }
           return false;
@@ -118,6 +164,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   sortarrayWithTime() {
+
     for (var i = 0; i < sortedarray.length; i++) {
       for (var j = i + 1; j < sortedarray.length; j++) {
         if (sortedarray[i].uid == sortedarray[j].uid) {
@@ -125,15 +172,17 @@ class _HomePageState extends State<HomePage> {
           sortedarray.remove(sortedarray[j]);
           continue;
         }
-        // print('\'diff:' + sortedarray[i].value.toString());
-        if (sortedarray[i].date < sortedarray[j].date) {
-          SortDateTime temp = sortedarray[i];
-          sortedarray[i] = sortedarray[j];
-          sortedarray[j] = temp;
-          temp = null;
-        }
+        
+    //     // print('\'diff:' + sortedarray[i].value.toString());
+    //     if (sortedarray[i].date < sortedarray[j].date) {
+    //       SortDateTime temp = sortedarray[i];
+    //       sortedarray[i] = sortedarray[j];
+    //       sortedarray[j] = temp;
+    //       temp = null;
+    //     }
       }
     }
+    sortedarray.sort((a,b) => b.date.compareTo(a.date));
   }
 
   List<DateTime> timeofRefresh = List(2);
@@ -149,8 +198,15 @@ class _HomePageState extends State<HomePage> {
             // print('\'sortedarray\':'+f.value.toString());
           });
           if (sortedarray != null) {
+            _loadNew = false;
             load = false;
           }
+        });
+      }else{
+        setState(() {
+          _loadNew = false;
+          load = false;
+          error = true;
         });
       }
     });
@@ -177,6 +233,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    load = true;
     // _fcm.autoInitEnabled()
     _fcm.configure(
       onMessage: (Map<String, dynamic> message) async {
@@ -184,40 +241,39 @@ class _HomePageState extends State<HomePage> {
          showNotification(message['data']);
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-        // loadSnt();
+        loadSnt();
           // newNotf = true;
           bodyMsg = message['notification']['body'];
           data = message['data']['message'];
           display = message['notification']['title'];
         });
       },
-      // onResume: (Map<String, dynamic> message) async {
-      //   showNotification(message['data']);
-      //   _fcm.autoInitEnabled();
-      //   // AndroidNotificationDetails(channelId, channelName, channelDescription);
-      //   print("onResume : $message" + 'is fromResume');
-      //   setState(() {
-      //     // addStringToSF(DateTime.now().toIso8601String());
-      //     // loadEVERY();
-      //     // newNotf = true;
-      //     bodyMsg = message['notification']['body'];
-      //     display = message['notification']['title'];
-      //   });
-      // },
-      // onLaunch: (Map<String, dynamic> message) async {
-      //   showNotification(message['data']);
-      //   print("onLaunch: $message" + ':is fromLaunch');
-      //   setState(() {
-      //     // addStringToSF(DateTime.now().toIso8601String());
-      //     // loadEVERY();
-      //     // newNotf = true;
-      //     bodyMsg = message['notification']['body'];
-      //     display = message['notification']['title'];
-      //   });
-      //   // onUpdate(prefsel)
-      // },
+      onResume: (Map<String, dynamic> message) async {
+        showNotification(message['data']);
+        _fcm.autoInitEnabled();
+        // AndroidNotificationDetails(channelId, channelName, channelDescription);
+        print("onResume : $message" + 'is fromResume');
+        setState(() {
+          // addStringToSF(DateTime.now().toIso8601String());
+          loadSnt();
+          // newNotf = true;
+          bodyMsg = message['notification']['body'];
+          display = message['notification']['title'];
+        });
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+        showNotification(message['data']);
+        print("onLaunch: $message" + ':is fromLaunch');
+        setState(() {
+          // addStringToSF(DateTime.now().toIso8601String());
+          loadSnt();
+          // newNotf = true;
+          bodyMsg = message['notification']['body'];
+          display = message['notification']['title'];
+        });
+        // onUpdate(prefsel)
+      },
       onBackgroundMessage: myBackgroundMessageHandler,
-      // onBackgroundMessage: 
     );
     configLocalNotification();
     fullData().then((var val){
@@ -231,7 +287,7 @@ class _HomePageState extends State<HomePage> {
               id = value['id'];
               admin = value['admin'];
               _prefs = value['prefs'];
-              _name = value['name'];
+              name = value['name'];
               _rollno = value['rollno'];
               // var prefer =[];
               // Map<String,Map<String,Iterable<String>>> data;
@@ -385,52 +441,7 @@ class _HomePageState extends State<HomePage> {
     // Future.delayed(Duration(seconds: 2),() => print('rendering home'));
     loadSnt();
   }
-   void configLocalNotification() {
-    var initializationSettingsAndroid =
-        new AndroidInitializationSettings('launch');
-    var initializationSettingsIOS = new IOSInitializationSettings();
-    var initializationSettings = new InitializationSettings(
-        initializationSettingsAndroid, initializationSettingsIOS);
-    _flnp.initialize(initializationSettings);
-  }
-   void showNotification(message) async {
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-      // Platform.isAndroid
-           'tk.notifier.sntiitk',
-          // : 'com.duytq.flutterchatdemo',
-      'Notifier',
-      'Notifier',
-      playSound: true,
-      enableVibration: true,
-      importance: Importance.Max,
-      priority: Priority.High,
-    );
-    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-
-    print(message);
-//    print(message['body'].toString());
-//    print(json.encode(message));
-    // await _flnp.initialize(initializationSettings;\);
-    await _flnp.show(0, message['title'].toString(),
-        message['body'].toString(), platformChannelSpecifics,
-        payload: json.encode(message));
-  // await _flnp.
-//    await flutterLocalNotificationsPlugin.show(
-//        0, 'plain title', 'plain body', platformChannelSpecifics,
-//        payload: 'item x');
-  }
-  signOut() async {
-    try {
-      DynamicTheme.of(context).setBrightness(Brightness.light);
-      subscribeUnsubsTopic([], _prefs);
-      await widget.auth.signOut();
-      widget.logoutCallback();
-    } catch (e) {
-      print(e);
-    }
-  }
+   
 
   Widget buildWaitingScreen() {
     return Container(
@@ -568,7 +579,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (BuildContext context) {
-                              return CreatePosts(id, _subs);
+                              return CreatePosts(id, _subs,name);
                             }));
                           },
                           child: Container(
@@ -657,10 +668,19 @@ class _HomePageState extends State<HomePage> {
               Container(
                       height: 55.0,
                       child: InkWell(
-                          onTap: () {
+                          onTap: () async{
                             // var v = proc();
                             // print(v);
-                            
+                            // var db = Firestore.instance;
+                            // await db.collectionGroup('posts/council').getDocuments().then((var v){
+                            //   print(v);
+                            //   v.documents.forEach((f){
+                            //     print(f.documentID);
+                            //   });
+                            // });
+                            // await db.collection('posts').document('council').collection('gnc').getDocuments().then((onValue){
+                            //   print(onValue.documents.iterator.current);
+                            // });
                             // print(_councilDataForMe["ss"].entity);
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
@@ -698,7 +718,10 @@ class _HomePageState extends State<HomePage> {
           )),
           body: load
               ? buildWaitingScreen()
-              : error ? buildErrorScreen():TabBarView(children: [
+              : error ? buildErrorScreen():
+              TabBarView(
+                
+                children: [
                   RefreshIndicator(
                     onRefresh: () async {
                         if (timeofRefresh[0] != null) {
@@ -727,9 +750,7 @@ class _HomePageState extends State<HomePage> {
                           FlatButton(
                             onPressed: () async {
                               if (timeofRefresh[0] != null) {
-                                if ((DateTime.now().millisecondsSinceEpoch -
-                                                    timeofRefresh[0]
-                                                        .millisecondsSinceEpoch) <
+                                if ((DateTime.now().millisecondsSinceEpoch - timeofRefresh[0].millisecondsSinceEpoch) <
                                                 30000) {
                                               return sortarrayWithTime();
                                             }
@@ -744,7 +765,7 @@ class _HomePageState extends State<HomePage> {
                                   ],
                                 ),
                               )
-                            :PrefsHome()),
+                            : PrefsHome()),
                   RefreshIndicator(
                       child: Container(
                         height: MediaQuery.of(context).size.height,
@@ -758,17 +779,12 @@ class _HomePageState extends State<HomePage> {
                                     FlatButton(
                                         onPressed: () async {
                                           if (timeofRefresh[0] != null) {
-                                            if ((DateTime.now()
-                                                        .millisecondsSinceEpoch -
-                                                    timeofRefresh[0]
-                                                        .millisecondsSinceEpoch) <
-                                                30000) {
+                                            if ((DateTime.now().millisecondsSinceEpoch - timeofRefresh[0].millisecondsSinceEpoch) < 30000) {
                                               return sortarrayWithTime();
                                             }
                                           }
                                           await loadSnt();
                                           setState(() {
-                                            // t2 =DateTime.now();
                                             timeofRefresh[0] = DateTime.now();
                                           });
                                         },
@@ -797,6 +813,52 @@ class _HomePageState extends State<HomePage> {
                       }),
                 ])),
     );
+  }
+  void configLocalNotification() {
+    var initializationSettingsAndroid =
+        new AndroidInitializationSettings('launch');
+    var initializationSettingsIOS = new IOSInitializationSettings();
+    var initializationSettings = new InitializationSettings(
+        initializationSettingsAndroid, initializationSettingsIOS);
+    _flnp.initialize(initializationSettings);
+  }
+   void showNotification(message) async {
+    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      // Platform.isAndroid
+           'tk.notifier.sntiitk',
+          // : 'com.duytq.flutterchatdemo',
+      'Notifier',
+      'Notifier',
+      playSound: true,
+      enableVibration: true,
+      importance: Importance.Max,
+      priority: Priority.High,
+    );
+    var iOSPlatformChannelSpecifics = new IOSNotificationDetails();
+    var platformChannelSpecifics = new NotificationDetails(
+        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+
+    print(message);
+//    print(message['body'].toString());
+//    print(json.encode(message));
+    // await _flnp.initialize(initializationSettings;\);
+    await _flnp.show(0, message['title'].toString(),
+        message['body'].toString(), platformChannelSpecifics,
+        payload: json.encode(message));
+  // await _flnp.
+//    await flutterLocalNotificationsPlugin.show(
+//        0, 'plain title', 'plain body', platformChannelSpecifics,
+//        payload: 'item x');
+  }
+  signOut() async {
+    try {
+      DynamicTheme.of(context).setBrightness(Brightness.light);
+      subscribeUnsubsTopic([], _prefs);
+      await widget.auth.signOut();
+      widget.logoutCallback();
+    } catch (e) {
+      print(e);
+    }
   }
 //   Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
 //   if (message.containsKey('data')) {

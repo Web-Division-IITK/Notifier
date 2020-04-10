@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
+// import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/data/data.dart';
+// import 'package:notifier/data/data.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/databse.dart';
@@ -98,7 +99,10 @@ class _PreferencesState extends State<Preferences> {
   buildTabs() {
     for (var i in widget.allCouncilData.subCouncil) {
       prefsTabs.add(
-        Tab(text: i.council.toString()),
+        Tab(
+          text: i.council.toString(),
+          
+        ),
       );
       for (var index = 0; index < i.entity.length; index++) {
         // if (_prefs.contains(i.entity[index])) {
@@ -131,7 +135,9 @@ class _PreferencesState extends State<Preferences> {
                     title: new Text('Preferences'),
                     bottom: TabBar(tabs: [
                       ...prefsTabs.toList(),
-                    ])),
+                    ],
+                      labelColor: Colors.white,
+                    )),
                 body: Stack(
                   fit: StackFit.expand,
                   children: <Widget>[
@@ -333,31 +339,42 @@ class _PreferencesState extends State<Preferences> {
           final _formKey = GlobalKey<FormState>();
           //  TextFormField _unsubscribe = GlobalKey<TextS>;
           return AlertDialog(
-            title: Text('Alert',
-                // textAlign: TextAlign.center,
-                style: TextStyle(
+            title: Row(
+              children: <Widget>[
+                Icon(Icons.warning,
                   color: Colors.red,
-                  // fontFamily: 'Comfortaa',
-                  // fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                )),
+                ),
+                Text('  Alert',
+                    // textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.red,
+                      // fontFamily: 'Comfortaa',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.0,
+                    )),
+              ],
+            ),
             content: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Text('Do you really want to unsubscribe',
+                Text('Do you really want to unsubscribe \n'+ name.entity[key],
+                textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.red,
                       // fontFamily: 'Comfortaa',
-                      // fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                       fontSize: 12.0,
                     )),
                 SizedBox(height: 10.0),
                 Text(
-                  'Note: You will not be able to receive notifications for the unsubscribed topic',
+                  'Note: You will not be able to receive any notification from ' + name.entity[key],
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10.0,
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold
                   ),
                 ),
                 SizedBox(height: 10.0),
@@ -446,7 +463,8 @@ class _PreferencesState extends State<Preferences> {
                                     name.entity[key].toString().toLowerCase()) {
                               setState(() {
                                 print(typed.toLowerCase());
-                                name.select[key] = false;
+                                name.select[key] = value;
+                                // Navigator.pop(context);
                               });
                               Navigator.pop(context);
                             }
@@ -474,13 +492,20 @@ class _PreferencesState extends State<Preferences> {
           String typed;
           final _formKey = GlobalKey<FormState>();
           return AlertDialog(
-            title: Text('Alert',
-                style: TextStyle(
+            title: Row(
+              children: <Widget>[
+                Icon(Icons.warning,
                   color: Colors.red,
-                  // fontFamily: 'Comfortaa',
-                  // fontWeight: FontWeight.bold,
-                  fontSize: 20.0,
-                )),
+                ),
+                Text('  Alert',
+                    style: TextStyle(
+                      color: Colors.red,
+                      // fontFamily: 'Comfortaa',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20.0,
+                    )),
+              ],
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.end,
@@ -490,7 +515,7 @@ class _PreferencesState extends State<Preferences> {
                   style: TextStyle(
                     color: Colors.red,
                     // fontFamily: 'Comfortaa',
-                    // fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.bold,
                     fontSize: 12.0,
                   ),
                 ),
@@ -499,8 +524,11 @@ class _PreferencesState extends State<Preferences> {
                 ),
                 Text(
                   'Note: You will not be able to receive notifications for the unsubscribed topics',
+                  textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 10.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red
                   ),
                 ),
                 SizedBox(height: 10.0),
@@ -529,7 +557,7 @@ class _PreferencesState extends State<Preferences> {
                                   ? Colors.white
                                   : Colors.black))
                     ])),
-                SizedBox(height: 20.0),
+                SizedBox(height: 10.0),
                 Material(
                   color: Colors.transparent,
                   child: Form(
@@ -798,7 +826,9 @@ final FirebaseMessaging _fcm = FirebaseMessaging();
 void subscribeUnsubsTopic(var subscribe, var unsubscribe) {
  
   for (var i in unsubscribe) {
+    if(i!=null && i!= ""){
     _fcm.unsubscribeFromTopic(checkSpace(i).toString());
+    }
   }
   for (var i in subscribe) {
     

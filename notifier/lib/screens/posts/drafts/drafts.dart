@@ -43,7 +43,7 @@ class _DraftsState extends State<Drafts> {
     return await fileExists('drafts').then((var _exists) async {
       print(_exists.toString() + 'exists in drafts.dart line 87');
       if (_exists) {
-        await readContentDrafts('drafts').then((var value) {
+        return await readContentDrafts('drafts').then((var value) {
           print(value);
 
           if (value != null && value.length != 0) {
@@ -149,21 +149,36 @@ class _DraftsState extends State<Drafts> {
                                               context: context,
                                               builder: (context) {
                                                 return AlertDialog(
-                                                  title: Text(
-                                                      'Delete Confirmation'),
+                                                  title: Row(
+                                                    children: <Widget>[
+                                                      Icon(Icons.warning,
+                                                        color: Colors.red,
+                                                      ),
+                                                      Text(' Delete this Post ?',
+                                                        style: TextStyle(
+                                                          color: Colors.red
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                   content: Column(
                                                     mainAxisAlignment: MainAxisAlignment.end,
                                                     mainAxisSize: MainAxisSize.min,
                                                     children: <Widget>[
                                                       Text(
-                                                          'Do you really want to permanently delete this file',
+                                                          'Doing this will permanently delete this file',
                                                             textAlign: TextAlign.center,
+                                                            style: TextStyle(
+                                                              fontWeight: FontWeight.bold
+                                                            ) ,
                                                           ),
                                                           SizedBox(height: 5.0),
                                                       Text(
-                                                          'Note: You will not be able to recover this file',
+                                                          'Note: You will not be able to recover this file later',
                                                         style:TextStyle(
-                                                              fontSize: 10.0
+                                                              fontSize: 10.0,
+                                                              color: Colors.red,
+                                                              fontWeight: FontWeight.bold
                                                             )    
                                                       ),
                                                   //   ],
@@ -186,6 +201,7 @@ class _DraftsState extends State<Drafts> {
                                                         setState(() {
                                                           _loadingDelete = true;
                                                         });
+                                                        Navigator.pop(context);
                                                         await deleteDraft(index).then((var statusCode) {
                                                           if (statusCode ==200) {
                                                             if (update.length ==0) {
@@ -198,7 +214,7 @@ class _DraftsState extends State<Drafts> {
                                                               _loadingDelete =false;
                                                             });
                                                               Fluttertoast.showToast(msg:'Delete Successful');
-                                                              Navigator.pop(context);
+                                                              // Navigator.pop(context);
                                                             
                                                           } else {
                                                             setState(() {
@@ -206,7 +222,7 @@ class _DraftsState extends State<Drafts> {
                                                              
                                                             });
                                                             Fluttertoast.showToast(msg:'Deletion Failed!!');
-                                                            Navigator.pop(context);
+                                                            // Navigator.pop(context);
                                                           }
 
                                                         });

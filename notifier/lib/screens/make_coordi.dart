@@ -251,7 +251,7 @@ class _MakeCoordiState extends State<MakeCoordi> {
                     // widget.allCouncilData.subCouncil[]
                     // selectedOptions[widget.allCouncilData.subCouncil[index].council] += [_selectedLocation];
                     if(!selectedOptions[_selcouncil].contains(_selectedEntity)  ){
-                      selectedOptions[_selcouncil] +=[_selectedEntity];
+                      selectedOptions[_selcouncil] =[_selectedEntity];
                       ret = false;
                     }
                     print(allCouncilData.coordOfCouncil);
@@ -262,11 +262,11 @@ class _MakeCoordiState extends State<MakeCoordi> {
                       setState(() {
                         // print(_selectedLocation);
                         Fluttertoast.showToast(msg: 'Making Coordinators');
-                        if(ret){
-                          print('returns');
-                           Fluttertoast.showToast(msg: 'Done!!');
-                           return;
-                        }
+                        // if(ret){
+                        //   print('returns');
+                        //    Fluttertoast.showToast(msg: 'Done!!');
+                        //    return;
+                        // }
                         validateAndSubmit();
 
                         // if(response == )

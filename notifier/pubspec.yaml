@@ -29,7 +29,6 @@ dependencies:
   firebase_storage: 
   cached_network_image: ^2.0.0-rc
   auto_size_text: ^2.1.0
-  google_maps_flutter: ^0.5.25+3
   flutter_local_notifications: ^1.4.0
   url_launcher: 
   flutter_linkify: 

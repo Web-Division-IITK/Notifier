@@ -2,10 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-String name;
+
 String rollno;
 
 class ProfilePage extends StatefulWidget {
@@ -413,11 +414,13 @@ class _ProfilePageState extends State<ProfilePage> {
                   children: <Widget>[
                     Container(
                       alignment: Alignment.center,
-                      child: Text('Alert: You will not be able to change you $type again',
+                      child: Text('Note: You will not be able to change your $type again',
+
                       textAlign: TextAlign.center,
                       style:TextStyle(
                         fontSize: 12.0,
-                        color: Colors.red
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold
                       )
                     )),
                     Padding(
@@ -493,7 +496,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                           _jsonData['rollno'] = _name;
                                           rollno = _name;
                                           updateRollNoinFirebase(widget.uid, rollno);
-                                        };
+                                        }
                                         writeposts();
                                       });
                                       Navigator.of(context).pop();

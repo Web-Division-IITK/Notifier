@@ -19,18 +19,17 @@ class _PrefsHomeState extends State<PrefsHome> {
   bool load;
   @override
   void initState() { 
-    super.initState();
-    setState(() {
+    //  setState(() {
       load = true;
-    });
+    // });
     readContent('users').then((var value){
       if(value!=null){
         var councilData = value["council"];
-        // councilData.forEach((key){
-        //   _prefs += (councilData[key]["entity"].cast<String>() + councilData[key]["misc"].cast<String>());
-        // });
-        _prefs = value['prefs'];
-        print(_prefs);
+        councilData.keys.forEach((key){
+          _prefs += (councilData[key]["entity"].cast<String>() + councilData[key]["misc"].cast<String>());
+        });
+        // _prefs = value['prefs'];
+        // print(_prefs);
         if(_prefs !=null && _prefs.length!=0){
           sortArraywithPrefs();
         }
@@ -42,16 +41,23 @@ class _PrefsHomeState extends State<PrefsHome> {
         }
       }
     });
+    super.initState();
+   
   }
+  List<int> indices =[];
 sortArraywithPrefs(){
   sortedarray.forEach((f){
     if(_prefs.contains(f.club)){
       var index = arrayWithclub.length /*> 0 ? arrayWithclub.length : 0*/;
+      indices.add(sortedarray.indexOf(f));
       arrayWithclub.insert(index, f);
     }
     else{
       if(arrayWithclub.contains(f.club)){
         arrayWithclub.remove(f);
+        if(indices.contains(sortedarray.indexOf(f))){
+          indices.remove(sortedarray.indexOf(f));
+        }
       }
     }
   });
@@ -100,7 +106,7 @@ sortArraywithPrefs(){
                  Container(child: Text('Today'),),
                   Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     )
                ],
              );
@@ -111,7 +117,7 @@ sortArraywithPrefs(){
                   // : time ==  ?
                   : Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     );
           }
         } 
@@ -125,7 +131,7 @@ sortArraywithPrefs(){
                  Container(child: Text('Yesterday'),),
                   Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     )
                ],
              );
@@ -136,12 +142,12 @@ sortArraywithPrefs(){
                   // : time ==  ?
                   : Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     );
           }
         }
           break;
-        default: if (arrayWithclub.firstWhere((test){
+        default: if (sortedarray.firstWhere((test){
           return (test.dateasString == day && (test.value['exists'] == null || test.value['exists']))?true:false;
         }) == i) {
           yield Column(
@@ -149,7 +155,7 @@ sortArraywithPrefs(){
                  Container(child: Text(day),),
                   Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     )
                ],
              );
@@ -160,7 +166,7 @@ sortArraywithPrefs(){
                   // : time ==  ?
                   : Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     );
         }
         break;
@@ -172,8 +178,10 @@ sortArraywithPrefs(){
     return load ? Center(child: CircularProgressIndicator(),):
     prefsHome!=null && !prefsHome ?  Center(child:Text('You don,t have any preferences') )
      : Container(
+
         padding: EdgeInsets.only(top: 10.0),
         child: ListView(
+          // shrinkWrap: true,
           physics: AlwaysScrollableScrollPhysics(),
           children: arrayofTime.toList(),
         ),
@@ -233,7 +241,7 @@ sortArraywithPrefs(){
         onTap: () {
           return Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
-            return NotfDesc(index);
+            return NotfDesc(index,indices,time);
           }));
         },
         child: Column(
