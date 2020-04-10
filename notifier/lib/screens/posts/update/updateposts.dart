@@ -36,7 +36,8 @@ class _UpDatePostsState extends State<UpDatePosts> {
       if (v != null && v['posts'] != null && v['posts'].length != 0) {
         loadPostsUsers(v['posts']).then((bool status) {
           print(status.toString() + 'stauts line39 upadate.dart');
-          if (docById != null) {
+          // print(docById.keys.length != 0);
+          if (docById != null && docById.keys.length!=0 ) {
             setState(() {
               var i = 0;
               docById.keys.forEach((key) {
@@ -78,6 +79,12 @@ class _UpDatePostsState extends State<UpDatePosts> {
             }
             });
            
+          }else{
+            setState(() {
+              update =[];
+            _post = null;
+            _load = false;
+            });
           }
         });
         // }

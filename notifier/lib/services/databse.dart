@@ -33,6 +33,11 @@ Future<File> get _localFilePeople async {
   final path = await _localPath;
   return File('$path' + '/' + 'people' + '.txt');
 }
+Future<File> get _localFileData async {
+  print('allData');
+  final path = await _localPath;
+  return File('$path' + '/' + 'allData' + '.txt');
+}
 
 Future<File> get _localFilePosts async {
   print('posts');
@@ -92,11 +97,33 @@ Future<List<dynamic>> readContentDrafts(String fileName)async{
 }
 Future<Map<String, dynamic>> readContent(String fileName) async {
   try {
-    final file = (fileName == 'snt')
+    /*final file ;= (fileName == 'snt')
         ? await _localFileSNT
-        : (fileName == 'posts' ? await _localFilePosts : (fileName == 'drafts' ? await _localFileDrafts :await _localFile));
+        : (fileName == 'posts' ? 
+        await _localFilePosts 
+        : (fileName == 'drafts' ? 
+        await _localFileDrafts :
+        await _localFile))*/
+    String content ;
+    switch (fileName) {
+      case 'snt': final file = await _localFileSNT;
+        content  = await file.readAsString();
+      break;
+      case 'posts': final file = await _localFilePosts;
+        content  = await file.readAsString();
+      break;
+      case 'drafts': final file = await _localFileDrafts;
+        content  = await file.readAsString();
+      break;
+      case'allData':final file = await _localFileData;
+        content  = await file.readAsString();        
+      break;
+      default: final file = await _localFile;
+        content  = await file.readAsString();
+      break;
+    }
     // Read the file
-    String content = await file.readAsString();
+     
     // print(content);
     var contents = json.decode(content);
     // Returning the contents of the file
@@ -142,6 +169,10 @@ Future<bool> writeContent(String fileName, var contentToWrite) async {
         break;
       case 'drafts':
         final file = await _localFileDrafts;
+        v = await file.writeAsString(contentToWrite);
+        break;
+      case 'allData':
+        final file = await _localFileData;
         v = await file.writeAsString(contentToWrite);
         break;
       default:
@@ -214,7 +245,8 @@ Future<bool> loadPostsUsers(var _posts) async{
 
 Future<bool> getDocByID(String uid) async {
   // var v;
-  return await databaseReference
+  try{
+    return await databaseReference
       .collection('snt')
       .document(uid).get()
       .then((DocumentSnapshot snapshot) {
@@ -233,6 +265,11 @@ Future<bool> getDocByID(String uid) async {
     print(docById);
     return true;
   });
+  }
+  catch(e){
+    print(e.toString() + 'something');
+    return true;
+  }
   // return v != null ? true : false;
 }
 
@@ -312,12 +349,12 @@ Future<bool> populatePeople(String id) async {
   
 }
 
-Future<bool> updateInFireBase(String uid, var prefs) async {
+Future<bool> updateInFireBase(String uid, var council) async {
   var error;
   return await databaseReference
       .collection('users')
       .document(uid)
-      .updateData({'prefs': prefs}).then((_) => true);
+      .updateData({'council': council}).then((_) => true);
 }
 Future<void> updateNameinFirebase(String uid,String name)async{
   await databaseReference
@@ -331,19 +368,33 @@ Future<void> updateRollNoinFirebase(String uid,String rollno)async{
       .document(uid)
       .updateData({'rollno': rollno});
 }
-Future<int> submit(String id, var value) async {
+Future<int> submit(String id, var council,var value) async {
   Map<String, String> headers = {"Content-type": "application/json"};
-  value = jsonEncode(value);
-  String json = '{"id": "$id","sub":$value}';
-  print(json);
+  // value = jsonEncode(value);
+  // String json = '{
+  //   "id": "$id";
+  //   "councils":"$value["councils"]",
+  //   "snt":"$value["snt"]","ss":"$value["ss"]","mnc":"$value["mnc"],
+  
+  // }';
+  String jsonDataBody = jsonEncode({
+    'id': id,
+    'councils':[council],
+    'snt':value['snt'],
+    'mnc':value['mnc'],
+    'anc':value['anc'],
+    'ss':value['ss'],
+    'gnc':value['gnc'],
+  });
+  print(jsonDataBody);
   // try{
   String url =
-      'https://us-central1-notifier-snt.cloudfunctions.net/elevatePerson';
+      'https://us-central1-notifier-phase-2.cloudfunctions.net/elevatePerson';
   // //   // }catch(e){
   // //   //   print(e.toString());
   // //   // }
   try {
-    Response response = await post(url, headers: headers, body: json);
+    Response response = await post(url, headers: headers, body: jsonDataBody);
     int statusCode = response.statusCode;
     print(statusCode);
     print(response.body.toString());
