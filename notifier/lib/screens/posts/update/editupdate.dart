@@ -15,6 +15,7 @@ import 'package:notifier/screens/posts/createposts.dart';
 import 'package:notifier/screens/posts/update/updateposts.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:notifier/services/function.dart';
+import 'package:notifier/widget/adding_tags.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:path/path.dart' as Path;
 
@@ -43,6 +44,7 @@ class _UpdateNState extends State<UpdateN> {
   File _image;
   bool _loadSubmit = false;
   final _tagController = TextEditingController();  
+  final _imageController = TextEditingController();  
   // bool _firstSelected = true;
   bool _loadingWidget = false;
   Repository repo = Repository(allCouncilData);
@@ -122,12 +124,10 @@ class _UpdateNState extends State<UpdateN> {
   validateAndSubmit() async {
     setState(() {
       _errorMessage = "";
-      // _isLoading = true;
     });
     if (validateAndSave()) {
-      // String userId = "";widget._
-      try {
-        // tags = _tag.split(';');
+      Fluttertoast.showToast(msg: 'Updating post');
+      try {;
         var _response = await upPostForNotifs(
             _title,
             _body,
@@ -140,7 +140,22 @@ class _UpdateNState extends State<UpdateN> {
             [_subs],
             // widget._subs,
             widget._update.uid);
-        if (_response.statusCode != 200) {
+        if(_response == null){
+          setState(() {
+          _loadSubmit = false;
+          _errorMessage = 'Error Check your Internet Connection';
+          _formKey.currentState.reset();
+        });
+        
+          Fluttertoast.showToast(
+              backgroundColor: Colors.grey[300],
+              timeInSecForIos: 3,
+              msg: _errorMessage,
+              textColor: Colors.red,
+              fontSize: 13.0);
+        }
+        else{
+          if (_response.statusCode != 200) {
           setState(() {
             _loadSubmit = false;
           });
@@ -161,24 +176,27 @@ class _UpdateNState extends State<UpdateN> {
             createMake(_response);
           }
         }
+        }
       } catch (e) {
         print('Error: $e');
         setState(() {
           _loadSubmit = false;
-          // _isLoading = false;
-          _errorMessage = e.message;
+          _errorMessage = e.message??'Error Updating Posts Check your Internet Connection';
+          _formKey.currentState.reset();
+        });
+        
           Fluttertoast.showToast(
               backgroundColor: Colors.grey[300],
               timeInSecForIos: 3,
               msg: _errorMessage,
               textColor: Colors.red,
               fontSize: 13.0);
-          _formKey.currentState.reset();
-          // Fluttertoast(
-
-          // );
-        });
+        
       }
+    }else{
+      setState(() {
+        _loadSubmit = false;
+      });
     }
   }
 
@@ -221,6 +239,8 @@ class _UpdateNState extends State<UpdateN> {
   void initState() {
     _councilList = List.from(_councilList)..addAll(repo.getCoordiCouncil());
      _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(widget._update.value['council']));
+     _url = widget._update.value['url'];
+    tags = widget._update.value['tags'];
     super.initState();
     buildsubs();
     
@@ -228,29 +248,10 @@ class _UpdateNState extends State<UpdateN> {
     _subs = widget._update.value['sub'][0];
     // _tagController.addListener((){
       _tagController.text = converToString(widget._update.value['tags']);
-      // _tagController.value = _tagController.value.copyWith(
-      //   text:converToString(widget._update.value['tags'])
-      //   selection: 
-      // );
-    // });
+      _imageController.text = (widget._update.value['url']);
   }
   @override
   Widget build(BuildContext context) {
-    List<DropdownMenuItem<String>> _selectItem = [];
-    for (var i in selectCouncil) {
-      _selectItem.add(DropdownMenuItem(
-        child: Text(i),
-        value: i,
-      ));
-    }
-    // if(widget._update.value['council'] !=null) { 
-    //   buildsubs();
-    //   _firstSelected = true;}
-    // else{
-    //   _firstSelected = false;
-    // }
-    _url = widget._update.value['url'];
-    tags = widget._update.value['tags'];
     return Scaffold(
         appBar: new AppBar(
           title: new Text('Edit Posts'),
@@ -281,6 +282,23 @@ class _UpdateNState extends State<UpdateN> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                     child: new TextFormField(
+                      maxLines: 1,
+                      keyboardType: TextInputType.text,
+                      autofocus: false,
+                      initialValue: widget._update.value['message'],
+                      decoration: new InputDecoration(
+                        labelText: 'Messsage',
+                        hintText:
+                            'Subtitile to be displayed in the notifications panel ',
+                      ),
+                      validator: (value) =>
+                          value.isEmpty ? 'Message can\'t be empty' : null,
+                      onSaved: (value) => _message = value,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                    child: new TextFormField(
                       maxLines: null,
                       keyboardType: TextInputType.multiline,
                       autofocus: false,
@@ -288,262 +306,15 @@ class _UpdateNState extends State<UpdateN> {
                       decoration: new InputDecoration(
                         labelText: 'Body',
                         hintText: 'Body of the post',
-                        // icon: new Icon(
-                        //   Icons.mail,
-                        //   color: Colors.grey,
-                        // )
+                        helperText: 'ADD <a>...</a> if you want to make that text a link'
+                        // counterText: 'ADD <a>...</a> if you want to make that text a link'
                       ),
                       validator: (value) =>
                           value.isEmpty ? 'body can\'t be empty' : null,
                       onSaved: (value) => _body = value,
                     ),
                   ),
-                  Container(
-                    // width: 100.0,
-                    // height: 100.0,
-                    width: MediaQuery.of(context).size.width,
-                    // padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                    child: Wrap(
-                      children: <Widget>[
-                        Container(
-                            width: 250.0,
-                            //image url to displayed and image tobe uploaded
-                            padding:
-                                const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                            child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  _url != null
-                                      ? SizedBox(height: 15.0,)
-                                      : SizedBox(height: 5.0),
-                                  _url != null
-                                      ? Text('Image Url',
-                                          style: TextStyle(
-                                              fontSize: 12.0, color: Colors.grey))
-                                      : Text(''),
-                                  SizedBox(height: 5.0,),
-                                  _url == null
-                                      ? Text('Image Url',
-                                          style: TextStyle(
-                                              color: Colors.grey, fontSize: 16),
-                                        )
-                                      : Text(
-                                          _url,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(fontSize: 16),
-                                        ),
-                                  _url != null
-                                      ? SizedBox(height: 5.0,)
-                                      : SizedBox(height: 10.0),
-                                  Divider(color: Colors.grey)
-                                ])),
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            top: 15.0,
-                          ),
-                          child: IconButton(
-                              icon: Icon(
-                                Icons.add,
-                                size: 30.0,
-                              ),
-                              onPressed: () {
-                                return showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return StatefulBuilder(
-                                        builder: (context, setState) {
-                                          return AlertDialog(
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16.0)),
-                                            content: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              mainAxisAlignment: MainAxisAlignment.end,
-                                              children: <Widget>[
-                                                Stack(
-                                                  alignment: AlignmentDirectional.center,
-                                                  children: <Widget>[
-                                                    Column(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: <Widget>[
-                                                        SizedBox(
-                                                          height: 20.0,
-                                                        ),
-                                                        _image != null || _url != null
-                                                            ? Text('Selected Image',
-                                                                style: TextStyle(
-                                                                    fontSize: 20.0))
-                                                            : Container(),
-                                                        _image != null || _url != null
-                                                            ? SizedBox(
-                                                                height: 10.0,
-                                                              )
-                                                            : SizedBox(),
-                                                        _image != null || _url != null
-                                                            ? Container(
-                                                                padding: EdgeInsets.only(
-                                                                    bottom: 10.0),
-                                                                height: 250.0,
-                                                                child: _url != null &&
-                                                                        _image == null
-                                                                    ? Image.network(_url,
-                                                                        fit: BoxFit.fill)
-                                                                    : Image.file(_image,
-                                                                        fit: BoxFit.fill))
-                                                            : Container(),
-                                                        _url != null || _image == null
-                                                            ? RaisedButton(
-                                                                shape: new RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        new BorderRadius
-                                                                                .circular(
-                                                                            30.0)),
-                                                                child: Text(
-                                                                  _url == null &&
-                                                                          _image == null
-                                                                      ? 'Choose Image'
-                                                                      : 'Choose another',
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          Colors.white),
-                                                                ),
-                                                                onPressed: () async {
-                                                                  if (_url != null) {
-                                                                    StorageReference
-                                                                        storageReference =
-                                                                        await FirebaseStorage
-                                                                            .instance
-                                                                            .getReferenceFromUrl(
-                                                                                _url);
-                                                                    storageReference
-                                                                        .delete()
-                                                                        .then((_) {
-                                                                      Fluttertoast.showToast(
-                                                                          msg:
-                                                                              'Removed Successfully');
-                                                                      setState(() {
-                                                                        _image = null;
-                                                                        _url = null;
-                                                                      });
-                                                                    });
-                                                                  }
-                                                                  await ImagePicker.pickImage(
-                                                                          source:
-                                                                              ImageSource
-                                                                                  .gallery)
-                                                                      .then((image) {
-                                                                    setState(() {
-                                                                      _image = image;
-                                                                      print(_image);
-                                                                    });
-                                                                    // setState(() {
-
-                                                                    // });
-                                                                  });
-                                                                },
-                                                                color: Colors.cyan,
-                                                              )
-                                                            : Container(),
-                                                        _image != null && _url != null
-                                                            ? RaisedButton(
-                                                                shape: new RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        new BorderRadius
-                                                                                .circular(
-                                                                            30.0)),
-                                                                child: Text(
-                                                                  'Upload Image',
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          Colors.white),
-                                                                ),
-                                                                onPressed: (){
-                                                                  setState((){
-                                                                    _loadingWidget = true;
-                                                                  });
-                                                                  uploadFile().then((bool status){
-                                                                    if(status){
-                                                                      setState((){
-                                                                        _loadingWidget =false;
-                                                                        
-                                                                      });
-                                                                      if(_url!=null){
-                                                                        Fluttertoast.showToast(msg: 'Upload Successful!!');
-                                                                        Navigator.of(context).pop();
-                                                                      }
-                                                                      else{
-                                                                        Fluttertoast.showToast(msg: 'Can\'t process request at this time');
-                                                                      }
-                                                                    }
-                                                                    
-                                                                  });
-                                                                },
-                                                                color: Colors.cyan,
-                                                              )
-                                                            : Container(),
-                                                        _image != null || _url != null
-                                                            ? RaisedButton(
-                                                                color: Colors.white,
-                                                                shape: new RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        new BorderRadius
-                                                                                .circular(
-                                                                            30.0)),
-                                                                child: Text(
-                                                                  'Clear Selection',
-                                                                  style: TextStyle(
-                                                                      color:
-                                                                          Colors.black),
-                                                                ),
-                                                                onPressed: () async {
-                                                                  print(_image);
-                                                                  print(_url);
-                                                                  if (_image != null &&
-                                                                      _url == null) {
-                                                                    setState(() {
-                                                                      _image = null;
-                                                                      _url = null;
-                                                                      print(_url);
-                                                                    });
-                                                                  } else if(_url != null) {
-                                                                    StorageReference
-                                                                        storageReference =
-                                                                       await FirebaseStorage
-                                                                            .instance
-                                                                            .getReferenceFromUrl(_url);
-                                                                    storageReference
-                                                                        .delete()
-                                                                        .then((_) {
-                                                                      Fluttertoast.showToast(
-                                                                          msg:
-                                                                              'Removed Successfully');
-                                                                      setState((){
-                                                                        _image=null;
-                                                                        _url =null;
-                                                                      });
-                                                                    });
-                                                                  }
-                                                                })
-                                                            : Container(),
-                                                      ],
-                                                    ),
-                                                    _loadingWidget?Center(child: CircularProgressIndicator(),):Container()
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    });
-                                // return UploadIMage(chooseFile, uploadFile);
-                                // child:
-                              }),
-                        ),
-                      ],
-                    ),
-                  ),
+                 
                   //council dropdown to make
                   Padding(
                       padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
@@ -595,19 +366,13 @@ class _UpdateNState extends State<UpdateN> {
                             maxLines: null,
                             controller: _tagController,
                             readOnly: true,
+                            enabled: false,
                             keyboardType: TextInputType.multiline,
                             autofocus: false,
-                            // initialValue: converToString(widget._update.value['tags']),
                             decoration: new InputDecoration(
                               labelText: 'Tags',
                               hintText: 'Click \'+\' button to add tags',
-                              // icon: new Icon(
-                              //   Icons.mail,
-                              //   color: Colors.grey,
-                              // )
                             ),
-                            // validator: (value) =>
-                            //     value.isEmpty ? 'Tags can\'t be empty' : null,
                             onSaved: (value) {
                               _tag = value;
                             },
@@ -619,39 +384,247 @@ class _UpdateNState extends State<UpdateN> {
                         tooltip: 'Add tags',
                           icon: Icon(
                             Icons.add,
-                            
                             size: 30.0,
                           ),
                           onPressed: () {
                             addingTag();
-                            // BottomSheet(onClosing: null, builder: null)
                           }),
                     )
                       ],
                     ),
                   ),
-                  Padding(
+                   Container(
                     padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                    child: new TextFormField(
-                      maxLines: 1,
-                      keyboardType: TextInputType.text,
-                      autofocus: false,
-                      initialValue: widget._update.value['message'],
-                      decoration: new InputDecoration(
-                        labelText: 'Messsage',
-                        hintText:
-                            'Subtitile to be displayed in the notifications panel ',
-                        // icon: new Icon(
-                        //   Icons.mail,
-                        //   color: Colors.grey,
-                        // )
-                      ),
-                      validator: (value) =>
-                          value.isEmpty ? 'Message can\'t be empty' : null,
-                      onSaved: (value) => _message = value,
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                           width: MediaQuery.of(context).size.width - 150.0,
+                          child: new TextFormField(
+                            maxLines: 1,
+                            controller: _imageController,
+                            readOnly: true,
+                            enabled: false,
+                            keyboardType: TextInputType.multiline,
+                            autofocus: false,
+                            decoration: new InputDecoration(
+                              labelText: 'Image',
+                              // hintText: 'Click \'+\' button to add Images',
+                            ),
+                            onSaved: (value) {
+                              _url = value;
+                            },
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 20.0,
+                          ),
+                          child: IconButton(
+                            tooltip: 'Add Image',
+                            icon:Icon(
+                                    Icons.add_a_photo,
+                                    // size: 30.0,
+                                  ),
+                            // ),
+                                onPressed: () {
+                                  return showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return StatefulBuilder(
+                                          builder: (context, setState) {
+                                            return AlertDialog(
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16.0)),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: <Widget>[
+                                                  Stack(
+                                                    alignment: AlignmentDirectional.center,
+                                                    children: <Widget>[
+                                                      Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: <Widget>[
+                                                          SizedBox(
+                                                            height: 20.0,
+                                                          ),
+                                                          _image != null || _url != null
+                                                              ? Text('Selected Image',
+                                                                  style: TextStyle(
+                                                                      fontSize: 20.0))
+                                                              : Container(),
+                                                          _image != null || _url != null
+                                                              ? SizedBox(
+                                                                  height: 10.0,
+                                                                )
+                                                              : SizedBox(),
+                                                          _image != null || _url != null
+                                                              ? Container(
+                                                                  padding: EdgeInsets.only(
+                                                                      bottom: 10.0),
+                                                                  height: 250.0,
+                                                                  child: _url != null &&
+                                                                          _image == null
+                                                                      ? Image.network(_url,
+                                                                          fit: BoxFit.fill)
+                                                                      : Image.file(_image,
+                                                                          fit: BoxFit.fill))
+                                                              : Container(),
+                                                          _url != null || _image == null
+                                                              ? RaisedButton(
+                                                                  shape: new RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          new BorderRadius
+                                                                                  .circular(
+                                                                              30.0)),
+                                                                  child: Text(
+                                                                    _url == null &&
+                                                                            _image == null
+                                                                        ? 'Choose Image'
+                                                                        : 'Choose another',
+                                                                    style: TextStyle(
+                                                                        color:
+                                                                            Colors.white),
+                                                                  ),
+                                                                  onPressed: () async {
+                                                                    if (_url != null) {
+                                                                      StorageReference
+                                                                          storageReference =
+                                                                          await FirebaseStorage
+                                                                              .instance
+                                                                              .getReferenceFromUrl(
+                                                                                  _url);
+                                                                      storageReference
+                                                                          .delete()
+                                                                          .then((_) {
+                                                                        Fluttertoast.showToast(
+                                                                            msg:
+                                                                                'Removed Successfully');
+                                                                        setState(() {
+                                                                          _image = null;
+                                                                          _url = null;
+                                                                        });
+                                                                      });
+                                                                    }
+                                                                    await ImagePicker.pickImage(
+                                                                            source:
+                                                                                ImageSource
+                                                                                    .gallery)
+                                                                        .then((image) {
+                                                                      setState(() {
+                                                                        _image = image;
+                                                                        print(_image);
+                                                                      });
+                                                                      // setState(() {
+
+                                                                      // });
+                                                                    });
+                                                                  },
+                                                                  color: Colors.cyan,
+                                                                )
+                                                              : Container(),
+                                                          _image != null && _url != null
+                                                              ? RaisedButton(
+                                                                  shape: new RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          new BorderRadius
+                                                                                  .circular(
+                                                                              30.0)),
+                                                                  child: Text(
+                                                                    'Upload Image',
+                                                                    style: TextStyle(
+                                                                        color:
+                                                                            Colors.white),
+                                                                  ),
+                                                                  onPressed: (){
+                                                                    setState((){
+                                                                      _loadingWidget = true;
+                                                                    });
+                                                                    uploadFile().then((bool status){
+                                                                      if(status){
+                                                                        setState((){
+                                                                          _loadingWidget =false;
+                                                                          
+                                                                        });
+                                                                        if(_url!=null){
+                                                                          Fluttertoast.showToast(msg: 'Upload Successful!!');
+                                                                          Navigator.of(context).pop();
+                                                                        }
+                                                                        else{
+                                                                          Fluttertoast.showToast(msg: 'Can\'t process request at this time');
+                                                                        }
+                                                                      }
+                                                                      
+                                                                    });
+                                                                  },
+                                                                  color: Colors.cyan,
+                                                                )
+                                                              : Container(),
+                                                          _image != null || _url != null
+                                                              ? RaisedButton(
+                                                                  color: Colors.white,
+                                                                  shape: new RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          new BorderRadius
+                                                                                  .circular(
+                                                                              30.0)),
+                                                                  child: Text(
+                                                                    'Clear Selection',
+                                                                    style: TextStyle(
+                                                                        color:
+                                                                            Colors.black),
+                                                                  ),
+                                                                  onPressed: () async {
+                                                                    print(_image);
+                                                                    print(_url);
+                                                                    if (_image != null &&
+                                                                        _url == null) {
+                                                                      setState(() {
+                                                                        _image = null;
+                                                                        _url = null;
+                                                                        print(_url);
+                                                                      });
+                                                                    } else if(_url != null) {
+                                                                      StorageReference
+                                                                          storageReference =
+                                                                         await FirebaseStorage
+                                                                              .instance
+                                                                              .getReferenceFromUrl(_url);
+                                                                      storageReference
+                                                                          .delete()
+                                                                          .then((_) {
+                                                                        Fluttertoast.showToast(
+                                                                            msg:
+                                                                                'Removed Successfully');
+                                                                        setState((){
+                                                                          _image=null;
+                                                                          _url =null;
+                                                                        });
+                                                                      });
+                                                                    }
+                                                                  })
+                                                              : Container(),
+                                                        ],
+                                                      ),
+                                                      _loadingWidget?Center(child: CircularProgressIndicator(),):Container()
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        );
+                                      });
+                                  // return UploadIMage(chooseFile, uploadFile);
+                                  // child:
+                                },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Padding(
+                  widget._update.value['author'] ==null ? Padding(
                     padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                     child: new TextFormField(
                       maxLines: 1,
@@ -661,16 +634,13 @@ class _UpdateNState extends State<UpdateN> {
                       decoration: new InputDecoration(
                         labelText: 'Uploader',
                         hintText: 'Name of the Uploader',
-                        // icon: new Icon(
-                        //   Icons.mail,
-                        //   color: Colors.grey,
-                        // )
                       ),
                       validator: (value) =>
                           value.isEmpty ? 'Name field can\'t be empty' : null,
                       onSaved: (value) => _author = value,
                     ),
-                  ),
+                  
+                  ):Container(),
                   Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16.0),
@@ -681,7 +651,7 @@ class _UpdateNState extends State<UpdateN> {
                             borderRadius: new BorderRadius.circular(30.0)),
                         // color: Colors.blue,
                         onPressed: () {
-                          Fluttertoast.showToast(msg: 'Updating post');
+                          
                           // Fluttertoast.cancel();
                           setState(() {
                             _loadSubmit = true;
@@ -731,141 +701,142 @@ class _UpdateNState extends State<UpdateN> {
     return showModalBottomSheet(
         context: (context),
         builder: (BuildContext context) {
-          final _formKey = GlobalKey<FormState>();
-          String addTag;
+          return AddingTags(_tag, tags, _tagController);
+          // final _formKey = GlobalKey<FormState>();
+          // String addTag;
           
-          return CupertinoActionSheet(
-            actions: <Widget>[
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 100.0),
-                child: RaisedButton(
-                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                    child: Text('Add Tags',
-                    style: TextStyle(
-                      color: Colors.white
-                    )
-                    ),
-                    onPressed: () {
-                      showDialog(context: context, builder: (BuildContext context){
-                        return AlertDialog(
-                          title: Text('Add tag'),
-                          content: Form(
-                            key: _formKey,
-                              child:  Container(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                      child: Material(
-                        color: Colors.transparent,
-                          child: TextFormField(
-                            maxLines: 1,
-                            keyboardType: TextInputType.text,
-                            autofocus: false,
-                            decoration: new InputDecoration(
-                              labelText: 'Tag',
-                            ),
-                            validator: (value) => value.isEmpty
-                              ?'Tags can\'t be empty'
-                                : null,
-                            onSaved: (value) {
-                              addTag = value;
-                              // _tag = value.toString() + ' ;';
-                              // tags.add(value);
-                            }
-                          ),
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.only(bottom: 5.0, top: 25.0),
-                      // height: 100.0,
-                      child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: <Widget>[
-                              FlatButton(
-                                  shape: new RoundedRectangleBorder(
-                                      borderRadius:
-                                          new BorderRadius.circular(30.0)),
-                                  // color: Colors.blue,
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Dismiss')),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 5.0),
-                                child: RaisedButton(
-                                    shape: new RoundedRectangleBorder(
-                                        borderRadius:
-                                            new BorderRadius.circular(30.0)),
-                                    // color: Colors.blue,
-                                    onPressed: () {
-                                      // Fluttertoast.showToast(msg: 'Creating post');
-                                      // Fluttertoast.cancel();
-                                      // print(createTagsToList(tags[0]));
-                                      // tags = _tag.split(';');
-                                      if (_formKey.currentState.validate()) {
-                                        _formKey.currentState.save();
-                                        setState(() {
-                                          // tagForChip!=null?tagForChip += addTag + ' ;' : tagForChip = addTag + ' ;';
-                                          tags.add(addTag);
-                                        });
-                                        Navigator.of(context).pop();
-                                        // confirmPage();
-                                      }
-                                    },
-                                    child: Text(
-                                      'Add Tag',
-                                      style: TextStyle(color: Colors.white),
-                                    )),
-                              ),
-                            ]),
-                    )
-                    // )
-                  ],
-                  // )
-                ),
-              ), 
-                          ),
-                        );
-                      });
-                    }),
-              ),
-            ],
-            message: CreateChips(this._tag,this.tags),
-            cancelButton: Column(
-              children: <Widget>[
-                RaisedButton(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                  onPressed: () {
-                    setState(() {
+          // return CupertinoActionSheet(
+          //   actions: <Widget>[
+          //     Container(
+          //       margin: EdgeInsets.symmetric(horizontal: 100.0),
+          //       child: RaisedButton(
+          //          shape: RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.circular(30.0),
+          //         ),
+          //           child: Text('Add Tags',
+          //           style: TextStyle(
+          //             color: Colors.white
+          //           )
+          //           ),
+          //           onPressed: () {
+          //             showDialog(context: context, builder: (BuildContext context){
+          //               return AlertDialog(
+          //                 title: Text('Add tag'),
+          //                 content: Form(
+          //                   key: _formKey,
+          //                     child:  Container(
+          //       child: Column(
+          //         mainAxisSize: MainAxisSize.min,
+          //         mainAxisAlignment: MainAxisAlignment.end,
+          //         children: <Widget>[
+          //           Padding(
+          //             padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+          //             child: Material(
+          //               color: Colors.transparent,
+          //                 child: TextFormField(
+          //                   maxLines: 1,
+          //                   keyboardType: TextInputType.text,
+          //                   autofocus: false,
+          //                   decoration: new InputDecoration(
+          //                     labelText: 'Tag',
+          //                   ),
+          //                   validator: (value) => value.isEmpty
+          //                     ?'Tags can\'t be empty'
+          //                       : null,
+          //                   onSaved: (value) {
+          //                     addTag = value;
+          //                     // _tag = value.toString() + ' ;';
+          //                     // tags.add(value);
+          //                   }
+          //                 ),
+          //             ),
+          //           ),
+          //           Container(
+          //             padding: EdgeInsets.only(bottom: 5.0, top: 25.0),
+          //             // height: 100.0,
+          //             child: Row(
+          //                   mainAxisAlignment: MainAxisAlignment.end,
+          //                   children: <Widget>[
+          //                     FlatButton(
+          //                         shape: new RoundedRectangleBorder(
+          //                             borderRadius:
+          //                                 new BorderRadius.circular(30.0)),
+          //                         // color: Colors.blue,
+          //                         onPressed: () {
+          //                           Navigator.of(context).pop();
+          //                         },
+          //                         child: Text('Dismiss')),
+          //                     Padding(
+          //                       padding: const EdgeInsets.only(left: 5.0),
+          //                       child: RaisedButton(
+          //                           shape: new RoundedRectangleBorder(
+          //                               borderRadius:
+          //                                   new BorderRadius.circular(30.0)),
+          //                           // color: Colors.blue,
+          //                           onPressed: () {
+          //                             // Fluttertoast.showToast(msg: 'Creating post');
+          //                             // Fluttertoast.cancel();
+          //                             // print(createTagsToList(tags[0]));
+          //                             // tags = _tag.split(';');
+          //                             if (_formKey.currentState.validate()) {
+          //                               _formKey.currentState.save();
+          //                               setState(() {
+          //                                 // tagForChip!=null?tagForChip += addTag + ' ;' : tagForChip = addTag + ' ;';
+          //                                 tags.add(addTag);
+          //                               });
+          //                               Navigator.of(context).pop();
+          //                               // confirmPage();
+          //                             }
+          //                           },
+          //                           child: Text(
+          //                             'Add Tag',
+          //                             style: TextStyle(color: Colors.white),
+          //                           )),
+          //                     ),
+          //                   ]),
+          //           )
+          //           // )
+          //         ],
+          //         // )
+          //       ),
+          //     ), 
+          //                 ),
+          //               );
+          //             });
+          //           }),
+          //     ),
+          //   ],
+          //   message: CreateChips(this._tag,this.tags),
+          //   cancelButton: Column(
+          //     children: <Widget>[
+          //       RaisedButton(
+          //         shape: RoundedRectangleBorder(
+          //           borderRadius: BorderRadius.circular(30.0),
+          //         ),
+          //         onPressed: () {
+          //           setState(() {
                       
-                      // print(tagsForChips);
-                      _tag??='';
-                      _tag!=null || _tag != ''? _tag =_tag:_tag = '';
-                      for (var i in tags) {
-                        _tag += i + '; ';
-                      }
-                      // _tag = tagForChip;
-                      // tags = tagsForChips;
-                      _tagController.text = _tag;
-                      print(_tag + ':tags line807');
-                    });
-                    Navigator.of(context).pop();
-                  },
-                  child: Text('Done',
-                  style: TextStyle(
-                      color: Colors.white
-                    ),),
-                ),
-              ],
-            ),
-          );
+          //             // print(tagsForChips);
+          //             _tag??='';
+          //             _tag!=null || _tag != ''? _tag =_tag:_tag = '';
+          //             for (var i in tags) {
+          //               _tag += i + '; ';
+          //             }
+          //             // _tag = tagForChip;
+          //             // tags = tagsForChips;
+          //             _tagController.text = _tag;
+          //             print(_tag + ':tags line807');
+          //           });
+          //           Navigator.of(context).pop();
+          //         },
+          //         child: Text('Done',
+          //         style: TextStyle(
+          //             color: Colors.white
+          //           ),),
+          //       ),
+          //     ],
+          //   ),
+          // );
         });
 }
 

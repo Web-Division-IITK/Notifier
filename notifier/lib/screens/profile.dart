@@ -2,10 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
-String name;
+
 String rollno;
 
 class ProfilePage extends StatefulWidget {

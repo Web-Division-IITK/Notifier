@@ -39,7 +39,7 @@ class HomePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new _HomePageState();
 }
-
+String name;
 bool admin;
 
 // List<dynamic> sortedarray = List();
@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   var id;
   final FirebaseMessaging _fcm = FirebaseMessaging();
   final FlutterLocalNotificationsPlugin _flnp = FlutterLocalNotificationsPlugin();
-  String _name;
+  // String _name;
   String _rollno;
   List<dynamic> ids = List();
   List<dynamic> _prefs = [];
@@ -287,7 +287,7 @@ class _HomePageState extends State<HomePage> {
               id = value['id'];
               admin = value['admin'];
               _prefs = value['prefs'];
-              _name = value['name'];
+              name = value['name'];
               _rollno = value['rollno'];
               // var prefer =[];
               // Map<String,Map<String,Iterable<String>>> data;
@@ -579,7 +579,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (BuildContext context) {
-                              return CreatePosts(id, _subs);
+                              return CreatePosts(id, _subs,name);
                             }));
                           },
                           child: Container(

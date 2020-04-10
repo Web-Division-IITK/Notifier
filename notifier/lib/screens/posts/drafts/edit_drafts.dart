@@ -199,13 +199,6 @@ class _EditDraftState extends State<EditDraft> {
   }
   @override
   Widget build(BuildContext context) {
-    List<DropdownMenuItem<String>> _selectItem = [];
-    for (var i in selectCouncil) {
-      _selectItem.add(DropdownMenuItem(
-        child: Text(i),
-        value: i,
-      ));
-    }
     // if(widget._update.value['council'] !=null) { 
     //   buildsubs();
     //   _firstSelected = true;}
