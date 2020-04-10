@@ -1,14 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+// import 'package:flutter/foundation.dart';
 import 'dart:async';
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 // import 'package:notifier/data/data.dart';
 // import 'package:notifier/screens/home/home.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 Future<String> get _localPath async {
   final directory = await getApplicationDocumentsDirectory();
@@ -237,7 +237,7 @@ Future<bool> getDocByID(String uid) async {
 }
 
 Future<bool> populateUsers(String uid, bool loading) async {
-  bool people = false;
+  // bool people = false;
   // databaseReference.collection('users');
   // await databaseReference
   //     .collection('users')
@@ -312,12 +312,12 @@ Future<bool> populatePeople(String id) async {
   
 }
 
-Future<bool> updateInFireBase(String uid, var prefs) async {
-  var error;
+Future<bool> updateInFireBase(String uid, var council) async {
+  // var error;
   return await databaseReference
       .collection('users')
       .document(uid)
-      .updateData({'prefs': prefs}).then((_) => true);
+      .updateData({'council': council}).then((_) => true);
 }
 Future<void> updateNameinFirebase(String uid,String name)async{
   await databaseReference
@@ -331,11 +331,25 @@ Future<void> updateRollNoinFirebase(String uid,String rollno)async{
       .document(uid)
       .updateData({'rollno': rollno});
 }
-Future<int> submit(String id, var value) async {
+Future<int> submit(String id, var council,var value) async {
   Map<String, String> headers = {"Content-type": "application/json"};
-  value = jsonEncode(value);
-  String json = '{"id": "$id","sub":$value}';
-  print(json);
+  // value = jsonEncode(value);
+  // String json = '{
+  //   "id": "$id";
+  //   "councils":"$value["councils"]",
+  //   "snt":"$value["snt"]","ss":"$value["ss"]","mnc":"$value["mnc"],
+  
+  // }';
+  String jsonDataBody = jsonEncode({
+    'id': id,
+    'councils':council,
+    'snt': value['snt'].length!=0? value['snt'][0]:null,
+    'mnc':value['mnc'].length!=0? value['mnc'][0]:null,
+    'anc':value['anc'].length!=0? value['anc'][0]:null,
+    'ss':value['ss'].length!=0? value['ss'][0]:null,
+    'gnc':value['gnc'].length!=0? value['gnc'][0]:null,
+  });
+  print(jsonDataBody);
   // try{
   String url =
       'https://us-central1-notifier-snt.cloudfunctions.net/elevatePerson';
