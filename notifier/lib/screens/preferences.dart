@@ -99,7 +99,10 @@ class _PreferencesState extends State<Preferences> {
   buildTabs() {
     for (var i in widget.allCouncilData.subCouncil) {
       prefsTabs.add(
-        Tab(text: i.council.toString()),
+        Tab(
+          text: i.council.toString(),
+          
+        ),
       );
       for (var index = 0; index < i.entity.length; index++) {
         // if (_prefs.contains(i.entity[index])) {
@@ -132,7 +135,9 @@ class _PreferencesState extends State<Preferences> {
                     title: new Text('Preferences'),
                     bottom: TabBar(tabs: [
                       ...prefsTabs.toList(),
-                    ])),
+                    ],
+                      labelColor: Colors.white,
+                    )),
                 body: Stack(
                   fit: StackFit.expand,
                   children: <Widget>[

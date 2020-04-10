@@ -255,7 +255,7 @@ class _HomePageState extends State<HomePage> {
         print("onResume : $message" + 'is fromResume');
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
+          loadSnt();
           // newNotf = true;
           bodyMsg = message['notification']['body'];
           display = message['notification']['title'];
@@ -266,7 +266,7 @@ class _HomePageState extends State<HomePage> {
         print("onLaunch: $message" + ':is fromLaunch');
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
+          loadSnt();
           // newNotf = true;
           bodyMsg = message['notification']['body'];
           display = message['notification']['title'];
