@@ -21,9 +21,17 @@ class MakeCoordi extends StatefulWidget {
 class _MakeCoordiState extends State<MakeCoordi> {
   String _selectedLocation;
   String _selectedId;
+  String _selcouncil;
   final _formKey = GlobalKey<FormState>();
   String _id = "";
-  List<String> selectedOptions = [];
+  Map<String,String> selectedOptions = {
+    "snt": null,
+    "mnc":null,
+    "gnc":null,
+    "anc":null,
+    "ss":null
+
+  };
   // TextFieldController
   bool validateAndSave() {
     final form = _formKey.currentState;
@@ -42,34 +50,38 @@ class _MakeCoordiState extends State<MakeCoordi> {
     if (validateAndSave()) {
       // String userId = "";
       try {
-         submit(_id, selectedOptions).then((var i) async{
-                              if (i == 200) {
-                                await readContent('users').then((var value)async{
-                                  if(value!=null){
-                                    List<dynamic>sub;
-                                    value['admin'] = true;
-                                    value['sub'] = selectedOptions;
-                                    await writeContent('users',json.encode(value) ).then((bool status){
-                                      if(status){
-                                        setState(() {
-                                          admin = true;
-                                        });
-                                        Fluttertoast.showToast(msg: 'Done!!');
-                                        // Navigator.removeRouteBelow(context, anchorRoute)
-                                        // Navigator.of(context).pop();
-                                        
-                                        // Navigator.removeRouteBelow(context, anchorRoute)
-                                      }
-                                    });
-                                  }
-                                });
-                                
-                              } else {
-                                Fluttertoast.showToast(
-                                    msg:
-                                        'Cannot process request at this time, please try again later !!');
-                              }
-         });
+        submit(_id,_selcouncil,selectedOptions,).then((var i) async {
+          if (i == 200) {
+            await readContent('users').then((var value) async {
+              if (value != null) {
+                List<dynamic> sub;
+                value['admin'] = true;
+                selectedOptions.keys.forEach((key) {
+                  value.update(key, (v) {
+                    return selectedOptions[key];
+                  }, ifAbsent: () => selectedOptions[key]);
+                });
+                await writeContent('users', json.encode(value))
+                    .then((bool status) {
+                  if (status) {
+                    setState(() {
+                      admin = true;
+                    });
+                    Fluttertoast.showToast(msg: 'Done!!');
+                    // Navigator.removeRouteBelow(context, anchorRoute)
+                    // Navigator.of(context).pop();
+
+                    // Navigator.removeRouteBelow(context, anchorRoute)
+                  }
+                });
+              }
+            });
+          } else {
+            Fluttertoast.showToast(
+                msg:
+                    'Cannot process request at this time, please try again later !!');
+          }
+        });
       } catch (e) {
         print('Error: $e');
         setState(() {
@@ -284,6 +296,47 @@ class _MakeCoordiState extends State<MakeCoordi> {
                       )
                     ],
                   ),
+                  onPressed: () {
+                    // if (validateAndSave()) {
+                    //   // print(_selectedEntity);
+
+                    // }
+                    // var index = widget
+                    if(!widget.allCouncilData.coordOfCouncil.contains(_selcouncil)){
+                      widget.allCouncilData.coordOfCouncil.add(_selcouncil);
+                    }
+                    // widget.allCouncilData.subCouncil[index].coordiOfInCouncil.add(_selectedLocation);
+                    // allCouncilData.subCouncil[widget.allCouncilData.globalCouncils.indexOf(_selcouncil)].coordiOfInCouncil.clear();
+                    if(!allCouncilData.subCouncil[widget.allCouncilData.globalCouncils.indexOf(_selcouncil)].coordiOfInCouncil.contains(_selectedEntity)){
+                      allCouncilData.subCouncil[widget.allCouncilData.globalCouncils.indexOf(_selcouncil)].coordiOfInCouncil.add(_selectedEntity);
+                    }
+                    var ret = true;
+                    print( allCouncilData.subCouncil[widget.allCouncilData.globalCouncils.indexOf(_selcouncil)].coordiOfInCouncil);
+                    // widget.allCouncilData.subCouncil[]
+                    // selectedOptions[widget.allCouncilData.subCouncil[index].council] += [_selectedLocation];
+                    if(!selectedOptions[_selcouncil].contains(_selectedEntity)  ){
+                      selectedOptions[_selcouncil] =[_selectedEntity];
+                      ret = false;
+                    }
+                    print(allCouncilData.coordOfCouncil);
+                    print(selectedOptions);
+                    // selectedOptions.add(_selectedLocation);
+                    // print(validateAndSave());
+                    if (validateAndSave()) {
+                      setState(() {
+                        // print(_selectedLocation);
+                        Fluttertoast.showToast(msg: 'Making Coordinators');
+                        // if(ret){
+                        //   print('returns');
+                        //    Fluttertoast.showToast(msg: 'Done!!');
+                        //    return;
+                        // }
+                        validateAndSubmit();
+
+                        // if(response == )
+                      });
+                    }
+                  },
                 ),
               // ),
             ),
