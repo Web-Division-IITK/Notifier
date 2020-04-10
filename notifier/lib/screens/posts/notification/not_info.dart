@@ -33,7 +33,7 @@ class _NotfDescState extends State<NotfDesc> {
                 //   fit: BoxFit.fill,
                 //   // height: MediaQuery.of(context).size.height * 0.5,
                 // ),
-                child:sortedarray[widget.index].value['url']==null ?
+                child:sortedarray[widget.index].value['url']==null ||sortedarray[widget.index].value['url'] == ''?
                 Container():
                  CachedNetworkImage(
                   fit: BoxFit.fitWidth,

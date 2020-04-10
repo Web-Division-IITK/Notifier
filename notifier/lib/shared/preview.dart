@@ -10,8 +10,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:notifier/services/function.dart';
-import 'package:sliding_up_panel/sliding_up_panel.dart';
-import 'package:notifier/screens/posts/notification/notification.dart';
+// import 'package:sliding_up_panel/sliding_up_panel.dart';
+// import 'package:notifier/screens/posts/notification/notification.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -440,10 +440,10 @@ launchMail(String mailId) async{
   }
 }
 
-_launchUrl(url) async {
-  if (await canLaunch(url)) {
-    await launch(url);
-  } else {
-    throw 'Could not launch $url';
-  }
-}
+// _launchUrl(url) async {
+//   if (await canLaunch(url)) {
+//     await launch(url);
+//   } else {
+//     throw 'Could not launch $url';
+//   }
+// }

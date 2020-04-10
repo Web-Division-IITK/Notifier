@@ -223,6 +223,9 @@ class _UpdateNState extends State<UpdateN> {
      _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(widget._update.value['council']));
     super.initState();
     buildsubs();
+    
+    _council = widget._update.value['council'];
+    _subs = widget._update.value['sub'][0];
     // _tagController.addListener((){
       _tagController.text = converToString(widget._update.value['tags']);
       // _tagController.value = _tagController.value.copyWith(
@@ -247,7 +250,6 @@ class _UpdateNState extends State<UpdateN> {
     //   _firstSelected = false;
     // }
     _url = widget._update.value['url'];
-    
     tags = widget._update.value['tags'];
     return Scaffold(
         appBar: new AppBar(
@@ -556,7 +558,7 @@ class _UpdateNState extends State<UpdateN> {
                         onChanged: (newValue) => _onSelectedCouncil(convertFromCouncilName(newValue)),
                         
                         hint: Text('Choose Council'),
-                        value: _council = widget._update.value['council'],
+                        value: _council ,
                         validator: (value) => value == null || value.isEmpty
                             ? 'Council Field can\'t be empty'
                             : null,
@@ -575,7 +577,7 @@ class _UpdateNState extends State<UpdateN> {
                     onChanged: (newValue) => _onSelectedEntity(newValue),
                     hint: Text(
                               'Choose Club'),
-                    value: _subs = widget._update.value['sub'][0],
+                    value: _subs ,
                     validator: (value) =>
                      value ==null || value.isEmpty ? 'Club Field can\'t be empty' : null,
                     onSaved: (value)=>_subs = value,
@@ -604,8 +606,8 @@ class _UpdateNState extends State<UpdateN> {
                               //   color: Colors.grey,
                               // )
                             ),
-                            validator: (value) =>
-                                value.isEmpty ? 'Tags can\'t be empty' : null,
+                            // validator: (value) =>
+                            //     value.isEmpty ? 'Tags can\'t be empty' : null,
                             onSaved: (value) {
                               _tag = value;
                             },
@@ -897,7 +899,7 @@ Future<Res> upPostForNotifs(
   });
   print(value);
   String json = '$value';
-  String url = 'https://us-central1-notifier-snt.cloudfunctions.net/editPost';
+  String url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost';
   try {
     Response response = await post(url, headers: headers, body: json);
     int statusCode = response.statusCode;

@@ -19,18 +19,17 @@ class _PrefsHomeState extends State<PrefsHome> {
   bool load;
   @override
   void initState() { 
-    super.initState();
-    setState(() {
+    //  setState(() {
       load = true;
-    });
+    // });
     readContent('users').then((var value){
       if(value!=null){
         var councilData = value["council"];
-        // councilData.forEach((key){
-        //   _prefs += (councilData[key]["entity"].cast<String>() + councilData[key]["misc"].cast<String>());
-        // });
-        _prefs = value['prefs'];
-        print(_prefs);
+        councilData.keys.forEach((key){
+          _prefs += (councilData[key]["entity"].cast<String>() + councilData[key]["misc"].cast<String>());
+        });
+        // _prefs = value['prefs'];
+        // print(_prefs);
         if(_prefs !=null && _prefs.length!=0){
           sortArraywithPrefs();
         }
@@ -42,6 +41,8 @@ class _PrefsHomeState extends State<PrefsHome> {
         }
       }
     });
+    super.initState();
+   
   }
 sortArraywithPrefs(){
   sortedarray.forEach((f){
@@ -172,8 +173,10 @@ sortArraywithPrefs(){
     return load ? Center(child: CircularProgressIndicator(),):
     prefsHome!=null && !prefsHome ?  Center(child:Text('You don,t have any preferences') )
      : Container(
+
         padding: EdgeInsets.only(top: 10.0),
         child: ListView(
+          // shrinkWrap: true,
           physics: AlwaysScrollableScrollPhysics(),
           children: arrayofTime.toList(),
         ),
