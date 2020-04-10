@@ -21,17 +21,9 @@ class MakeCoordi extends StatefulWidget {
 class _MakeCoordiState extends State<MakeCoordi> {
   String _selectedLocation;
   String _selectedId;
-  String _selcouncil;
   final _formKey = GlobalKey<FormState>();
   String _id = "";
-  Map<String,String> selectedOptions = {
-    "snt": null,
-    "mnc":null,
-    "gnc":null,
-    "anc":null,
-    "ss":null
-
-  };
+  List<String> selectedOptions = [];
   // TextFieldController
   bool validateAndSave() {
     final form = _formKey.currentState;
@@ -296,6 +288,8 @@ class _MakeCoordiState extends State<MakeCoordi> {
                       )
                     ],
                   ),
+<<<<<<< Updated upstream
+=======
                   onPressed: () {
                     // if (validateAndSave()) {
                     //   // print(_selectedEntity);
@@ -337,6 +331,7 @@ class _MakeCoordiState extends State<MakeCoordi> {
                       });
                     }
                   },
+>>>>>>> Stashed changes
                 ),
               // ),
             ),
