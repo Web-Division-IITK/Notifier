@@ -26,6 +26,7 @@ class _MessageHandlerNotfState extends State<MessageHandlerNotf> {
   List<TableRow> tableRows = List();
   ScrollController _controller;
   bool newNotf = false;
+  List<int> indices =[];
 
   // bool load = true;
   // void loadEVERY() async {
@@ -114,7 +115,11 @@ class _MessageHandlerNotfState extends State<MessageHandlerNotf> {
   //   );
   // }
   Iterable<Widget> get arrayofTime sync*{
+    // indices.add(sortedarray.indexOf(sortedarray.iterator.current));
     for (var i in sortedarray) {
+      if(!indices.contains(sortedarray.indexOf(i))){
+        indices.add(sortedarray.indexOf(i));
+      }
       DateTime postTime = DateTime.parse(i.value['timeStamp']);
       var time;var day;
       // var dayTime = DateFormat('d mm yyyy').format;
@@ -278,7 +283,7 @@ class _MessageHandlerNotfState extends State<MessageHandlerNotf> {
         onTap: () {
           return Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
-            return NotfDesc(index);
+            return NotfDesc(index,indices,time);
           }));
         },
         child: Column(
@@ -378,7 +383,7 @@ class _MessageHandlerNotfState extends State<MessageHandlerNotf> {
         Navigator.of(context)
             .push(MaterialPageRoute(builder: (BuildContext context) {
           // return Description(index);
-          return NotfDesc(index);
+          return NotfDesc(index,indices,time);
         }));
       },
       child: Card(

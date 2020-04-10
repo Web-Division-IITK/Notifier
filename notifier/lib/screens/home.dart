@@ -241,7 +241,7 @@ class _HomePageState extends State<HomePage> {
          showNotification(message['data']);
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-        // loadSnt();
+        loadSnt();
           // newNotf = true;
           bodyMsg = message['notification']['body'];
           data = message['data']['message'];

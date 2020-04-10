@@ -246,9 +246,7 @@ Future<bool> loadPostsUsers(var _posts) async{
 Future<bool> getDocByID(String uid) async {
   // var v;
   try{
-    return await databaseReference
-      .collection('snt')
-      .document(uid).get()
+    return await databaseReference.collection('snt').document(uid).get()
       .then((DocumentSnapshot snapshot) {
         docById.update(snapshot.documentID, (v){
           var data = snapshot.data;
@@ -262,7 +260,7 @@ Future<bool> getDocByID(String uid) async {
               //   .format(DateTime.parse(data['timeStamp'])).toIso8601String();
               return data;
         });
-    print(docById);
+    // print(docById);
     return true;
   });
   }

@@ -1,11 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:notifier/screens/posts/notification/notification.dart';
 import 'package:notifier/screens/posts/update/updateposts.dart';
-// import 'package:notifier/screens/posts/updateposts.dart';
-import 'package:notifier/screens/preferences.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:notifier/services/function.dart';
 abstract class BaseAuth {

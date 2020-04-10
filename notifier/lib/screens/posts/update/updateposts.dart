@@ -36,60 +36,71 @@ class _UpDatePostsState extends State<UpDatePosts> {
 
   makeUpdatePost() async {
     return await readPeople().then((var v) {
-      print(v);
+      // print(v);
       if (v != null && v['posts'] != null && v['posts'].length != 0) {
         loadPostsUsers(v['posts']).then((bool status) {
           print(status.toString() + 'stauts line39 upadate.dart');
           // print(docById.keys.length != 0);
-          if (docById != null && docById.keys.length!=0 ) {
-            setState(() {
+          if (status) {
+            if (docById != null && docById.keys.length!=0 ) {
               var i = 0;
-              docById.keys.forEach((key) {
-                
-                if (docById[key]['exists']!=null && docById[key]['exists']) {
-                  if(update==null){
-                    update = [];
+                docById.keys.forEach((key) {
+                  
+                  if (docById[key]['exists']!=null && docById[key]['exists']) {
+                    if(update==null){
+                      setState(() {
+                        update = [];
+                      });
+                    }
+                    // _myListKey.currentState.insertItem(0);
+                    update.insert(0, UpdatePostsFormat(uid: key, value: docById[key]));
+                        i++;
+                  } else if (update!=null && update.contains(
+                      UpdatePostsFormat(uid: key, value: docById[key]))) {
+                    update.remove(UpdatePostsFormat(uid: key, value: docById[key]));
                   }
-                  // _myListKey.currentState.insertItem(0);
-                  update.insert(0, UpdatePostsFormat(uid: key, value: docById[key]));
-                      i++;
-                } else if (update!=null && update.contains(
-                    UpdatePostsFormat(uid: key, value: docById[key]))) {
-                  update
-                      .remove(UpdatePostsFormat(uid: key, value: docById[key]));
-                }
-                // print(update[i]);
-                // i++;
-              });
-               if (docById != null &&
-                update != null &&
-                docById.length == v['posts'].length) {
-              setState(() {
-                writeContent('posts', json.encode(docById)).then((var v) {
-                  if (v) {
-                    print('writing posts done line87 in updatepost.dart');
-                  } else {
-                    print('writing posts failed line87 in updatepost.dart');
+                  // print(update[i]);
+                  // i++;
+                });
+                if (docById != null &&
+                  update != null &&
+                  docById.length == v['posts'].length) {
+                setState(() {
+                  writeContent('posts', json.encode(docById)).then((var v) {
+                    if (v) {
+                      print('writing posts done line87 in updatepost.dart');
+                    } else {
+                      print('writing posts failed line87 in updatepost.dart');
+                    }
+                  });
+                  if(i!=0){
+                    setState(() {
+                        _post = docById;
+                    _load = false;
+                    });
+                  }
+                  else if(i == 0){
+                    setState(() {
+                      update = [];
+                      _post = null;
+                      _load = false;
+                    });
                   }
                 });
-               if(i!=0){
-                  _post = docById;
+              }
+              // });
+            
+            }else{
+              setState(() {
+                update =[];
+                _post = null;
                 _load = false;
-               }
-               else if(i == 0){
-                 update = [];
-                 _post = null;
-                 _load = false;
-               }
               });
             }
-            });
-           
-          }else{
+          } else {
             setState(() {
-              update =[];
-            _post = null;
-            _load = false;
+              update = null;
+              _load = false;
             });
           }
         });
@@ -147,9 +158,9 @@ class _UpDatePostsState extends State<UpDatePosts> {
           } else {
             setState(() {
               update = [];
-                _post = null;
-                _load = false;
-              });
+              _post = null;
+              _load = false;
+            });
           }
         });
       } else {

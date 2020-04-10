@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +10,8 @@ import 'package:intl/intl.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/screens/home.dart';
-import 'package:notifier/services/databse.dart';
 import 'package:notifier/shared/preview.dart';
+import 'package:notifier/widget/add_image.dart';
 import 'package:notifier/widget/adding_tags.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:path/path.dart' as Path;
@@ -44,9 +42,9 @@ List<String> tagsForChips =[];
   String _author;
   String _message;
   File _image = null;
-  bool _firstSelected = false;
+  // bool _firstSelected = false;
   bool _loadingWidget = false;
-  bool _loadingSubmit = false;
+  // bool _loadingSubmit = false;
   Repository repo = Repository(allCouncilData);
   List<String> _councilList = [];
   List<String> _entityList = [];
@@ -60,7 +58,7 @@ List<String> tagsForChips =[];
     return false;
   }
 
-  var _errorMessage;
+  // var _errorMessage;
 
   Future chooseFile() async {
     await ImagePicker.pickImage(source: ImageSource.gallery).then((image) {
@@ -150,12 +148,6 @@ List<String> tagsForChips =[];
     return Scaffold(
         appBar: new AppBar(
           title: new Text('Create Posts'),
-          // actions: <Widget>[
-          //   new FlatButton(
-          //       child: new Text('Logout',
-          //           style: new TextStyle(fontSize: 17.0, color: Colors.white)),
-          //       onPressed: signOut)
-          // ],
         ),
         body: Form(
           key: _formKey,
@@ -331,179 +323,186 @@ List<String> tagsForChips =[];
                             return showCupertinoDialog(
                                 context: context,
                                 builder: (context) {
-                                  return StatefulBuilder(
+                                  print(_url);
+                                  print(_image);
+                                  return /*StatefulBuilder(
                                     builder: (context, setState) {
-                                      return WillPopScope(
-                                        onWillPop: () async {
-                                          return Navigator.of(context).pop(_loadingWidget);
-                                        },
-                                        child: AlertDialog(
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: <Widget>[
-                                              Stack(
-                                                alignment:
-                                                    AlignmentDirectional.center,
-                                                children: <Widget>[
-                                                  Column(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: <Widget>[
-                                                      SizedBox(
-                                                        height: 20.0,
-                                                      ),
-                                                      _image != null
-                                                          ? Text(
-                                                              'Selected Image',
-                                                              style: TextStyle(
-                                                                  fontSize:
-                                                                      20.0))
-                                                          : Container(),
-                                                      _image != null
-                                                          ? SizedBox(
-                                                              height: 10.0,
-                                                            )
-                                                          : SizedBox(),
-                                                      _image != null
-                                                          ? Container(
-                                                              padding: EdgeInsets.only(bottom:10.0),
-                                                              height: 250.0,
-                                                              child: Image.file(_image),
-                                                            )
-                                                          : Container(),
-                                                      _url == null
-                                                          ? RaisedButton(
-                                                              shape: new RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      new BorderRadius
-                                                                              .circular(
-                                                                          30.0)),
-                                                              child: Text(
-                                                                _url == null &&
-                                                                        _image ==
-                                                                            null
-                                                                    ? 'Choose Image'
-                                                                    : 'Choose another',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                              ),
-                                                              onPressed:
-                                                                  () async {
-                                                                await ImagePicker.pickImage(
-                                                                        source: ImageSource
-                                                                            .gallery)
-                                                                    .then(
-                                                                        (image) {
-                                                                  setState(() {
-                                                                    _image =image;
-                                                                  });
-                                                                });
-                                                              },
-                                                              color:
-                                                                  Colors.cyan,
-                                                            )
-                                                          : Container(),
-                                                      _image != null &&
-                                                              _url == null
-                                                          ? RaisedButton(
-                                                              shape: new RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      new BorderRadius
-                                                                              .circular(
-                                                                          30.0)),
-                                                              child: Text(
-                                                                'Upload Image',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .white),
-                                                              ),
-                                                              onPressed: () {
-                                                                setState(() {
-                                                                  _loadingWidget =
-                                                                      true;
-                                                                });
-                                                                uploadFile().then((bool status) {
-                                                                  if (status) {
-                                                                    Fluttertoast.showToast(
-                                                                            msg:
-                                                                                'Upload Successful!!');
-                                                                    Navigator.of(context).pop();
-                                                                    setState(() {
-                                                                      _loadingWidget =false;
-                                                                    });
-                                                                  }
-                                                                });
-                                                              },
-                                                              color:Colors.cyan,
-                                                            )
-                                                          : Container(),
-                                                      _image != null
-                                                          ? RaisedButton(
-                                                              color:
-                                                                  Colors.white,
-                                                              shape: new RoundedRectangleBorder(
-                                                                  borderRadius:
-                                                                      new BorderRadius
-                                                                              .circular(
-                                                                          30.0)),
-                                                              child: Text(
-                                                                'Clear Selection',
-                                                                style: TextStyle(
-                                                                    color: Colors
-                                                                        .black),
-                                                              ),
-                                                              onPressed: () {
-                                                                print(_image
-                                                                    .path);
-                                                                if (_url ==
-                                                                    null) {
-                                                                  setState(() {
-                                                                    _image =
-                                                                        null;
-                                                                    _url = null;
-                                                                    _imageController.text = null;
-                                                                  });
-                                                                } else {
-                                                                  StorageReference
-                                                                      storageReference =
-                                                                      FirebaseStorage.instance.ref().child(
-                                                                              'upload_image/${Path.basename(_image.path)}');
-                                                                  storageReference
-                                                                      .delete()
-                                                                      .then(
-                                                                          (_) {
-                                                                    Fluttertoast
-                                                                        .showToast(
-                                                                            msg:
-                                                                                'Removed Successfully');
-                                                                    setState(
-                                                                        () {
-                                                                      _image =null;
-                                                                      _url =null;
-                                                                      _imageController.text = null;
-                                                                    });
-                                                                  });
-                                                                }
-                                                              })
-                                                          : Container(),
-                                                    ],
-                                                  ),
-                                                  _loadingWidget
-                                                      ? Center(
-                                                          child:Container(
-                                                            child: CircularProgressIndicator()),
-                                                        )
-                                                      : Container(),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
+                                      return*/ AddImage(_image,
+                                        _imageController,
+                                        // uploadFile: ,
+                                      _url,addingImage
                                       );
-                                    },
-                                  );
+                                      // return WillPopScope(
+                                      //   onWillPop: () async {
+                                      //     return Navigator.of(context).pop(_loadingWidget);
+                                      //   },
+                                      //   child: AlertDialog(
+                                      //     content: Column(
+                                      //       mainAxisSize: MainAxisSize.min,
+                                      //       mainAxisAlignment: MainAxisAlignment.end,
+                                      //       children: <Widget>[
+                                      //         Stack(
+                                      //           alignment:
+                                      //               AlignmentDirectional.center,
+                                      //           children: <Widget>[
+                                      //             Column(
+                                      //               mainAxisSize:
+                                      //                   MainAxisSize.min,
+                                      //               children: <Widget>[
+                                      //                 SizedBox(
+                                      //                   height: 20.0,
+                                      //                 ),
+                                      //                 _image != null
+                                      //                     ? Text(
+                                      //                         'Selected Image',
+                                      //                         style: TextStyle(
+                                      //                             fontSize:
+                                      //                                 20.0))
+                                      //                     : Container(),
+                                      //                 _image != null
+                                      //                     ? SizedBox(
+                                      //                         height: 10.0,
+                                      //                       )
+                                      //                     : SizedBox(),
+                                      //                 _image != null
+                                      //                     ? Container(
+                                      //                         padding: EdgeInsets.only(bottom:10.0),
+                                      //                         height: 250.0,
+                                      //                         child: Image.file(_image),
+                                      //                       )
+                                      //                     : Container(),
+                                      //                 _url == null
+                                      //                     ? RaisedButton(
+                                      //                         shape: new RoundedRectangleBorder(
+                                      //                             borderRadius:
+                                      //                                 new BorderRadius
+                                      //                                         .circular(
+                                      //                                     30.0)),
+                                      //                         child: Text(
+                                      //                           _url == null &&
+                                      //                                   _image ==
+                                      //                                       null
+                                      //                               ? 'Choose Image'
+                                      //                               : 'Choose another',
+                                      //                           style: TextStyle(
+                                      //                               color: Colors
+                                      //                                   .white),
+                                      //                         ),
+                                      //                         onPressed:
+                                      //                             () async {
+                                      //                           await ImagePicker.pickImage(
+                                      //                                   source: ImageSource
+                                      //                                       .gallery)
+                                      //                               .then(
+                                      //                                   (image) {
+                                      //                             setState(() {
+                                      //                               _image =image;
+                                      //                             });
+                                      //                           });
+                                      //                         },
+                                      //                         color:
+                                      //                             Colors.cyan,
+                                      //                       )
+                                      //                     : Container(),
+                                      //                 _image != null &&
+                                      //                         _url == null
+                                      //                     ? RaisedButton(
+                                      //                         shape: new RoundedRectangleBorder(
+                                      //                             borderRadius:
+                                      //                                 new BorderRadius
+                                      //                                         .circular(
+                                      //                                     30.0)),
+                                      //                         child: Text(
+                                      //                           'Upload Image',
+                                      //                           style: TextStyle(
+                                      //                               color: Colors
+                                      //                                   .white),
+                                      //                         ),
+                                      //                         onPressed: () {
+                                      //                           setState(() {
+                                      //                             _loadingWidget =
+                                      //                                 true;
+                                      //                           });
+                                      //                           uploadFile().then((bool status) {
+                                      //                             if (status) {
+                                      //                               Fluttertoast.showToast(
+                                      //                                       msg:
+                                      //                                           'Upload Successful!!');
+                                      //                               Navigator.of(context).pop();
+                                      //                               setState(() {
+                                      //                                 _loadingWidget =false;
+                                      //                               });
+                                      //                             }
+                                      //                           });
+                                      //                         },
+                                      //                         color:Colors.cyan,
+                                      //                       )
+                                      //                     : Container(),
+                                      //                 _image != null
+                                      //                     ? RaisedButton(
+                                      //                         color:
+                                      //                             Colors.white,
+                                      //                         shape: new RoundedRectangleBorder(
+                                      //                             borderRadius:
+                                      //                                 new BorderRadius
+                                      //                                         .circular(
+                                      //                                     30.0)),
+                                      //                         child: Text(
+                                      //                           'Clear Selection',
+                                      //                           style: TextStyle(
+                                      //                               color: Colors
+                                      //                                   .black),
+                                      //                         ),
+                                      //                         onPressed: () {
+                                      //                           print(_image
+                                      //                               .path);
+                                      //                           if (_url ==
+                                      //                               null) {
+                                      //                             setState(() {
+                                      //                               _image =
+                                      //                                   null;
+                                      //                               _url = null;
+                                      //                               _imageController.text = null;
+                                      //                             });
+                                      //                           } else {
+                                      //                             StorageReference
+                                      //                                 storageReference =
+                                      //                                 FirebaseStorage.instance.ref().child(
+                                      //                                         'upload_image/${Path.basename(_image.path)}');
+                                      //                             storageReference
+                                      //                                 .delete()
+                                      //                                 .then(
+                                      //                                     (_) {
+                                      //                               Fluttertoast
+                                      //                                   .showToast(
+                                      //                                       msg:
+                                      //                                           'Removed Successfully');
+                                      //                               setState(
+                                      //                                   () {
+                                      //                                 _image =null;
+                                      //                                 _url =null;
+                                      //                                 _imageController.text = null;
+                                      //                               });
+                                      //                             });
+                                      //                           }
+                                      //                         })
+                                      //                     : Container(),
+                                      //               ],
+                                      //             ),
+                                      //             _loadingWidget
+                                      //                 ? Center(
+                                      //                     child:Container(
+                                      //                       child: CircularProgressIndicator()),
+                                      //                   )
+                                      //                 : Container(),
+                                      //           ],
+                                      //         ),
+                                      //       ],
+                                      //     ),
+                                      //   ),
+                                      // );
+                                  //   },
+                                  // );
                                 });
                             // return UploadIMage(chooseFile, uploadFile);
                             // child:
@@ -608,6 +607,13 @@ List<String> tagsForChips =[];
           ),
         ));
   }
+  void addingImage(File image,String url){
+    setState(() {
+      _image = image;
+      _url = url;
+      _imageController.text = url;
+    });
+  }
    void _onSelectedCouncil(String value) {
     if( _council!=value){
       setState(() {
@@ -628,145 +634,165 @@ List<String> tagsForChips =[];
       _subs = value;
     });
   }
+  // void addingvalue(List<dynamic>_tags,String tag){
+  //   setState(() {
+  //     _tag ??= '';
+  //     _tag != null || _tag != ''
+  //     ? _tag = tag??''
+  //     : _tag = '';
+  //     for (var i in _tags) {
+  //       if(i.toString()!=null){
+  //         _tag += i.toString() + '; ';
+  //       }
+  //     }
+  //     _tagController.text = _tag;
+  //   });
+  // }
   addingTag() {
+    List<dynamic> newTag = [];
+    setState(() {
+       newTag = tags;
+    });
     return showModalBottomSheet(
         context: (context),
-        builder: (BuildContext context) {
-          return AddingTags(_tag, tags, _tagController);
-          // final _formKey = GlobalKey<FormState>();
-          // String addTag;
+        builder: (context) {
+          // print(_tag.toString()+ ' \'\' tags value');
+          // return AddingTags(this._tag, this.tags, _tagController,addingvalue);
+          final _formKey = GlobalKey<FormState>();
+          String addTag;
           
-          // return CupertinoActionSheet(
-          //   actions: <Widget>[
-          //     Container(
-          //       margin: EdgeInsets.symmetric(horizontal: 100.0),
-          //       child: RaisedButton(
-          //          shape: RoundedRectangleBorder(
-          //           borderRadius: BorderRadius.circular(30.0),
-          //         ),
-          //           child: Text('Add Tags',
-          //           style: TextStyle(
-          //             color: Colors.white
-          //           )),
-          //           onPressed: () {
-          //             showDialog(context: context, builder: (BuildContext context){
-          //               return AlertDialog(
-          //                 title: Text('Add tag'),
-          //                 content: Form(
-          //                   key: _formKey,
-          //                     child:  Container(
+          return CupertinoActionSheet(
+            actions: <Widget>[
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 100.0),
+                child: RaisedButton(
+                   shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                    child: Text('Add Tags',
+                    style: TextStyle(
+                      color: Colors.white
+                    )),
+                    onPressed: () {
+                      showDialog(context: context, builder: (BuildContext context){
+                        return AlertDialog(
+                          title: Text('Add tag'),
+                          content: Form(
+                            key: _formKey,
+                              child:  Container(
 
-          //       child: Column(
-          //         mainAxisSize: MainAxisSize.min,
-          //         mainAxisAlignment: MainAxisAlignment.end,
-          //         children: <Widget>[
-          //           Padding(
-          //             padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-          //             child: Material(
-          //               color: Colors.transparent,
-          //                 child: TextFormField(
-          //                   maxLines: 1,
-          //                   keyboardType: TextInputType.text,
-          //                   autofocus: false,
-          //                   decoration: new InputDecoration(
-          //                     labelText: 'Tag',
-          //                   ),
-          //                   validator: (value) => value.isEmpty
-          //                     ?'Tags can\'t be empty'
-          //                       : null,
-          //                   onSaved: (value) {
-          //                     addTag = value;
-          //                     // _tag = value.toString() + ' ;';
-          //                     // tags.add(value);
-          //                   }
-          //                 ),
-          //             ),
-          //           ),
-          //           Container(
-          //             padding: EdgeInsets.only(bottom: 0.0, top: 25.0,left:0.0),
-          //             // height: 100.0,
-          //             child: Row(
-          //                   mainAxisAlignment: MainAxisAlignment.end,
-          //                   children: <Widget>[
-          //                     FlatButton(
-          //                         shape: new RoundedRectangleBorder(
-          //                             borderRadius:
-          //                                 new BorderRadius.circular(30.0)),
-          //                         // color: Colors.blue,
-          //                         onPressed: () {
-          //                           Navigator.of(context).pop();
-          //                         },
-          //                         child: Text('Dismiss')),
-          //                     Padding(
-          //                       padding: const EdgeInsets.only(left: 5.0),
-          //                       child: RaisedButton(
-          //                           shape: new RoundedRectangleBorder(
-          //                               borderRadius:
-          //                                   new BorderRadius.circular(30.0)),
-          //                           // color: Colors.blue,
-          //                           onPressed: () {
-          //                             // Fluttertoast.showToast(msg: 'Creating post');
-          //                             // Fluttertoast.cancel();
-          //                             // print(createTagsToList(tags[0]));
-          //                             // tags = _tag.split(';');
-          //                             if (_formKey.currentState.validate()) {
-          //                               _formKey.currentState.save();
-          //                               setState(() {
-          //                                 // tagForChip!=null?tagForChip += addTag + ' ;' : tagForChip = addTag + ' ;';
-          //                                 tagsForChips.add(addTag);
-          //                               });
-          //                               Navigator.of(context).pop();
-          //                               // confirmPage();
-          //                             }
-          //                           },
-          //                           child: Text(
-          //                             'Add Tag',
-          //                             style: TextStyle(color: Colors.white),
-          //                           )),
-          //                     ),
-          //                   ]),
-          //           )
-          //           // )
-          //         ],
-          //         // )
-          //       ),
-          //     ), 
-          //                 ),
-          //               );
-          //             });
-          //           }),
-          //     ),
-          //   ],
-          //   message: CreateChips(this.tagForChip,this.tagsForChips),
-          //   cancelButton: Column(
-          //     children: <Widget>[
-          //       RaisedButton(
-          //         shape: RoundedRectangleBorder(
-          //           borderRadius: BorderRadius.circular(30.0),
-          //         ),
-          //         onPressed: () {
-          //           setState(() {
-                      
-          //             print(tagsForChips);
-          //             _tag = '';
-          //             for (var i in tagsForChips) {
-          //               _tag += i + '; ';
-          //             }
-          //             // _tag = tagForChip;
-          //             tags = tagsForChips;
-          //             _tagController.text = _tag;
-          //             print(_tag + ':tags line807');
-          //           });
-          //           Navigator.of(context).pop();
-          //         },
-          //         child: Text('Done',
-          //         style: TextStyle(
-          //             color: Colors.white
-          //           ),),
-          //       ),
-          //     ],
-          //   ),
-          // );
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+                      child: Material(
+                        color: Colors.transparent,
+                          child: TextFormField(
+                            maxLines: 1,
+                            keyboardType: TextInputType.text,
+                            autofocus: false,
+                            decoration: new InputDecoration(
+                              labelText: 'Tag',
+                            ),
+                            validator: (value) => value.isEmpty
+                              ?'Tags can\'t be empty'
+                                : null,
+                            onSaved: (value) {
+                              addTag = value;
+                              // _tag = value.toString() + ' ;';
+                              // tags.add(value);
+                            }
+                          ),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.only(bottom: 0.0, top: 25.0,left:0.0),
+                      // height: 100.0,
+                      child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              FlatButton(
+                                  shape: new RoundedRectangleBorder(
+                                      borderRadius:
+                                          new BorderRadius.circular(30.0)),
+                                  // color: Colors.blue,
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Dismiss')),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 5.0),
+                                child: RaisedButton(
+                                    shape: new RoundedRectangleBorder(
+                                        borderRadius:
+                                            new BorderRadius.circular(30.0)),
+                                    // color: Colors.blue,
+                                    onPressed: () {
+                                      // Fluttertoast.showToast(msg: 'Creating post');
+                                      // Fluttertoast.cancel();
+                                      // print(createTagsToList(tags[0]));
+                                      // tags = _tag.split(';');
+                                      if (_formKey.currentState.validate()) {
+                                        _formKey.currentState.save();
+                                        setState(() {
+                                          // tagForChip!=null?tagForChip += addTag + ' ;' : tagForChip = addTag + ' ;';
+                                          tagsForChips.add(addTag);
+                                          newTag = tagsForChips;
+                                        });
+                                        Navigator.of(context).pop();
+                                        // confirmPage();
+                                      }
+                                    },
+                                    child: Text(
+                                      'Add Tag',
+                                      style: TextStyle(color: Colors.white),
+                                    )),
+                              ),
+                            ]),
+                    )
+                    // )
+                  ],
+                  // )
+                ),
+              ), 
+                          ),
+                        );
+                      });
+                    }),
+              ),
+            ],
+            message: CreateChips(tagForChip,newTag),
+            cancelButton: Column(
+              children: <Widget>[
+                RaisedButton(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30.0),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      tagsForChips = newTag;
+                      print(tagsForChips);
+                      _tag = '';
+                      for (var i in tagsForChips) {
+                        _tag += i + '; ';
+                      }
+                      // _tag = tagForChip;
+                      tags = tagsForChips;
+                      _tagController.text = _tag;
+                      print(_tag + ':tags line807');
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Done',
+                  style: TextStyle(
+                      color: Colors.white
+                    ),),
+                ),
+              ],
+            ),
+          );
         });
   }
   // confirmPage() {
