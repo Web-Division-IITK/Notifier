@@ -68,18 +68,18 @@ exports.sendToTopicCreate = functions.firestore.document('snt/{id}').onCreate(as
     let sub = data.sub;
     sub.unshift("Science and Technology Council")
     let payload = {
-        notification: {
-            title: data.title,
-            council: data.council,
-            message: data.message,
-            body:data.body,
-            type: "create",
-            id: data.id,
-            // badge: data.id,
-            // priority: "HIGH",
-            sound: "default",
-            clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        },
+        // notification: {
+        //     title: data.title,
+        //     council: data.council,
+        //     message: data.message,
+        //     body:data.body,
+        //     type: "create",
+        //     id: data.id,
+        //     // badge: data.id,
+        //     // priority: "HIGH",
+        //     sound: "default",
+        //     clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+        // },
         
         // priority: "Priority.High",
         data:{
@@ -107,19 +107,23 @@ exports.sendToTopicUpdate = functions.firestore.document('snt/{id}').onUpdate(as
     let data = change.after.data();
     let sub = data.sub;
     sub.unshift("Science and Technology Council")
+    let tag ='';
+    for(var i in data.tags){
+        tag += i.toString +';';
+    }
     let payload = {
-        notification: {
-            title: data.title,
-            council: data.council,
-            message: data.message,
-            body:data.body,
-            type: "update",
-            id: data.id,
-            // badge: data.id,
-            // priority: "HIGH",
-            sound: "default",
-            clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        },
+        // notification: {
+        //     title: data.title,
+        //     council: data.council,
+        //     message: data.message,
+        //     body:data.body,
+        //     type: "update",
+        //     id: data.id,
+        //     // badge: data.id,
+        //     // priority: "HIGH",
+        //     sound: "default",
+        //     clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+        // },
         
         // priority: "Priority.High",
         data:{
@@ -129,17 +133,19 @@ exports.sendToTopicUpdate = functions.firestore.document('snt/{id}').onUpdate(as
             body:data.body,
             type: "update",
             id: data.id,
-            // status: "done",
-            // priority:"high",
+            club: data.sub[0],
+            tags:tag,
+            // url:data.url,
+            author:data.author,
             click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
         
     };
     let options = {
-        mutableContent : true,
+        // mutableContent : true,
         contentAvailable: true,
         priority:"high",
-        collapseKey: data.message,
+        // collapseKey: data.message,
     };
     await sub.forEach(async (element) => {await fcm.sendToTopic(element.replace(/ /g, '_'), payload,options)});
 })
@@ -149,18 +155,18 @@ exports.sendToTopicDelete = functions.firestore.document('snt/{id}').onDelete(as
     let sub = data.sub;
     sub.unshift("Science and Technology Council")
     let payload = {
-        notification: {
-            title: data.title,
-            council: data.council,
-            message: data.message,
-            body:data.body,
-            type: "delete",
-            id: data.id,
-            // badge: data.id,
-            // priority: "HIGH",
-            sound: "default",
-            clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        },
+        // notification: {
+        //     title: data.title,
+        //     council: data.council,
+        //     message: data.message,
+        //     body:data.body,
+        //     type: "delete",
+        //     id: data.id,
+        //     // badge: data.id,
+        //     // priority: "HIGH",
+        //     sound: "default",
+        //     clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+        // },
         
         // priority: "Priority.High",
         data:{
