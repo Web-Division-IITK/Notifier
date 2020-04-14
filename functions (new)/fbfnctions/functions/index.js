@@ -66,7 +66,11 @@ exports.deletePost = functions.https.onRequest(async function (req, res) {
 exports.sendToTopicCreate = functions.firestore.document('snt/{id}').onCreate(async snapshot => {
     let data = snapshot.data();
     let sub = data.sub;
-    sub.unshift("Science and Technology Council")
+    sub.unshift("Science and Technology Council");
+    // let tag ='';
+    // for(var i in data.tags){
+    //     tag += i.toString +';';
+    // };
     let payload = {
         // notification: {
         //     title: data.title,
@@ -83,22 +87,30 @@ exports.sendToTopicCreate = functions.firestore.document('snt/{id}').onCreate(as
         
         // priority: "Priority.High",
         data:{
+            author: data.author,
+             url: data.url !=null? data.url : 'null',
+            owner: data.owner,
+            message: data.message,
+             
+            // exists:true,
             title: data.title,
             council: data.council,
             message: data.message,
             body:data.body,
             type: "create",
             id: data.id,
+            club: data.sub[0],
+            // tags:tag,
             // status: "done",
             // priority:"high",
             click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
     };
     let options = {
-        mutableContent : true,
+        // mutableContent : true,
         contentAvailable: true,
         priority:"high",
-        collapseKey: data.message,
+        // collapseKey: data.message,
     };
     await sub.forEach(async (element) => {await fcm.sendToTopic(element.replace(/ /g, '_'), payload,options)});
 })
@@ -107,10 +119,10 @@ exports.sendToTopicUpdate = functions.firestore.document('snt/{id}').onUpdate(as
     let data = change.after.data();
     let sub = data.sub;
     sub.unshift("Science and Technology Council")
-    let tag ='';
-    for(var i in data.tags){
-        tag += i.toString +';';
-    }
+    // let tag ='';
+    // for(var i in data.tags){
+    //     tag += i.toString +';';
+    // };
     let payload = {
         // notification: {
         //     title: data.title,
@@ -127,6 +139,12 @@ exports.sendToTopicUpdate = functions.firestore.document('snt/{id}').onUpdate(as
         
         // priority: "Priority.High",
         data:{
+            author: data.author,
+             url: data.url !=null? data.url : 'null',
+            owner: data.owner,
+            message: data.message,
+             
+            // exists:true,
             title: data.title,
             council: data.council,
             message: data.message,
@@ -134,9 +152,9 @@ exports.sendToTopicUpdate = functions.firestore.document('snt/{id}').onUpdate(as
             type: "update",
             id: data.id,
             club: data.sub[0],
-            tags:tag,
+            // tags:tag,
             // url:data.url,
-            author:data.author,
+            // author:data.author,
             click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
         
@@ -153,7 +171,11 @@ exports.sendToTopicUpdate = functions.firestore.document('snt/{id}').onUpdate(as
 exports.sendToTopicDelete = functions.firestore.document('snt/{id}').onDelete(async snapshot => {
     let data = snapshot.data();
     let sub = data.sub;
-    sub.unshift("Science and Technology Council")
+    sub.unshift("Science and Technology Council");
+    // let tag ='';
+    // for(var i in data.tags){
+    //     tag += i.toString +';';
+    // };
     let payload = {
         // notification: {
         //     title: data.title,
@@ -170,22 +192,30 @@ exports.sendToTopicDelete = functions.firestore.document('snt/{id}').onDelete(as
         
         // priority: "Priority.High",
         data:{
+            author: data.author,
+             url: data.url !=null? data.url : 'null',
+            owner: data.owner,
+            message: data.message,
+             
+            // exists:true,
             title: data.title,
             council: data.council,
             message: data.message,
             body:data.body,
             type: "delete",
             id: data.id,
+            club: data.sub[0],
+            // tags:tag,
             // status: "done",
             // priority:"high",
             click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
     };
     let options = {
-        mutableContent : true,
+        // mutableContent : true,
         contentAvailable: true,
         priority:"high",
-        collapseKey: data.message,
+        // collapseKey: data.message,
     };
     await sub.forEach(async (element) => {await fcm.sendToTopic(element.replace(/ /g, '_'), payload,options)});
 })
@@ -413,44 +443,3 @@ exports.updateUser = functions.https.onRequest(async function (req, res) {
 //         res.send(arr);
 //     })
 // })
-exports.allpost = functions.https.onCall(async (data)=>{
-    let arr = [];
-    const collections = await db.collection('posts').doc('council').listCollections();
-    const document = await collections.map(col => col.listDocuments());
-    const datax = document.map(datas => datas);
-    return {
-        datax
-    };
-        // res.send(arr);
-        // await val.forEach(async function(f){
-        //     await f.get().then(async function(value){
-        //         // arr.push(value);
-        //         arr += [value];
-        //         res.send(value);
-        //     })
-        // })
-       
-    // });
-    
-})
-exports.allposts = functions.https.onRequest(async function(req,res){
-    // let data 
-    let array= [];
-    await db.collection('posts').doc('council').listCollections().then(async val => {
-       await val.forEach(async (collection) => {
-            await collection.listDocuments().then(val=>{
-                // res.send
-                val.forEach((f) => {
-                    // res.send(f);
-                    // array.push()
-                    array.push(f.id);
-                    // array.concat([f.id]);
-                    // console.info(f);
-                });
-                
-            });
-        });
-        res.send(array);
-    });
-    
-})
