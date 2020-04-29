@@ -3,47 +3,38 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 const db = admin.firestore();
 const fcm = admin.messaging();
+
 exports.makePost = functions.https.onRequest(async function (req, res) {
     // let FieldValue = require('firebase-admin').firestore.FieldValue
     // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
     // startTime and endTime would be int
     let data = req.body;
     let notfID = Date.now();
-    if (notfID>2000000000) {
-        notfID/10000;
-    } else {
-        notfID/1000
-    }
-    (Date.now() > 2000000000) ? Date.now()/10000: Date.now()/1000;
     let datax = {
         "title": data.title,
-        "tags": (data.tags == null)?'':data.tags,
+        "tags": (data.tags == null) ? '' : data.tags,
         "council": data.council,
         "sub": data.sub,
         "body": data.body,
         "author": data.author,
-        "url": (data.url == null)?'':data.url,
-        "type":"create",
+        "url": (data.url == null) ? '' : data.url,
+        "type": "create",
         "owner": data.owner,
         "message": data.message,
-        "startTime": (data.startTime == null)?'':data.startTime,
-        'endTime':(data.endTime == null)? '':data.endTime,
+        "startTime": (data.startTime == null) ? '' : data.startTime,
+        'endTime': (data.endTime == null) ? '' : data.endTime,
         "notfID": notfID,
         "timeStamp": Date.now(),
     }
     let ref = db.collection('allPosts').doc()
-    // let notfID = Date.now().toPrecision(21);
     datax.id = ref.id;
     await ref.set(datax);
     let coun = data.council.toString();
-
-    await db.collection('posts').doc('council').update({
-        [coun]: admin.firestore.FieldValue.arrayUnion(datax.id),
-    })
+    let x = {};
+    x[coun] = admin.firestore.FieldValue.arrayUnion(datax.id);
+    await db.collection('posts').doc('council').update(x)
     await db.collection('people').doc(data.owner).update({
-        posts:{
-            [coun]:admin.firestore.FieldValue.arrayUnion(datax.id),
-        }
+        posts: x,
     })
     res.send(datax.id);
 })
@@ -54,15 +45,15 @@ exports.editPost = functions.https.onRequest(async function (req, res) {
     let data = req.body;
     let datax = {
         "title": data.title,
-        "tags": (data.tags == null)?'':data.tags,
+        "tags": (data.tags == null) ? '' : data.tags,
         "council": data.council,
         "sub": data.sub,
         "body": data.body,
-        "startTime": (data.startTime == null)?'':data.startTime,
-        'endTime':(data.endTime == null)? '':data.endTime,
-        "type":"update",
+        "startTime": (data.startTime == null) ? '' : data.startTime,
+        'endTime': (data.endTime == null) ? '' : data.endTime,
+        "type": "update",
         "author": data.author,
-        "url": (data.url == null)?'':data.url,
+        "url": (data.url == null) ? '' : data.url,
         "owner": data.owner,
         "message": data.message,
         "timeStamp": Date.now(),
@@ -75,18 +66,11 @@ exports.deletePost = functions.https.onRequest(async function (req, res) {
     // input must have these fields: id, owner, council
     let data = req.body;
     await db.collection('allPosts').doc(data.id).delete();
-    // await db.collection(data.council).doc(data.id).update({
-    //     // timeStamp: admin.firestore.FieldValue.serverTimestamp(),
-    //     // exists: false,
-    // });
-    let ref = await db.collection('posts').doc('council').update({
-        [data.council] : admin.firestore.FieldValue.arrayRemove(data.id)
-    })
-
+    let x={};
+    x[data.council]=admin.firestore.FieldValue.arrayRemove(data.id);
+    await db.collection('posts').doc('council').update(x)
     await db.collection('people').doc(data.owner).update({
-        posts: {
-            [data.council] : admin.firestore.FieldValue.arrayRemove(data.id)
-        }
+        posts: x
     })
     res.send(data.id);
 })
@@ -95,233 +79,99 @@ exports.sendToTopicCreate = functions.firestore.document('allPosts/{id}').onCrea
     let data = snapshot.data();
     let sub = data.sub;
     // sub.unshift("Science and Technology Council");
-    let payload;
-    if({        
-        author :data.author,
-        url: data.url,
-        owner: data.owner,
-        message: data.message,
-        timeStamp: data.timeStamp.toString(),
-        title: data.title,
-        council: data.council,
-        body:data.body,
-        startTime: data.startTime.toString(),
-        endTime:data.endTime.toString(),
-        type: "create",
-        fetchFF : 'false',
-        notfID: data.notfID.toString(),// id of notification in integer
-        id: data.id,
-        sub: data.sub[0],
-        tags:data.tags,
-    }.toString().length >= 3900)
-    {
-        payload= {
-            data:{        
-                owner: data.owner,
-                title: data.title,
-                council: data.council,
-                fetchFF : 'true',
-                message: data.message,
-                type: "create",
-                notfID: data.notfID.toString(),// id of notification in integer
-                id: data.id,
-                sub: data.sub[0],
-            }
+    let payload = {
+        data: {
+            owner: data.owner,
+            title: data.title,
+            council: data.council,
+            fetchFF: 'true',
+            message: data.message,
+            type: "create",
+            notfID: data.notfID.toString(), // id of notification in integer
+            id: data.id,
+            sub: data.sub[0],
         }
     }
-     else{
-         payload = {
-            data:{        
-                author: data.author,
-                url: data.url,
-                owner: data.owner,
-                message: data.message,
-                timeStamp: data.timeStamp.toString(),
-                title: data.title,
-                council: data.council,
-                body:data.body,
-                fetchFF : 'false',
-                startTime: data.startTime.toString(),
-                endTime:data.endTime.toString(),
-                type: "create",
-                notfID: data.notfID.toString(),// id of notification in integer
-                id: data.id,
-                sub: data.sub[0],
-                tags:data.tags,
-            }
-        };
-     } 
- 
-    let options = {
-        // mutableContent : true,
-        contentAvailable: true,
-        priority:"high",
-        // collapseKey: data.message,
-    };
-    await sub.forEach(async (element) => {await fcm.sendToTopic(element.replace(/ /g, '_'), payload,options)});
+    await sub.forEach(async (element) => {
+        await fcm.sendToTopic(element.replace(/ /g, '_'), payload, options)
+    });
 })
 
 exports.sendToTopicUpdate = functions.firestore.document('allPosts/{id}').onUpdate(async (change, context) => {
     let data = change.after.data();
     let sub = data.sub;
     let payload;
-    if({        
-        author :data.author,
-        url: data.url,
-        owner: data.owner,
-        message: data.message,
-        timeStamp: data.timeStamp.toString(),
-        title: data.title,
-        council: data.council,
-        body:data.body,
-        startTime: data.startTime.toString(),
-        endTime:data.endTime.toString(),
-        type: "update",
-        fetchFF : 'false',
-        notfID: data.notfID.toString(),// id of notification in integer
-        id: data.id,
-        sub: data.sub[0],
-        tags:data.tags,
-    }.toString().length >= 3900)
-    {
-        payload= {
-            data:{        
-                owner: data.owner,
-                title: data.title,
-                council: data.council,
-                message: data.message,
-                fetchFF : 'true',
-                type: "update",
-                notfID: data.notfID.toString(),// id of notification in integer
-                id: data.id,
-                sub: data.sub[0],
-            }
+    payload = {
+        data: {
+            owner: data.owner,
+            title: data.title,
+            council: data.council,
+            message: data.message,
+            fetchFF: 'true',
+            type: "update",
+            notfID: data.notfID.toString(), // id of notification in integer
+            id: data.id,
+            sub: data.sub[0],
         }
     }
-     else{
-         payload = {
-            data:{        
-                author: data.author,
-                url: data.url,
-                owner: data.owner,
-                message: data.message,
-                timeStamp: data.timeStamp.toString(),
-                title: data.title,
-                council: data.council,
-                body:data.body,
-                fetchFF : 'false',
-                startTime: data.startTime.toString(),
-                endTime:data.endTime.toString(),
-                type: "update",
-                notfID: data.notfID.toString(),// id of notification in integer
-                id: data.id,
-                sub: data.sub[0],
-                tags:data.tags,
-            }
-        };
-     } 
-    let options = {
-        // mutableContent : true,
-        contentAvailable: true,
-        priority:"high",
-        // collapseKey: data.message,
-    };
-    await sub.forEach(async (element) => {await fcm.sendToTopic(element.replace(/ /g, '_'), payload,options)});
+    await sub.forEach(async (element) => {
+        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
+    });
 })
 
 exports.sendToTopicDelete = functions.firestore.document('allPosts/{id}').onDelete(async snapshot => {
     let data = snapshot.data();
     let sub = data.sub;
     let payload = {
-        // notification: {
-        //     title: data.title,
-        //     council: data.council,
-        //     message: data.message,
-        //     body:data.body,
-        //     type: "delete",
-        //     id: data.id,
-        //     // badge: data.id,
-        //     // priority: "HIGH",
-        //     sound: "default",
-        //     clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        // },
-        
-        // priority: "Priority.High",
-        data:{
+        data: {
             timeStamp: Date.now().toString(),
-            title: data.title,
-            message: data.message,
             type: "delete",
-            notfID: data.notfID.toString(),// id of notification in integer
+            notfID: data.notfID.toString(),
             id: data.id,
-            sub: data.sub[0],
-            // click_action: 'FLUTTER_NOTIFICATION_CLICK'
         }
     };
-    let options = {
-        // mutableContent : true,
-        contentAvailable: true,
-        priority:"high",
-        // collapseKey: data.message,
-    };
-    await sub.forEach(async (element) => {await fcm.sendToTopic(element.replace(/ /g, '_'), payload,options)});
+    await sub.forEach(async (element) => {
+        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
+    });
 })
 
 exports.elevatePerson = functions.https.onRequest(async function (req, res) {
     // input: id, sub (array)
     let data = req.body;
-    
-    await db.collection('people').doc(data.id).get().then(async function(document){
-        if(document.exists){
-            
-            await document.ref.update({
-                councils: admin.firestore.FieldValue.arrayUnion(data.councils),
-                snt: admin.firestore.FieldValue.arrayUnion(data.snt),
-                ss: admin.firestore.FieldValue.arrayUnion(data.ss),
-                anc: admin.firestore.FieldValue.arrayUnion(data.anc),
-                mnc: admin.firestore.FieldValue.arrayUnion(data.mnc),
-                gnc: admin.firestore.FieldValue.arrayUnion(data.gnc),
-                councils: admin.firestore.FieldValue.arrayRemove(null),
-                snt: admin.firestore.FieldValue.arrayRemove(null),
-                ss: admin.firestore.FieldValue.arrayRemove(null),
-                anc: admin.firestore.FieldValue.arrayRemove(null),
-                mnc: admin.firestore.FieldValue.arrayRemove(null),
-                gnc: admin.firestore.FieldValue.arrayRemove(null),
-            });            
-        }else{
+    await db.collection('people').doc(data.id).get().then(async function (document) {
+        if (document.exists) {
+            let x = {
+                councils: admin.firestore.FieldValue.arrayUnion(data.council)
+            };
+            x[data.council] = admin.firestore.FieldValue.arrayUnion(data.por);
+            await document.ref.update(x);
+        } else {
             let datax = {
                 "id": data.id,
-                "councils": data.councils,
-                "snt":  data.snt,
-                "ss":data.ss,
-                "anc": data.anc,
-                "mnc":data.mnc,
-                "gnc": data.gnc,
-                // "sub": data.sub,
+                "councils": [data.council],
+                "snt": [],
+                "ss": [],
+                "anc": [],
+                "mnc": [],
+                "gns": [],
                 "posts": {
-                    "snt":[],
-                    "mnc":[],
+                    "snt": [],
+                    "mnc": [],
+                    "anc": [],
+                    "gns": [],
+                    "ss": []
                 }
             };
-            await db.collection('people').doc(data.id).set(datax,{merge:true});
-                // let dxc = await db.collection('users').where('id', '==', data.id).get()
-                // dxc.forEach(async (res)=> await db.collection('users').doc(res.data().uid).update({"admin": true}))
-                // res.send(data.id);
+            datax[data.council] = data.por;
+            await db.collection('people').doc(data.id).set(datax);
         }
     });
-    
+
     let dxc = await db.collection('users').where('id', '==', data.id).get()
-    dxc.forEach(async (res)=> await db.collection('users').doc(res.data().uid).update({"admin": true}))
+    dxc.forEach(async (res) => await db.collection('users').doc(res.data().uid).update({
+        "admin": true
+    }))
     res.send(data.id)
-    // });
-    // try {
-    //     console.log((await db.collection('people').doc(data.id).get()).exists);
-    // } catch (error) {
-    //     console.log(error);
-    // }
-    // await db.collection('people').where('id', '==', data.id).get();
-    
-    
 })
 
 exports.resetCouncil = functions.https.onRequest(async function (req, res) {
@@ -329,17 +179,16 @@ exports.resetCouncil = functions.https.onRequest(async function (req, res) {
         res.send({
             "status": "Not Authorized"
         })
-    }
-    else {
+    } else {
         let data = {
             "id": "sntsecy",
             "posts": [],
-            "councils":["snt"],
+            "councils": ["snt"],
             "snt": ["Science and Technology Council"],
             "ss": [],
             "anc": [],
             "mnc": [],
-            "gnc": [],
+            "gns": [],
             // "sub": ["Science and Technology Council"]
         }
         await db.collection('people').listDocuments().then(val => {
@@ -367,103 +216,87 @@ exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
         id,
         admin: false,
         council: {
-            "snt":{
-                "entity":[ "Aeromodelling Club",
-            "Astronomy Club",
-            "Electronics Club",
-            "Robotics Club",
-            "Programming Club",
-            "Speedcubing Club",
-            "Finance and Analytics Club",
-            "Science Coffee House",
-             "DESCON",
-              "Consulting Group",
-            "Game Development Society",
-            "Web Division", 
-            "Outreach and Connect",
-             "Product Development Society",
-            "Aerial Robotics",
-            "AUV",
-            "IITK Motorsports",
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"],
-            "misc" : ["Science and Technology Council", "Techkriti"]
-            },
-            "mnc":{
-                "entity":[ "Dance Club",
-            "Music Club",
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"],
-            "misc" : ["Antaragni","Galaxy"]
-            },
-            "ss":{
-                "entity":[ "Aeromodelling Club",
-            "Astronomy Club",
-            "Electronics Club",
-             "Product Development Society",
-            "Aerial Robotics",
-            "AUV",
-            "IITK Motorsports",
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"],
-            "misc" : [""]
-            },
-            "anc":{
-                "entity":[ "Aeromodelling Club",
-            "Astronomy Club",
-            "Electronics Club",
-            "Robotics Club",
-            "Programming Club",
-            "Speedcubing Club",
-            "Finance and Analytics Club",
-            "Science Coffee House",
-             "DESCON"
-              ],
-            "misc" : [""]
-            },
-            "gns" : {
-                "entity":[ 
+            "snt": {
+                "entity": ["Aeromodelling Club",
+                    "Astronomy Club",
+                    "Electronics Club",
+                    "Robotics Club",
+                    "Programming Club",
+                    "Speedcubing Club",
+                    "Finance and Analytics Club",
+                    "Science Coffee House",
+                    "DESCON",
+                    "Consulting Group",
+                    "Game Development Society",
+                    "Web Division",
+                    "Outreach and Connect",
+                    "Product Development Society",
+                    "Aerial Robotics",
+                    "AUV",
+                    "IITK Motorsports",
                     "ERA IITK",
                     "Vision",
                     "ZURA",
                     "Humanoid",
                     "iGEM",
-                    "Robocon"],
-                "misc" : [""]
+                    "Robocon"
+                ],
+                "misc": ["Science and Technology Council", "Techkriti"]
+            },
+            "mnc": {
+                "entity": ["Dance Club",
+                    "Music Club",
+                    "ERA IITK",
+                    "Vision",
+                    "ZURA",
+                    "Humanoid",
+                    "iGEM",
+                    "Robocon"
+                ],
+                "misc": ["Antaragni", "Galaxy"]
+            },
+            "ss": {
+                "entity": ["Aeromodelling Club",
+                    "Astronomy Club",
+                    "Electronics Club",
+                    "Product Development Society",
+                    "Aerial Robotics",
+                    "AUV",
+                    "IITK Motorsports",
+                    "ERA IITK",
+                    "Vision",
+                    "ZURA",
+                    "Humanoid",
+                    "iGEM",
+                    "Robocon"
+                ],
+                "misc": [""]
+            },
+            "anc": {
+                "entity": ["Aeromodelling Club",
+                    "Astronomy Club",
+                    "Electronics Club",
+                    "Robotics Club",
+                    "Programming Club",
+                    "Speedcubing Club",
+                    "Finance and Analytics Club",
+                    "Science Coffee House",
+                    "DESCON"
+                ],
+                "misc": [""]
+            },
+            "gns": {
+                "entity": [
+                    "ERA IITK",
+                    "Vision",
+                    "ZURA",
+                    "Humanoid",
+                    "iGEM",
+                    "Robocon"
+                ],
+                "misc": [""]
             }
         }
     }
-    await db.collection('users').doc(user.uid).set(account); 
+    await db.collection('users').doc(user.uid).set(account);
 });
-
-exports.updateUser = functions.https.onRequest(async function (req, res) {
-    // update: name, rollno and prefs array, input: uid of the person
-    let data = req.body;
-    await db.collection('users').doc(data.uid).update(data);
-    res.send(data.uid)
-})
-// const allpost = express();
-// allpost.get('/home',async function(req,res){
-    
-//     await db.collection('posts').doc('council').listCollections().then(async function(val){
-//         let arr = [];
-//         await val.forEach(async function(f){
-//             await f.get().then(async function(value){
-//                 arr.push(value);
-//             })
-//         })
-//         res.send(arr);
-//     })
-// })
