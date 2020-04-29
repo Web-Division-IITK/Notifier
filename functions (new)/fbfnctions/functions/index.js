@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const fs=require('fs');
 admin.initializeApp();
 const db = admin.firestore();
 const fcm = admin.messaging();
@@ -207,6 +208,7 @@ exports.resetCouncil = functions.https.onRequest(async function (req, res) {
 })
 
 exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
+    let vals = JSON.stringify(fs.readFileSync('vals.json'));
     let id = user.email.replace("@iitk.ac.in", "");
     const account = {
         uid: user.uid,
@@ -215,88 +217,7 @@ exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
         rollno: "",
         id,
         admin: false,
-        council: {
-            "snt": {
-                "entity": ["Aeromodelling Club",
-                    "Astronomy Club",
-                    "Electronics Club",
-                    "Robotics Club",
-                    "Programming Club",
-                    "Speedcubing Club",
-                    "Finance and Analytics Club",
-                    "Science Coffee House",
-                    "DESCON",
-                    "Consulting Group",
-                    "Game Development Society",
-                    "Web Division",
-                    "Outreach and Connect",
-                    "Product Development Society",
-                    "Aerial Robotics",
-                    "AUV",
-                    "IITK Motorsports",
-                    "ERA IITK",
-                    "Vision",
-                    "ZURA",
-                    "Humanoid",
-                    "iGEM",
-                    "Robocon"
-                ],
-                "misc": ["Science and Technology Council", "Techkriti"]
-            },
-            "mnc": {
-                "entity": ["Dance Club",
-                    "Music Club",
-                    "ERA IITK",
-                    "Vision",
-                    "ZURA",
-                    "Humanoid",
-                    "iGEM",
-                    "Robocon"
-                ],
-                "misc": ["Antaragni", "Galaxy"]
-            },
-            "ss": {
-                "entity": ["Aeromodelling Club",
-                    "Astronomy Club",
-                    "Electronics Club",
-                    "Product Development Society",
-                    "Aerial Robotics",
-                    "AUV",
-                    "IITK Motorsports",
-                    "ERA IITK",
-                    "Vision",
-                    "ZURA",
-                    "Humanoid",
-                    "iGEM",
-                    "Robocon"
-                ],
-                "misc": [""]
-            },
-            "anc": {
-                "entity": ["Aeromodelling Club",
-                    "Astronomy Club",
-                    "Electronics Club",
-                    "Robotics Club",
-                    "Programming Club",
-                    "Speedcubing Club",
-                    "Finance and Analytics Club",
-                    "Science Coffee House",
-                    "DESCON"
-                ],
-                "misc": [""]
-            },
-            "gns": {
-                "entity": [
-                    "ERA IITK",
-                    "Vision",
-                    "ZURA",
-                    "Humanoid",
-                    "iGEM",
-                    "Robocon"
-                ],
-                "misc": [""]
-            }
-        }
+        council: vals
     }
     await db.collection('users').doc(user.uid).set(account);
 });
