@@ -1,0 +1,82 @@
+{
+    "snt": {
+        "entity": ["Aeromodelling Club",
+            "Astronomy Club",
+            "Electronics Club",
+            "Robotics Club",
+            "Programming Club",
+            "Speedcubing Club",
+            "Finance and Analytics Club",
+            "Science Coffee House",
+            "DESCON",
+            "Consulting Group",
+            "Game Development Society",
+            "Web Division",
+            "Outreach and Connect",
+            "Product Development Society",
+            "Aerial Robotics",
+            "AUV",
+            "IITK Motorsports",
+            "ERA IITK",
+            "Vision",
+            "ZURA",
+            "Humanoid",
+            "iGEM",
+            "Robocon"
+        ],
+        "misc": ["Science and Technology Council", "Techkriti"]
+    },
+    "mnc": {
+        "entity": ["Dance Club",
+            "Music Club",
+            "ERA IITK",
+            "Vision",
+            "ZURA",
+            "Humanoid",
+            "iGEM",
+            "Robocon"
+        ],
+        "misc": ["Antaragni", "Galaxy"]
+    },
+    "ss": {
+        "entity": ["Aeromodelling Club",
+            "Astronomy Club",
+            "Electronics Club",
+            "Product Development Society",
+            "Aerial Robotics",
+            "AUV",
+            "IITK Motorsports",
+            "ERA IITK",
+            "Vision",
+            "ZURA",
+            "Humanoid",
+            "iGEM",
+            "Robocon"
+        ],
+        "misc": [""]
+    },
+    "anc": {
+        "entity": ["Aeromodelling Club",
+            "Astronomy Club",
+            "Electronics Club",
+            "Robotics Club",
+            "Programming Club",
+            "Speedcubing Club",
+            "Finance and Analytics Club",
+            "Science Coffee House",
+            "DESCON"
+        ],
+        "misc": [""]
+    },
+    "gns": {
+        "entity": [
+            "ERA IITK",
+            "Vision",
+            "ZURA",
+            "Humanoid",
+            "iGEM",
+            "Robocon"
+        ],
+        "misc": [""]
+    }
+}

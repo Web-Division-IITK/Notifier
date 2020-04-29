@@ -94,7 +94,7 @@ exports.sendToTopicCreate = functions.firestore.document('allPosts/{id}').onCrea
         }
     }
     await sub.forEach(async (element) => {
-        await fcm.sendToTopic(element.replace(/ /g, '_'), payload, options)
+        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
     });
 })
 
@@ -163,7 +163,7 @@ exports.elevatePerson = functions.https.onRequest(async function (req, res) {
                     "ss": []
                 }
             };
-            datax[data.council] = data.por;
+            datax[data.council] = [data.por];
             await db.collection('people').doc(data.id).set(datax);
         }
     });
