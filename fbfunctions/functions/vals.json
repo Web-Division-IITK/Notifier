@@ -1,6 +1,7 @@
 {
-    "snt": {
-        "entity": ["Aeromodelling Club",
+    "snt" : {
+        "level2" : ["sntsecy"],
+        "entity":[ "Aeromodelling Club",
             "Astronomy Club",
             "Electronics Club",
             "Robotics Club",
@@ -11,7 +12,7 @@
             "DESCON",
             "Consulting Group",
             "Game Development Society",
-            "Web Division",
+            "Web Division", 
             "Outreach and Connect",
             "Product Development Society",
             "Aerial Robotics",
@@ -22,24 +23,12 @@
             "ZURA",
             "Humanoid",
             "iGEM",
-            "Robocon"
-        ],
-        "misc": ["Science and Technology Council", "Techkriti"]
+            "Robocon"],
+            "misc" : ["Science and Technology Council", "Techkriti"]
     },
-    "mnc": {
-        "entity": ["Dance Club",
-            "Music Club",
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"
-        ],
-        "misc": ["Antaragni", "Galaxy"]
-    },
-    "ss": {
-        "entity": ["Aeromodelling Club",
+    "ss" : {
+        "level2" : ["sssecy"],
+        "entity":[ "Aeromodelling Club",
             "Astronomy Club",
             "Electronics Club",
             "Product Development Society",
@@ -51,12 +40,40 @@
             "ZURA",
             "Humanoid",
             "iGEM",
-            "Robocon"
-        ],
-        "misc": [""]
+            "Robocon"],
+            "misc" : [""]
     },
-    "anc": {
-        "entity": ["Aeromodelling Club",
+    "mnc" : {
+        "level2" : ["mncsecy"],
+        "entity":[ "Dance Club",
+            "Music Club",
+            "ERA IITK",
+            "Vision",
+            "ZURA",
+            "Humanoid",
+            "iGEM",
+            "Robocon"],
+            "misc" : ["Antaragni","Galaxy"]
+    },
+    "gns" : {
+        "level2" : ["gnssecy"],
+        "entity":[ 
+            "ERA IITK",
+            "Vision",
+            "ZURA",
+            "Humanoid",
+            "iGEM",
+            "Robocon"],
+            "misc" : [""]
+    },
+    "psg":{
+        "level2":["president_gymkhana"],
+        "entity":[""],
+        "misc":[""]
+    },
+    "anc_ug" : {
+        "level2" : ["ancsecy"],
+        "entity":[ "Aeromodelling Club",
             "Astronomy Club",
             "Electronics Club",
             "Robotics Club",
@@ -65,18 +82,21 @@
             "Finance and Analytics Club",
             "Science Coffee House",
             "DESCON"
-        ],
-        "misc": [""]
+            ],
+            "misc" : [""]
     },
-    "gns": {
-        "entity": [
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"
-        ],
-        "misc": [""]
+    "anc_pg" : {
+        "level2" : ["ancsecy"],
+        "entity":[ "Aeromodelling Club",
+            "Astronomy Club",
+            "Electronics Club",
+            "Robotics Club",
+            "Programming Club",
+            "Speedcubing Club",
+            "Finance and Analytics Club",
+            "Science Coffee House",
+            "DESCON"
+            ],
+            "misc" : [""]
     }
 }
