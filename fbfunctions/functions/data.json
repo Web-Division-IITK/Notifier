@@ -11,12 +11,12 @@
             "Speedcubing Club",
             "Finance and Analytics Club",
             "Science Coffee House",
-             "DESCON",
-              "Consulting Group",
+            "DESCON",
+            "Consulting Group",
             "Game Development Society",
             "Web Division", 
             "Outreach and Connect",
-             "Product Development Society",
+            "Product Development Society",
             "Aerial Robotics",
             "AUV",
             "IITK Motorsports",
@@ -33,7 +33,7 @@
         "entity":[ "Aeromodelling Club",
             "Astronomy Club",
             "Electronics Club",
-             "Product Development Society",
+            "Product Development Society",
             "Aerial Robotics",
             "AUV",
             "IITK Motorsports",
@@ -68,7 +68,12 @@
             "Robocon"],
             "misc" : [""]
     },
-    "anc" : {
+    "psg":{
+        "level2":["president_gymkhana"],
+        "entity":[],
+        "misc":[]
+    },
+    "anc_ug" : {
         "level2" : ["ancsecy"],
         "entity":[ "Aeromodelling Club",
             "Astronomy Club",
@@ -78,8 +83,22 @@
             "Speedcubing Club",
             "Finance and Analytics Club",
             "Science Coffee House",
-             "DESCON"
-              ],
+            "DESCON"
+            ],
+            "misc" : [""]
+    },
+    "anc_pg" : {
+        "level2" : ["ancsecy"],
+        "entity":[ "Aeromodelling Club",
+            "Astronomy Club",
+            "Electronics Club",
+            "Robotics Club",
+            "Programming Club",
+            "Speedcubing Club",
+            "Finance and Analytics Club",
+            "Science Coffee House",
+            "DESCON"
+            ],
             "misc" : [""]
     }
 }
