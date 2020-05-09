@@ -1,6 +1,7 @@
 {
-    "level3": ["adtgupta","utkarshg","sntsecy","mncsecy"],
+    "level3": ["adtgupta","utkarshg"],
     "councils": ["ss", "snt", "gns", "anc", "mnc"],
+    "presiAndChairPerson" :["psg"],
     "snt" : {
         "level2" : ["sntsecy"],
         "entity":[ "Aeromodelling Club",
@@ -70,8 +71,8 @@
     },
     "psg":{
         "level2":["president_gymkhana"],
-        "entity":[],
-        "misc":[]
+        "entity":[""],
+        "misc":[""]
     },
     "anc_ug" : {
         "level2" : ["ancsecy"],

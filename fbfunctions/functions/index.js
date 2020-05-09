@@ -19,7 +19,8 @@ exports.makePost = functions.https.onRequest(async function (req, res) {
         "body": data.body,
         "author": data.author,
         "url": (data.url == null) ? '' : data.url,
-        "type": "create",
+        "type":data.type,
+        "priority": data.priority,
         "owner": data.owner,
         "message": data.message,
         "startTime": (data.startTime == null) ? '' : data.startTime,
@@ -39,6 +40,65 @@ exports.makePost = functions.https.onRequest(async function (req, res) {
     })
     res.send(datax.id);
 })
+exports.makeNotification = functions.https.onRequest(async function (req, res) {
+    // let FieldValue = require('firebase-admin').firestore.FieldValue
+    // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
+    // startTime and endTime would be int
+    let data = req.body;
+    let notfID = Date.now();
+    let datax = {
+        "title": data.title,
+        "tags": (data.tags == null) ? '' : data.tags,
+        "council": data.council,
+        "sub": data.sub,
+        "body": data.body,
+        "author": data.author,
+        "url": (data.url == null) ? '' : data.url,
+        "type": "permission",
+        "priority": data.priority,
+        "owner": data.owner,
+        "message": data.message,
+        "startTime": (data.startTime == null) ? '' : data.startTime,
+        'endTime': (data.endTime == null) ? '' : data.endTime,
+        "notfID": notfID,
+        "timeStamp": Date.now(),
+    }
+    let ref = db.collection('notification').doc()
+    datax.id = ref.id;
+    await ref.set(datax);
+    // let coun = data.council.toString();
+    // let x = {};
+    // x[coun] = admin.firestore.FieldValue.arrayUnion(datax.id);
+    // await db.collection('posts').doc('council').update(x)
+    // await db.collection('people').doc(data.owner).update({
+    //     posts: x,
+    // })
+    res.send(datax.id);
+})
+exports.updateNotification = functions.https.onRequest(async function (req, res) {
+    // let FieldValue = require('firebase-admin').firestore.FieldValue
+    // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
+    // startTime and endTime would be int
+    let data = req.body;
+    let datax = {
+        "title": data.title,
+        "tags": (data.tags == null) ? '' : data.tags,
+        "council": data.council,
+        "sub": data.sub,
+        "body": data.body,
+        "priority": data.priority,
+        "startTime": (data.startTime == null) ? '' : data.startTime,
+        'endTime': (data.endTime == null) ? '' : data.endTime,
+        "type": "permission",
+        "author": data.author,
+        "url": (data.url == null) ? '' : data.url,
+        "owner": data.owner,
+        "message": data.message,
+        "timeStamp": Date.now(),
+    };
+    await db.collection('notification').doc(data.id).update(datax);
+    res.send(data.id);
+})
 
 exports.editPost = functions.https.onRequest(async function (req, res) {
     // input must have these fields: id, council
@@ -50,9 +110,10 @@ exports.editPost = functions.https.onRequest(async function (req, res) {
         "council": data.council,
         "sub": data.sub,
         "body": data.body,
+        "priority": data.priority,
         "startTime": (data.startTime == null) ? '' : data.startTime,
         'endTime': (data.endTime == null) ? '' : data.endTime,
-        "type": "update",
+        "type": data.type,
         "author": data.author,
         "url": (data.url == null) ? '' : data.url,
         "owner": data.owner,
@@ -87,7 +148,7 @@ exports.sendToTopicCreate = functions.firestore.document('allPosts/{id}').onCrea
             council: data.council,
             fetchFF: 'true',
             message: data.message,
-            type: "create",
+            type: data.type,
             notfID: data.notfID.toString(), // id of notification in integer
             id: data.id,
             sub: data.sub[0],
@@ -109,7 +170,7 @@ exports.sendToTopicUpdate = functions.firestore.document('allPosts/{id}').onUpda
             council: data.council,
             message: data.message,
             fetchFF: 'true',
-            type: "update",
+            type: data.type,
             notfID: data.notfID.toString(), // id of notification in integer
             id: data.id,
             sub: data.sub[0],
@@ -119,7 +180,48 @@ exports.sendToTopicUpdate = functions.firestore.document('allPosts/{id}').onUpda
         await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
     });
 })
-
+exports.sendToTopicPermissionCreate = functions.firestore.document('notification/{id}').onCreate(async snapshot => {
+    let data = snapshot.data();
+    let sub = data.sub;
+    let payload;
+    payload = {
+        data: {
+            owner: data.owner,
+            title: data.title,
+            council: data.council,
+            message: data.message,
+            fetchFF: 'true',
+            type: "permission",
+            notfID: data.notfID.toString(), // id of notification in integer
+            id: data.id,
+            sub: data.sub[0],
+        }
+    }
+    await sub.forEach(async (element) => {
+        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
+    });
+})
+exports.sendToPermissionUpdate = functions.firestore.document('notification/{id}').onUpdate(async (change, context) => {
+    let data = change.after.data();
+    let sub = data.sub;
+    let payload;
+    payload = {
+        data: {
+            owner: data.owner,
+            title: data.title,
+            council: data.council,
+            message: data.message,
+            fetchFF: 'true',
+            type: "permission",
+            notfID: data.notfID.toString(), // id of notification in integer
+            id: data.id,
+            sub: data.sub[0],
+        }
+    }
+    await sub.forEach(async (element) => {
+        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
+    });
+})
 exports.sendToTopicDelete = functions.firestore.document('allPosts/{id}').onDelete(async snapshot => {
     let data = snapshot.data();
     let sub = data.sub;
@@ -127,6 +229,7 @@ exports.sendToTopicDelete = functions.firestore.document('allPosts/{id}').onDele
         data: {
             timeStamp: Date.now().toString(),
             type: "delete",
+            owner: data.owner,
             notfID: data.notfID.toString(),
             id: data.id,
         }
@@ -151,16 +254,18 @@ exports.elevatePerson = functions.https.onRequest(async function (req, res) {
                 "id": data.id,
                 "councils": [data.council],
                 "snt": [],
-                "ss": [],
+                "psg": [],
                 "anc": [],
                 "mnc": [],
                 "gns": [],
+                "senate":[],
                 "posts": {
                     "snt": [],
                     "mnc": [],
                     "anc": [],
                     "gns": [],
-                    "ss": []
+                    "psg": [],
+                    "senate":[]
                 }
             };
             datax[data.council] = [data.por];
@@ -208,7 +313,7 @@ exports.resetCouncil = functions.https.onRequest(async function (req, res) {
 })
 
 exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
-    let vals = JSON.stringify(fs.readFileSync('vals.json'));
+    let vals = JSON.parse(fs.readFileSync('vals.json'));
     let id = user.email.replace("@iitk.ac.in", "");
     const account = {
         uid: user.uid,
@@ -218,6 +323,8 @@ exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
         id,
         admin: false,
         council: vals
+        
+        
     }
     await db.collection('users').doc(user.uid).set(account);
 });

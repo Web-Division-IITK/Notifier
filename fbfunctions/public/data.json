@@ -1,6 +1,7 @@
 {
-    "level3": ["adtgupta","utkarshg","sntsecy","mncsecy"],
-    "councils": ["ss", "snt", "gns", "anc_ug","anc_pg", "mnc"],
+    "level3": ["adtgupta","utkarshg"],
+    "councils": ["snt", "gns", "anc", "mnc","psg","senate"],
+    "presiAndChairPerson" :[""],
     "snt" : {
         "level2" : ["sntsecy"],
         "entity":[ "Aeromodelling Club",
@@ -11,94 +12,90 @@
             "Speedcubing Club",
             "Finance and Analytics Club",
             "Science Coffee House",
-            "DESCON",
-            "Consulting Group",
+            "Brain and Cognitive Society",
+            "DesCon Society",
+            "Consulting Society",
             "Game Development Society",
             "Web Division", 
             "Outreach and Connect",
             "Product Development Society",
             "Aerial Robotics",
-            "AUV",
+            "Science Coffeehouse",
+            "AUV IITK",
             "IITK Motorsports",
             "ERA IITK",
-            "Vision",
+            "VISiON",
             "ZURA",
             "Humanoid",
             "iGEM",
             "Robocon"],
             "misc" : ["Science and Technology Council", "Techkriti"]
     },
-    "ss" : {
-        "level2" : ["sssecy"],
-        "entity":[ "Aeromodelling Club",
-            "Astronomy Club",
-            "Electronics Club",
-            "Product Development Society",
-            "Aerial Robotics",
-            "AUV",
-            "IITK Motorsports",
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"],
-            "misc" : [""]
-    },
     "mnc" : {
         "level2" : ["mncsecy"],
-        "entity":[ "Dance Club",
+        "entity":[ 
+            "Anime Society Club",
+            "Dance Club",
+            "Debating and Discussion Society",
+            "English Literary Society",
+            "Film Club",
+            "Fine Arts Club",
+            "Hindi Sahitya Sabha",
+            "Book Club",
+            "Design and Animation Club",
+            "Dramatics Club",
+            "Photography Club",
+            "Quiz Club",
             "Music Club",
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"],
-            "misc" : ["Antaragni","Galaxy"]
+            "Students Opinion Society",
+            "Students Film Society"
+        ],
+        "misc" : ["Antaragni","Galaxy","Montage","Impressions","Media and Cultural Council"]
     },
     "gns" : {
-        "level2" : ["gnssecy"],
-        "entity":[ 
-            "ERA IITK",
-            "Vision",
-            "ZURA",
-            "Humanoid",
-            "iGEM",
-            "Robocon"],
-            "misc" : [""]
+        "level2" : ["sportsecy"],
+        "entity":[
+            "Adventure Sports Club",
+            "Card and Board Club",
+            "Chess Club", 
+            "Shooting Club",
+            "Skating Club",
+            "Taekwondo Club",
+            "Archery Society",
+            "Bicycling Society",
+            "Boxing Society",
+           "Ultimate Frisbee Society"   
+        ],
+            "misc" : ["Games and Sports Council","Udghosh"]
     },
     "psg":{
-        "level2":["president_gymkhana"],
-        "entity":[""],
-        "misc":[""]
+        "level2":["presidentsg"],
+        "entity":[
+            "Entrepreneurship Cell",
+            "Vox Populi",
+            "Outreach Cell",
+            "Community Welfare Cell"
+        ],
+        "misc":["President Students Gymkhana"]
     },
-    "anc_ug" : {
-        "level2" : ["ancsecy"],
-        "entity":[ "Aeromodelling Club",
-            "Astronomy Club",
-            "Electronics Club",
-            "Robotics Club",
-            "Programming Club",
-            "Speedcubing Club",
-            "Finance and Analytics Club",
-            "Science Coffee House",
-            "DESCON"
-            ],
-            "misc" : [""]
+    "senate":{
+        "level2":["chair_ss"],
+        "entity":[
+            "Election Commission",
+            "Senate Samachaar",
+            "Finance Committee"
+        ],
+        "misc":["Students Senate"]
     },
-    "anc_pg" : {
-        "level2" : ["ancsecy"],
-        "entity":[ "Aeromodelling Club",
-            "Astronomy Club",
-            "Electronics Club",
-            "Robotics Club",
-            "Programming Club",
-            "Speedcubing Club",
-            "Finance and Analytics Club",
-            "Science Coffee House",
-            "DESCON"
+    "anc" : {
+        "level2" : ["ug_anc","pg_anc"],
+        "entity":[ 
+            "UG Academics Wing",
+            "PG Academics Wing",
+            "Research Wing",
+            "Career Development Wing",
+            "International Relations Wing"
             ],
-            "misc" : [""]
+            "misc" : ["Students Research Convention","Career Fair","Academics and Career Council"]
     }
 }
