@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "101368378371",
+    "firebase_url": "https://notifier-phase-2.firebaseio.com",
+    "project_id": "notifier-phase-2",
+    "storage_bucket": "notifier-phase-2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101368378371:android:b795bc08c5cec4dada4a36",
+        "android_client_info": {
+          "package_name": "tk.notifier.sntiitk"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "101368378371-2t9bfvcereh2i95elp32e4h2qbi9tngs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtCZSYKq8QZOdaz_6TU_KiG635WLPqhnA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "101368378371-2t9bfvcereh2i95elp32e4h2qbi9tngs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
