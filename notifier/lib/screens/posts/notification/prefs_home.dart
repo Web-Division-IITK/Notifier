@@ -13,7 +13,7 @@ class PrefsHome extends StatefulWidget {
 
 class _PrefsHomeState extends State<PrefsHome> {
 
-  List<dynamic> _prefs;
+  List<dynamic> _prefs = [];
   List<SortDateTime> arrayWithclub=[];
   bool prefsHome;
   bool load;
@@ -44,15 +44,20 @@ class _PrefsHomeState extends State<PrefsHome> {
     super.initState();
    
   }
+  List<int> indices =[];
 sortArraywithPrefs(){
   sortedarray.forEach((f){
     if(_prefs.contains(f.club)){
       var index = arrayWithclub.length /*> 0 ? arrayWithclub.length : 0*/;
+      indices.add(sortedarray.indexOf(f));
       arrayWithclub.insert(index, f);
     }
     else{
       if(arrayWithclub.contains(f.club)){
         arrayWithclub.remove(f);
+        if(indices.contains(sortedarray.indexOf(f))){
+          indices.remove(sortedarray.indexOf(f));
+        }
       }
     }
   });
@@ -101,7 +106,7 @@ sortArraywithPrefs(){
                  Container(child: Text('Today'),),
                   Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     )
                ],
              );
@@ -112,7 +117,7 @@ sortArraywithPrefs(){
                   // : time ==  ?
                   : Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     );
           }
         } 
@@ -126,7 +131,7 @@ sortArraywithPrefs(){
                  Container(child: Text('Yesterday'),),
                   Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     )
                ],
              );
@@ -137,12 +142,12 @@ sortArraywithPrefs(){
                   // : time ==  ?
                   : Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     );
           }
         }
           break;
-        default: if (arrayWithclub.firstWhere((test){
+        default: if (sortedarray.firstWhere((test){
           return (test.dateasString == day && (test.value['exists'] == null || test.value['exists']))?true:false;
         }) == i) {
           yield Column(
@@ -150,7 +155,7 @@ sortArraywithPrefs(){
                  Container(child: Text(day),),
                   Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     )
                ],
              );
@@ -161,7 +166,7 @@ sortArraywithPrefs(){
                   // : time ==  ?
                   : Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: tile(i.value,arrayWithclub.indexOf(i) , time),
+                      child: tile(i.value,sortedarray.indexOf(i) , time),
                     );
         }
         break;
@@ -236,7 +241,7 @@ sortArraywithPrefs(){
         onTap: () {
           return Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
-            return NotfDesc(index);
+            return NotfDesc(index,indices,time);
           }));
         },
         child: Column(

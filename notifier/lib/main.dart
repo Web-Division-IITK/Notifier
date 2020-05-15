@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/authentication/rootpage.dart';
 
@@ -15,10 +19,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final FirebaseMessaging _fcm = FirebaseMessaging();
+  final FlutterLocalNotificationsPlugin _flnp = FlutterLocalNotificationsPlugin();
+  String display;
+  String bodyMsg;
+  String data;
   bool darkMode = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]);
     // _fcm.setAutoInitEnabled(true);
@@ -151,7 +159,26 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
+  
 }
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
+  if (message.containsKey('data')) {
+    // Handle data message
+    final dynamic data = message['data'];
+    print(data .toString() + 'backgrounddata from home');
+  }
+
+  if (message.containsKey('notification')) {
+    // Handle notification message
+    final dynamic notification = message['notification'];
+//   }
+//   configLocalNotification();
+//  showNotification(message['data']);
+  // Or do other work.
+}
+}
+
+
 // MaterialApp(
       // debugShowCheckedModeBanner: false,
       // // darkTheme: ,

@@ -7,10 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notifier/model/notification.dart';
+import 'package:notifier/model/options.dart';
+import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/posts/createposts.dart';
 import 'package:notifier/screens/posts/update/updateposts.dart';
 // import 'package:notifier/screens/posts/updateposts.dart';
 import 'package:notifier/services/databse.dart';
+import 'package:notifier/services/function.dart';
 import 'package:notifier/shared/preview.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:path/path.dart' as Path;
@@ -42,6 +45,9 @@ class _EditDraftState extends State<EditDraft> {
   final _imgController = TextEditingController();  
   // bool _firstSelected = true;
   bool _loadingWidget = false;
+  Repository repo = Repository(allCouncilData);
+  List<String> _councilList = [];
+  List<String> _entityList = [];
   List<DropdownMenuItem<String>>_selectSub=[];
   void buildsubs(){
     _selectSub.clear();
@@ -180,6 +186,8 @@ class _EditDraftState extends State<EditDraft> {
   }
 @override
   void initState() {
+    _councilList = List.from(_councilList)..addAll(repo.getCoordiCouncil());
+     _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(widget._update.value['council']));
     super.initState();
     buildsubs();
     // _tagController.addListener((){
@@ -191,13 +199,6 @@ class _EditDraftState extends State<EditDraft> {
   }
   @override
   Widget build(BuildContext context) {
-    List<DropdownMenuItem<String>> _selectItem = [];
-    for (var i in selectCouncil) {
-      _selectItem.add(DropdownMenuItem(
-        child: Text(i),
-        value: i,
-      ));
-    }
     // if(widget._update.value['council'] !=null) { 
     //   buildsubs();
     //   _firstSelected = true;}
@@ -246,6 +247,23 @@ class _EditDraftState extends State<EditDraft> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                     child: new TextFormField(
+                      maxLines: 1,
+                      keyboardType: TextInputType.text,
+                      autofocus: false,
+                      initialValue: widget._update.value['message'],
+                      decoration: new InputDecoration(
+                        labelText: 'Messsage',
+                        hintText:
+                            'Subtitile to be displayed in the notifications panel ',
+                      ),
+                      validator: (value) =>
+                          value.isEmpty ? 'Message can\'t be empty' : null,
+                      onSaved: (value) => _message = value,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                    child: new TextFormField(
                       maxLines: null,
                       keyboardType: TextInputType.multiline,
                       autofocus: false,
@@ -263,32 +281,91 @@ class _EditDraftState extends State<EditDraft> {
                       onSaved: (value) => _body = value,
                     ),
                   ),
-                  // Row(
-                  //   children: <Widget>[
-                  //     Container(
-                  //       width: 60.0,
-                  //       padding: const EdgeInsets.fromLTRB(20.0, 10.0, 100.0, 0.0),
-                  //       child: new TextFormField(
-                  //         maxLines: 1,
-                  //         keyboardType: TextInputType.text,
-                  //         autofocus: false,
-                  //          readOnly: true,
-                  //         enabled: false,
-                  //         initialValue: widget._update.value['url'],
-                  //         decoration: new InputDecoration(
-                  //           labelText: 'Image Url',
-                  //           // icon: new Icon(
-                  //           //   Icons.mail,
-                  //           //   color: Colors.grey,
-                  //           // )
-                  //         ),
-                  //         validator: (value) =>
-                  //             value.isEmpty ? 'Images Field can\'t be empty' : null,
-                  //         onSaved: (value) => _url = value,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
+                  Padding(
+                      padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
+                      child: DropdownButtonFormField(
+                        isDense: true,
+                        items: _councilList.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(convertToCouncilName(location)),
+                      value: location,
+                    );
+                  }).toList(),
+                        onChanged: (newValue) => _onSelectedCouncil(convertFromCouncilName(newValue)),
+                        hint: Text('Choose Council'),
+                        value:  _council = widget._update.value['council'],
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Council Field can\'t be empty'
+                            : null,
+                        onSaved: (value) => _council = convertFromCouncilName(value),
+                      )),
+                      Padding(
+                  padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
+                  child: DropdownButtonFormField(
+                    items: _entityList.map((location) {
+                    return DropdownMenuItem(
+                      child: new Text(location),
+                      value: location,
+                    );
+                  }).toList(), 
+                    isDense: true,
+                    onChanged: (newValue)=> _onSelectedEntity(newValue),
+                    hint: Text(
+                              'Choose Club'),
+                    value: _subs = widget._update.value['sub'][0],
+                    validator: (value) =>
+                     value ==null || value.isEmpty ? 'Club Field can\'t be empty' : null,
+                    onSaved: (value)=>_subs = value,
+                  )
+            ),
+                  //tags to made
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
+                    child: Row(
+                      children: <Widget>[
+                        Container(
+                         width: MediaQuery.of(context).size.width - 150.0,
+                          child: new TextFormField(
+                            maxLines: null,
+                            controller: _tagController,
+                            readOnly: true,
+                            keyboardType: TextInputType.multiline,
+                            autofocus: false,
+                            enabled: false,
+                            // initialValue: converToString(widget._update.value['tags']),
+                            decoration: new InputDecoration(
+                              labelText: 'Tags',
+                              hintText: 'Click \'+\' button to add tags',
+                              // icon: new Icon(
+                              //   Icons.mail,
+                              //   color: Colors.grey,
+                              // )
+                            ),
+                            validator: (value) =>
+                                value.isEmpty ? 'Tags can\'t be empty' : null,
+                            onSaved: (value) {
+                              _tag = value;
+                            },
+                          ),
+                        ),
+                        Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: IconButton(
+                        tooltip: 'Add tags',
+                          icon: Icon(
+                            Icons.add,
+                            
+                            size: 30.0,
+                          ),
+                          onPressed: () {
+                            addingTag();
+                            // BottomSheet(onClosing: null, builder: null)
+                          }),
+                    )
+                      ],
+                    ),
+                  ),
+                  
                   Container(
                     // width: 100.0,
                     // height: 100.0,
@@ -325,41 +402,7 @@ class _EditDraftState extends State<EditDraft> {
                               onSaved: (_url) => _url,
                             ),
                         ),
-                            // child: Column(
-                            //     crossAxisAlignment: CrossAxisAlignment.start,
-                            //     children: <Widget>[
-                            //       _url != null
-                            //           ? SizedBox(
-                            //               height: 15.0,
-                            //             )
-                            //           : SizedBox(height: 5.0),
-                            //       _url != null
-                            //           ? Text('Image Url',
-                            //               style: TextStyle(
-                            //                   fontSize: 12.0, color: Colors.grey))
-                            //           : Text(''),
-                            //       SizedBox(
-                            //         height: 5.0,
-                            //       ),
-                            //       _url == null
-                            //           ? Text(
-                            //               'Image Url',
-                            //               style: TextStyle(
-                            //                   color: Colors.grey, fontSize: 16),
-                            //             )
-                            //           : Text(
-                            //               _url,
-                            //               maxLines: 1,
-                            //               overflow: TextOverflow.ellipsis,
-                            //               style: TextStyle(fontSize: 16),
-                            //             ),
-                            //       _url != null
-                            //           ? SizedBox(
-                            //               height: 5.0,
-                            //             )
-                            //           : SizedBox(height: 10.0),
-                            //       Divider(color: Colors.grey)
-                            //     ])),
+                        
                         Padding(
                           padding: const EdgeInsets.only(
                             top: 15.0,
@@ -558,137 +601,7 @@ class _EditDraftState extends State<EditDraft> {
                     ),
                   ),
                   //council dropdown to make
-                  Padding(
-                      padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
-                      // child: ListView.builder(
-                      //     shrinkWrap: true,
-                      //     itemCount: selectCouncil.length,
-                      //     itemBuilder: (BuildContext context, int index) {
-                      //       // var _selected;
-                      //       _council = 'SnT';
-                      //       return DropdownButton(
-                      //         itemHeight: 60.0,
-                      //         hint: Text(
-                      //             'Choose Council'), // Not necessary for Option 1
-                      //         value: _council,
-                      //         onChanged: (newValue) {
-                      //           setState(() {
-                      //             _council = newValue;
-                      //           });
-                      //         },
-                      //         items: selectCouncil.map((location) {
-                      //           return DropdownMenuItem(
-                      //             child: new Text(location),
-                      //             value: location,
-                      //           );
-                      //         }).toList(),
-                      //       );
-                      //     })
-                      child: DropdownButtonFormField(
-                        isDense: true,
-                        items: _selectItem,
-                        onChanged: (newValue) {
-                          setState(() {
-                            print(widget._update.value['council']);
-                            // buildsubs();
-                            // _firstSelected = true;
-                            _council = newValue;
-                          });
-                        },
-                        hint: Text('Choose Council'),
-                        value: widget._update.value['council'] == 'snt'||widget._update.value['council'] =='SnT' ? 'SnT' : null,
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Council Field can\'t be empty'
-                            : null,
-                        onSaved: (value) => _council = value,
-                      )),
-                      Padding(
-                  padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0.0),
-                  child: DropdownButtonFormField(
-                    items: _selectSub, 
-                    isDense: true,
-                    onChanged: (newValue){
-                      // print(_council);
-                      setState(() {
-                        _subs = newValue;
-                      });
-                    },
-                    hint: Text(
-                              'Choose Club'),
-                    value: widget._update.value['sub']!=null? widget._update.value['sub'][0]:_subs,
-                    validator: (value) =>
-                     value ==null || value.isEmpty ? 'Club Field can\'t be empty' : null,
-                    onSaved: (value)=>_subs = value,
-                  )
-            ),
-                  //tags to made
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                    child: Row(
-                      children: <Widget>[
-                        Container(
-                         width: MediaQuery.of(context).size.width - 150.0,
-                          child: new TextFormField(
-                            maxLines: null,
-                            controller: _tagController,
-                            readOnly: true,
-                            keyboardType: TextInputType.multiline,
-                            autofocus: false,
-                            enabled: false,
-                            // initialValue: converToString(widget._update.value['tags']),
-                            decoration: new InputDecoration(
-                              labelText: 'Tags',
-                              hintText: 'Click \'+\' button to add tags',
-                              // icon: new Icon(
-                              //   Icons.mail,
-                              //   color: Colors.grey,
-                              // )
-                            ),
-                            validator: (value) =>
-                                value.isEmpty ? 'Tags can\'t be empty' : null,
-                            onSaved: (value) {
-                              _tag = value;
-                            },
-                          ),
-                        ),
-                        Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: IconButton(
-                        tooltip: 'Add tags',
-                          icon: Icon(
-                            Icons.add,
-                            
-                            size: 30.0,
-                          ),
-                          onPressed: () {
-                            addingTag();
-                            // BottomSheet(onClosing: null, builder: null)
-                          }),
-                    )
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
-                    child: new TextFormField(
-                      maxLines: 1,
-                      keyboardType: TextInputType.text,
-                      autofocus: false,
-                      initialValue: widget._update.value['message'],
-                      decoration: new InputDecoration(
-                        labelText: 'Messsage',
-                        hintText:
-                            'Subtitile to be displayed in the notifications panel ',
-                        // icon: new Icon(
-                        //   Icons.mail,
-                        //   color: Colors.grey,
-                        // )
-                      ),
-                      validator: (value) =>
-                          value.isEmpty ? 'Message can\'t be empty' : null,
-                      onSaved: (value) => _message = value,
-                    ),
-                  ),
+                  
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                     child: new TextFormField(
@@ -760,6 +673,26 @@ class _EditDraftState extends State<EditDraft> {
                 : Container()
           ],
         ));
+  }
+  void _onSelectedCouncil(String value) {
+    if( _council!=value){
+      setState(() {
+      // _selectedEntity = "Choose ..";
+      // _entity = ["Choose .."];
+      _council = value;
+      _subs = null;
+      if(_entityList.length!=0){
+        _entityList.clear();
+      }
+      _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(value));
+    });
+    }
+  }
+
+  void _onSelectedEntity(String value) {
+    setState(() {
+      _subs = value;
+    });
   }
   addingTag() {
     return showModalBottomSheet(

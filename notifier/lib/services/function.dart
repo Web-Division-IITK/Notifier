@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/rendering.dart';
+import 'package:intl/intl.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart';
-import 'package:intl/intl.dart';
 import 'package:notifier/model/notification.dart';
-import 'package:notifier/screens/home.dart';
+import 'package:notifier/model/options.dart';
 import 'package:notifier/services/databse.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -58,33 +58,49 @@ removeValues() async {
     return null;
   }
 }
-createTagsToList(String tags){
+
+createTagsToList(String tags) {
   return tags.split(';');
 }
+
+proc() async{
+  var val;
+  var db = Firestore.instance;
+ return await  db.collection('users').getDocuments().then((var v){
+    
+    Future.delayed(Duration(seconds: 4), () => (val = v.documents));
+    
+    return val;
+  });
+// yield val;
+}
+
+
 Future<bool> procedure() async {
   // var notfs = List();
   Map<String, dynamic> notfication = {};
-  return await fileExists('snt').then((bool sntExists)async{
+  return await fileExists('snt').then((bool sntExists) async {
     print(sntExists.toString() + 'sntExists line62 of function.dart');
-  if (!sntExists) {
-    return await p1(notfication);
-  } else {
-    return await readContent('snt').then((var value) async {
-      if (value != null) {
-        notfication = value;
-        print('value exists of snt line69 function.dart:' + notfication.toString());
-        return await p1(notfication);
-      } else {
-        return await p1(notfication);
-      }
-    });
-  }
+    if (!sntExists) {
+      return await p1(notfication);
+    } else {
+      return await readContent('snt').then((var value) async {
+        if (value != null) {
+          notfication = value;
+          print('value exists of snt line69 function.dart:' +
+              notfication.toString());
+          return await p1(notfication);
+        } else {
+          return await p1(notfication);
+        }
+      });
+    }
   });
-  
 }
-Future<bool>p1(Map<String,dynamic> notification) async{
+
+Future<bool> p1(Map<String, dynamic> notification) async {
   var db = Firestore.instance;
-  return await getStringValuesSF().then((String lastTime)async{
+  return await getStringValuesSF().then((String lastTime) async {
     print(lastTime.toString() + 'lasttime line81 funtion.dart');
     if (lastTime == '0') {
       return await db
@@ -246,7 +262,8 @@ Future<Res> createPostForNotifs(
   });
   print(value);
   String json = '$value';
-  String url = 'https://us-central1-notifier-snt.cloudfunctions.net/makePost';
+  String url =
+      'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost';
   try {
     Response response = await post(url, headers: headers, body: json);
     int statusCode = response.statusCode;

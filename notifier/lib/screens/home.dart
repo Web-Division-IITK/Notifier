@@ -4,11 +4,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/data/data.dart';
 import 'package:notifier/main.dart';
 import 'package:notifier/model/notification.dart';
+import 'package:notifier/model/options.dart';
 import 'package:notifier/model/todo.dart';
 import 'package:notifier/screens/about.dart';
 import 'package:notifier/screens/posts/drafts/drafts.dart';
@@ -29,7 +31,7 @@ class HomePage extends StatefulWidget {
   HomePage(
       {Key key, this.darkMode, this.auth, this.userId, this.logoutCallback})
       : super(key: key);
-  bool darkMode;
+  final bool darkMode;
   final BaseAuth auth;
   final VoidCallback logoutCallback;
   final String userId;
@@ -37,19 +39,22 @@ class HomePage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() => new _HomePageState();
 }
-
+String name;
 bool admin;
+
 // List<dynamic> sortedarray = List();
 // List<UpdatePostsFormat> timenots = List();
 
+  Councils allCouncilData;
 class _HomePageState extends State<HomePage> {
   // List<Todo> _todoList;
   var id;
   final FirebaseMessaging _fcm = FirebaseMessaging();
-  String _name;
+  final FlutterLocalNotificationsPlugin _flnp = FlutterLocalNotificationsPlugin();
+  // String _name;
   String _rollno;
-  List<String> ids = List();
-  List<dynamic> _prefs = List();
+  List<dynamic> ids = List();
+  List<dynamic> _prefs = [];
   String display;
   String bodyMsg;
   String data;
@@ -206,7 +211,25 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
-
+  Future<Councils> fullData()async{
+    return await councilData().then((var data) async{
+      if(data!=null){
+        print(data);
+        allCouncilData = data;
+        for (var i in allCouncilData.subCouncil) {
+          ids+= i.level2;
+        }
+      return allCouncilData;
+      }else{
+        setState(() {
+          error = true;
+        });
+        return null;
+        // buildErrorWidget;
+      }
+    });
+  }
+ var _councilDataForMe;
   @override
   void initState() {
     super.initState();
@@ -215,6 +238,7 @@ class _HomePageState extends State<HomePage> {
     _fcm.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage :$message" + ' isthe message');
+         showNotification(message['data']);
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
         loadSnt();
@@ -231,7 +255,7 @@ class _HomePageState extends State<HomePage> {
         print("onResume : $message" + 'is fromResume');
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
+          loadSnt();
           // newNotf = true;
           bodyMsg = message['notification']['body'];
           display = message['notification']['title'];
@@ -242,7 +266,7 @@ class _HomePageState extends State<HomePage> {
         print("onLaunch: $message" + ':is fromLaunch');
         setState(() {
           // addStringToSF(DateTime.now().toIso8601String());
-          // loadEVERY();
+          loadSnt();
           // newNotf = true;
           bodyMsg = message['notification']['body'];
           display = message['notification']['title'];
@@ -251,113 +275,170 @@ class _HomePageState extends State<HomePage> {
       },
       onBackgroundMessage: myBackgroundMessageHandler,
     );
-    readContent('users').then((var value) async {
-      print(value.toString() + ' readinng value from users');
-      if (value != null) {
-        print(value);
-        setState(() {
-          uid = value['uid'];
-          id = value['id'];
-          admin = value['admin'];
-          _prefs = value['prefs'];
-          _name = value['name'];
-          _rollno = value['rollno'];
-          // print(_prefs + ['Science and Technology Council']);
+    configLocalNotification();
+    fullData().then((var val){
+      if(val !=null){
+        readContent('users').then((var value) async {
+          print(value.toString() + ' readinng value from users');
+          if (value != null) {
+            print(value);
+            setState(() {
+              uid = value['uid'];
+              id = value['id'];
+              admin = value['admin'];
+              _prefs = value['prefs'];
+              name = value['name'];
+              _rollno = value['rollno'];
+              // var prefer =[];
+              // Map<String,Map<String,Iterable<String>>> data;
+              _councilDataForMe = value['council'];
+              print(_councilDataForMe);
+              _councilDataForMe.keys.forEach((key){
+                _prefs += (_councilDataForMe[key]["entity"] + _councilDataForMe[key]["misc"]);
+              });
+              // print(prefer);
+               allCouncilData.subCouncil.forEach((f){
+            //      for (var i in f.entity) {
+            //        var index = f.entity.indexOf(i);
+            //      if(_prefs.contains(i)){
+            //   // setState(() {
+            //         f.select.insert(index, true);
+            //     // print(true);
+            //   // });
+            //     }
+            //       else{
+            //   // setState(() {
+            //     f.select.insert(index, false);
+            //   // });
+            // }
+            //    }
+               });
+              // print(_prefs + ['Science and Technology Council']);
 
-          print('reading users preferences' + value.toString());
-          subscribeUnsubsTopic(_prefs, []);
-          print(admin);
-          if (admin != null && (admin == true)) {
-            fileExists('people').then((bool fileExists) async {
-              if (!fileExists) {
-                // people = true;
-                populatePeople(id).then((var status) async {
-                  print(status.toString() + ' status for people');
-                  if (status) {
-                    // await fileExists('people').then((bool v) {
-                    //   if (v) {
-                    print('reading people');
-                    readPeople().then((var val) {
-                      print(val);
-                      if (val != null) {
-                        for (var i in val['sub']) {
-                          _subs.add(i.toString());
-                          print(i);
+              print('reading users preferences' + value.toString());
+              subscribeUnsubsTopic(_prefs.toList(), []);
+              print(admin);
+              if (admin != null && (admin == true)) {
+                fileExists('people').then((bool fileExists) async {
+                  if (!fileExists) {
+                    // people = true;
+                    populatePeople(id).then((var status) async {
+                      print(status.toString() + ' status for people');
+                      if (status) {
+                        // await fileExists('people').then((bool v) {
+                        //   if (v) {
+                        print('reading people');
+                        readPeople().then((var val) {
+                          print(val);
+                          if (val != null) {
+                            if(val['councils']!=null)
+                            {
+                              allCouncilData.coordOfCouncil = val['councils'].cast<String>(); 
+                              for (var i in val['councils']) {
+                              var index = allCouncilData.globalCouncils.indexOf(i);
+                              // _subs.add(i.toString());
+                              // print(i);
+                              allCouncilData.subCouncil[index].coordiOfInCouncil = val['$i'].cast<String>();
+                            }
+                            }
+                            
+                          } else {
+                            print('file Is empty');
+                          }
+                        });
+                      }
+                    });
+                  } else {
+                    readPeople().then((var v) async {
+                      if (v == null) {
+                        if (peopleArr == null) {
+                          return await populatePeople(id).then((var status) async {
+                            print(status.toString() + ' status for people');
+                            if (status) {
+                              // await fileExists('people').then((bool v) {
+                              //   if (v) {
+                              print('reading people');
+                              readPeople().then((var val) {
+                                if (val != null) {
+                                  if(val['councils']!=null)
+                            {
+                              allCouncilData.coordOfCouncil = val['councils'].cast<String>(); 
+                              for (var i in val['councils']) {
+                              var index = allCouncilData.globalCouncils.indexOf(i);
+                              // _subs.add(i.toString());
+                              // print(i);
+                              allCouncilData.subCouncil[index].coordiOfInCouncil = val['$i'].cast<String>();
+                            }
+                            }
+                                } else {
+                                  print('file Is empty');
+                                }
+                              });
+                            }
+                          });
+                        } else {
+                          return await writeContent(
+                                  'people', json.encode(peopleArr))
+                              .whenComplete(() {
+                            print('done!! people');
+                           if (v != null) {
+                                  if(v['councils']!=null)
+                            {
+                              allCouncilData.coordOfCouncil = v['councils'].cast<String>(); 
+                              for (var i in v['councils']) {
+                              var index = allCouncilData.globalCouncils.indexOf(i);
+                              // _subs.add(i.toString());
+                              // print(i);
+                              allCouncilData.subCouncil[index].coordiOfInCouncil = v['$i'].cast<String>();
+                            }
+                            }
+                                } else {
+                                  print('file Is empty');
+                                }
+                            //  return people = true;
+                          });
                         }
                       } else {
-                        print('file Is empty');
+                        print(v);
+                        if (v != null) {
+                          if (v != null) {
+                                if(v['councils']!=null){
+                                  allCouncilData.coordOfCouncil = v['councils'].cast<String>(); 
+                                  for (var i in v['councils']) {
+                                    var index = allCouncilData.globalCouncils.indexOf(i);
+                                    // _subs.add(i.toString());
+                                    // print(i);
+                                    allCouncilData.subCouncil[index].coordiOfInCouncil = v['$i'].cast<String>();
+                                  }
+                                }
+                                } else {
+                                  print('file Is empty');
+                                }
+                        } else {
+                          print('file Is empty');
+                        }
+                        return false;
                       }
                     });
                   }
                 });
+                // );
+              } else if (id == null) {
+                print('id is null');
               } else {
-                readPeople().then((var v) async {
-                  if (v == null) {
-                    if (peopleArr == null) {
-                      return await populatePeople(id).then((var status) async {
-                        print(status.toString() + ' status for people');
-                        if (status) {
-                          // await fileExists('people').then((bool v) {
-                          //   if (v) {
-                          print('reading people');
-                          readPeople().then((var val) {
-                            if (val != null) {
-                              for (var i in val['sub']) {
-                                _subs.add(i.toString());
-                                print(i);
-                              }
-                            } else {
-                              print('file Is empty');
-                            }
-                          });
-                          // } else {
-                          //   print('filealready exists');
-                          // }
-                          // });
-                          // }
-                          // });
-                        }
-                      });
-                    } else {
-                      return await writeContent(
-                              'people', json.encode(peopleArr))
-                          .whenComplete(() {
-                        print('done!! people');
-                        setState(() {
-                          for (var i in v['sub']) {
-                            _subs.add(i.toString());
-                            // print(i['id']);
-                            print(_subs);
-                          }
-                        });
-                        //  return people = true;
-                      });
-                    }
-                  } else {
-                    print(v);
-                    if (v != null) {
-                      for (var i in v['sub']) {
-                        _subs.add(i.toString());
-                        // print(i['id']);
-                        print(_subs);
-                      }
-                    } else {
-                      print('file Is empty');
-                    }
-                    return false;
-                  }
-                });
+                print(id);
               }
             });
-            // );
-          } else if (id == null) {
-            print('id is null');
-          } else {
-            print(id);
           }
         });
       }
+      else if(val == null){
+        setState(() {
+          error = true;
+        });
+      }
     });
+    // Future.delayed(Duration(seconds: 2),() => print('rendering home'));
     loadSnt();
   }
    
@@ -366,6 +447,14 @@ class _HomePageState extends State<HomePage> {
     return Container(
       alignment: Alignment.center,
       child: CircularProgressIndicator(),
+    );
+  }
+  Widget buildErrorScreen() {
+    return Container(
+      alignment: Alignment.center,
+      child: Center(
+        child: Text('Error while Loading'),
+      )
     );
   }
 
@@ -386,13 +475,6 @@ class _HomePageState extends State<HomePage> {
               ),
               Tab(text: 'All'),
             ]),
-            //   IconButton(
-            //       icon: Icon(Icons.refresh),
-            //       onPressed: () {
-            //         loadEVERY();
-            //       })
-            // ],
-            // flexibleSpace: ,
           ),
           drawer: Drawer(
               child: ListView(
@@ -414,7 +496,7 @@ class _HomePageState extends State<HomePage> {
                         children: <Widget>[
                           CircleAvatar(
                             radius: 50.0,
-                            // backgroundColor: Colors.blue,
+                            backgroundColor: Colors.blue,
                             child: Text(
                                 name == null || name == ''
                                     ? id[0].toUpperCase()
@@ -446,6 +528,8 @@ class _HomePageState extends State<HomePage> {
                           widget.auth,
                           widget.logoutCallback,
                           widget.userId,
+                          allCouncilData,
+                          true
                         );
                       }));
                     },
@@ -457,7 +541,7 @@ class _HomePageState extends State<HomePage> {
                               TextStyle(fontSize: 20.0, fontFamily: 'Nunito')),
                     )),
               ),
-              (id == 'adtgupta' || id == 'utkarshg' || id == 'sntsecy')
+              (allCouncilData !=null&&( allCouncilData.level3.contains(id) || ids.contains(id)))
                   ? Container(
                       height: 55.0,
                       child: InkWell(
@@ -468,6 +552,8 @@ class _HomePageState extends State<HomePage> {
                                 builder: (BuildContext context) {
                               return MakeCoordi(
                                 ids,
+                                allCouncilData,
+                                id,
                                 widget.auth,
                                 widget.logoutCallback,
                                 widget.userId,
@@ -485,7 +571,7 @@ class _HomePageState extends State<HomePage> {
                           )),
                     )
                   : Container(),
-              (admin == true)
+              (admin !=null && admin == true)
                   ? Container(
                       height: 55.0,
                       child: InkWell(
@@ -493,7 +579,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (BuildContext context) {
-                              return CreatePosts(id, _subs);
+                              return CreatePosts(id, _subs,name);
                             }));
                           },
                           child: Container(
@@ -507,7 +593,7 @@ class _HomePageState extends State<HomePage> {
                           )),
                     )
                   : Container(),
-              (admin == true)
+              (admin !=null && admin == true)
                   ? Container(
                       height: 55.0,
                       child: InkWell(
@@ -529,7 +615,7 @@ class _HomePageState extends State<HomePage> {
                           )),
                     )
                   : Container(),
-                  (admin == true)
+                  (admin !=null && admin == true)
                   ? Container(
                       height: 55.0,
                       child: InkWell(
@@ -585,22 +671,22 @@ class _HomePageState extends State<HomePage> {
                           onTap: () async{
                             // var v = proc();
                             // print(v);
-                            var db = Firestore.instance;
-                            await db.collectionGroup('posts/council').getDocuments().then((var v){
-                              print(v);
-                              v.documents.forEach((f){
-                                print(f.documentID);
-                              });
-                            });
-                            await db.collection('posts').document('council').collection('gnc').getDocuments().then((onValue){
-                              print(onValue.documents.iterator.current);
-                            });
+                            // var db = Firestore.instance;
+                            // await db.collectionGroup('posts/council').getDocuments().then((var v){
+                            //   print(v);
+                            //   v.documents.forEach((f){
+                            //     print(f.documentID);
+                            //   });
+                            // });
+                            // await db.collection('posts').document('council').collection('gnc').getDocuments().then((onValue){
+                            //   print(onValue.documents.iterator.current);
+                            // });
                             // print(_councilDataForMe["ss"].entity);
-                            // Navigator.of(context).pop();
-                            // Navigator.of(context).push(MaterialPageRoute(
-                            //     builder: (BuildContext context) {
-                            //   return AboutPage();
-                            // }));
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) {
+                              return AboutPage();
+                            }));
                           },
                           child: Container(
                             padding: EdgeInsets.only(
