@@ -1,7 +1,8 @@
 import 'package:hive/hive.dart';
-import 'package:notifier/model/hive_allCouncilData.dart';
-import 'package:notifier/model/hive_model.dart';
-import 'package:notifier/model/people_hive.dart';
+import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
+import 'package:notifier/model/hive_models/hive_model.dart';
+import 'package:notifier/model/hive_models/people_hive.dart';
+import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:path_provider/path_provider.dart';
 // import 'package:hive/hive.dart';
 /// don't forget to include null also
@@ -13,6 +14,7 @@ class HiveDatabaseUser{
   static Box _userBox;
   static Box _peopleBox;
   static Box _councilBox;
+  static Box _studSearch;
   Future<Box> initHive()async{
     // if(getBoxWithDatabase() == null){
     //   return null;
@@ -29,6 +31,9 @@ class HiveDatabaseUser{
          Hive.registerAdapter(CouncilsAdapter());
          Hive.registerAdapter(SubCouncilAdapter());
          break;
+      case 'ss':
+        Hive.registerAdapter(SearchModelAdapter());
+        break;
       default:Hive.registerAdapter(UserModelAdapter());
       
         break;
@@ -50,6 +55,8 @@ class HiveDatabaseUser{
     }else if(databaseName == 'councilData'){
       _councilBox = await Hive.openBox(databaseName);
        return _councilBox;
+    }else if(databaseName == 'ss'){
+      _studSearch = await Hive.openBox(databaseName);
     }else{
       return null;
     }
@@ -62,6 +69,8 @@ class HiveDatabaseUser{
       case 'people':return _peopleBox;
       break;
       case 'councilData' :return _councilBox;
+      break;
+      case 'ss':  return _studSearch;
       break;
       default: return null;
     }

@@ -3,7 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:notifier/database/hive_database.dart';
-import 'package:notifier/model/hive_model.dart';
+import 'package:notifier/model/hive_models/hive_model.dart';
+import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/map/map.dart';
 import 'package:notifier/services/beautify_body.dart';
@@ -29,22 +30,31 @@ class _ProfilePageState extends State<ProfilePage> {
   bool _load;
   String rollno;
   Box userBox;
+  Box _stuSearch;
   // List<Widget> preferences = List();
   Future<bool> preferen() async {
+    _stuSearch = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
     userBox = await HiveDatabaseUser().hiveBox;
     if(userBox.isNotEmpty){
       UserModel model = userBox.toMap()[0];
+      List<SearchModel> list = _stuSearch.toMap().values.toList().cast<SearchModel>();
+      print(list.length);
+      List<SearchModel> val = list.where((test)=>test.username == id).toList();
+      
       _jsonData = model.toMap();
         setState(() {
-          name = _jsonData['name'];
-          rollno = _jsonData['rollno'];
+          val[0].name = name;
+          print(val[0].toMap());
+          // name = _jsonData['name'];
+          val[0].rollno = rollno;
+          print(val[0].rollno);
+          // rollno = _jsonData['rollno'];
           // print(_jsonData);
           // print(_jsonData['prefs']);
         });
         // print(_jsonData);
         return true;
-    }
-    return false;
+    }    return false;
     // return await readContent('users').then((var value) {
     //   if (value != null) {
         

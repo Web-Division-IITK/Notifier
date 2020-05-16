@@ -8,9 +8,11 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/reminder.dart';
+import 'package:notifier/database/student_search.dart';
 import 'package:notifier/main.dart';
-import 'package:notifier/model/hive_allCouncilData.dart';
-import 'package:notifier/model/people_hive.dart';
+import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
+import 'package:notifier/model/hive_models/people_hive.dart';
+import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/about.dart';
 import 'package:notifier/screens/all_posts.dart';
@@ -22,6 +24,7 @@ import 'package:notifier/screens/posts/presi.dart';
 import 'package:notifier/screens/posts/update_drafts_list.dart';
 import 'package:notifier/screens/preferences.dart';
 import 'package:notifier/screens/profile.dart';
+import 'package:notifier/screens/stu_search/stu_search.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:notifier/database/hive_database.dart';
@@ -407,30 +410,6 @@ class _HomePageState extends State<HomePage> {
                                     userData
                                   );
                             }));
-                          // if(result == 'reload'){
-                          //   setState(() {
-                          //     _load = true;
-                          //   });
-                          //   await loadUser().then((var v)async{
-                          //     if(v){                              
-                          //       return await loadHome();
-                          //     }else{
-                          //         subscribeUnsubsTopic(_prefs, []);
-                          //         print(globalPostsArray);
-                                  
-                          //         // print(/)
-                          //         setState(() {
-                          //           _errorWidget = true;
-                          //           _load = false;
-                          //           _errorRefreshFunction = fullData();
-                          //         });
-                          //         setState(() {
-                                    
-                          //         });
-                          //       }
-
-                          //   });
-                          // }
                         },
                         child:Container(
                   height: 55.0,
@@ -656,6 +635,33 @@ class _HomePageState extends State<HomePage> {
                             ),
                           )
                         ),
+                  InkWell(
+                        onTap: () async {
+                          // getStudentData();
+                          // List<SearchModel> list = await StuSearchDatabase().getAllStuData();
+                          // print(list);
+                          // list.retainWhere((text)=>text.rollno.toLowerCase().contains("1900") && text.name.toLowerCase().contains("ad"));
+                          // print(list);
+                          Navigator.of(context).pop();
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(builder: (BuildContext context) {
+                              return StudentSearch();
+                            }));
+                        },
+                        child:Container(
+                  height: 55.0,
+                  padding: EdgeInsets.only(left:15.0),
+                  child:  Row(
+                          children: <Widget>[
+                            Icon(Octicons.settings),Container(
+                                padding: EdgeInsets.only(left: 15.0, top: 15.0, bottom: 15.0),
+                                child: Text('Student Search',
+                                  style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito')),
+                              ),
+                          ],
+                        ),
+                      ),
+                  ),
                   Container(
                     height: 55.0,
                     padding: EdgeInsets.only(left:15.0, top: 15.0, bottom: 15.0),

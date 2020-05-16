@@ -26,9 +26,14 @@ class _RootPageState extends State<RootPage> {
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
   String _userId = "";
   bool loading = true;
+  static int i = 0;
   @override
   void initState() {
     super.initState();
+    if (i == 0) {
+      getStudentData();
+      i++;
+    }
     widget.auth.getCurrentUser().then((user) {
       print(user);
       setState(() {

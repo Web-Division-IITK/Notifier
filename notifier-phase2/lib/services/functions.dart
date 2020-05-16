@@ -9,7 +9,9 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/database/reminder.dart';
-import 'package:notifier/model/hive_allCouncilData.dart';
+import 'package:notifier/database/student_search.dart';
+import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
+import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
@@ -244,6 +246,7 @@ Future<dynamic> allData() async {
     if (httpResponse.statusCode != 200) {
       // jsonResponse = 'errorObtaining';
       jsonResponse = null;
+      return null;
     }
     final responseBody = await httpResponse.transform(utf8.decoder).join();
     jsonResponse = json.decode(responseBody);
@@ -262,6 +265,51 @@ Future<dynamic> allData() async {
 
   return jsonResponse;
 }
+
+
+Future<bool> getStudentData() async{
+  Box _stuData = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
+  final HttpClient _httpClient = HttpClient();
+  var jsonResponse;
+  try {
+    final uri = Uri.https('us-central1-notifier-phase-2.cloudfunctions.net',
+        '/getStudData'); 
+    final httpRequest = await _httpClient.getUrl(uri);
+    final httpResponse = await httpRequest.close();
+    if (httpResponse.statusCode != 200) {
+      jsonResponse = null;
+      return false;
+    }
+    final responseBody = await httpResponse.transform(utf8.decoder).join();
+    jsonResponse = json.decode(responseBody);
+    var map = Map.fromIterable(jsonResponse,key: (item){return item['roll'].toString();},value: (item){
+          // print(item);
+          return SearchModel.fromMap(item);
+    });
+    print(map);
+    if (_stuData != null&&_stuData.isNotEmpty) {
+      _stuData.clear();
+    }
+    _stuData = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
+    
+    return 
+    // await Future.forEach(jsonResponse, (student)async{
+      await _stuData.addAll(map.values.toList())
+      
+    // })
+    .then((_){
+      return true;
+    }).catchError((onError){
+      print(onError);
+      return false;
+    });
+  } on Exception catch (e) {
+    print('$e');
+    jsonResponse = null;
+    return false;
+  }
+}
+
 /// returns data or null;
 Future<Councils> councilData() async {
   Box box = await HiveDatabaseUser(databaseName: 'councilData').hiveBox;

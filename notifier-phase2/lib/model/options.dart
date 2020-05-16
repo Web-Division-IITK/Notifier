@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:notifier/model/hive_allCouncilData.dart';
+import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
 
 class People{
   // final String title;

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:notifier/database/reminder.dart';
-import 'package:notifier/model/hive_model.dart';
+import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/all_posts.dart';
 import 'package:notifier/screens/home.dart';

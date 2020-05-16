@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:notifier/model/hive_model.dart';
+import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/posts/post_desc.dart';

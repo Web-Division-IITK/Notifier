@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/hive_database.dart';
-import 'package:notifier/model/hive_allCouncilData.dart';
+import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
 import 'package:notifier/model/notification.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/screens/home.dart';
