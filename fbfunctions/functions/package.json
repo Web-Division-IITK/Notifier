@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "firebase-admin": "^8.9.0",
-    "firebase-functions": "^3.3.0"
+    "firebase-functions": "^3.3.0",
+    "mongoose": "^5.9.14"
   },
   "devDependencies": {
     "firebase-functions-test": "^0.1.6"

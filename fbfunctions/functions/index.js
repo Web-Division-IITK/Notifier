@@ -4,6 +4,35 @@ const fs=require('fs');
 admin.initializeApp();
 const db = admin.firestore();
 const fcm = admin.messaging();
+let mongoose = require('mongoose');
+const USER = require('./userSchema.js');
+var url = "mongodb+srv://webdivision:webdivision@cluster0-ke6fc.mongodb.net/studdata?retryWrites=true&w=majority";
+let options = {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useCreateIndex: true
+}
+
+function getAllStudData(){
+    var promiseforcheck = new Promise(function (resolve, reject) {
+        var userrecord = USER.find({}, function (err, docs) {
+            if (err || typeof docs[0] === 'undefined') reject(); else resolve(docs);
+        });
+    });
+    return promiseforcheck;
+}
+
+function updateStudData(data){
+    var conditions = {roll: data.roll}
+    var update = {$set : data}
+    var opts = {multi : false}
+    var prom = new Promise((resolve, reject) => {
+        USER.update(conditions, update, opts, function(err, numAffected){
+            resolve();
+        })
+    })
+    return prom;    
+}
 
 exports.makePost = functions.https.onRequest(async function (req, res) {
     // let FieldValue = require('firebase-admin').firestore.FieldValue
@@ -40,6 +69,7 @@ exports.makePost = functions.https.onRequest(async function (req, res) {
     })
     res.send(datax.id);
 })
+
 exports.makeNotification = functions.https.onRequest(async function (req, res) {
     // let FieldValue = require('firebase-admin').firestore.FieldValue
     // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
@@ -75,6 +105,7 @@ exports.makeNotification = functions.https.onRequest(async function (req, res) {
     // })
     res.send(datax.id);
 })
+
 exports.updateNotification = functions.https.onRequest(async function (req, res) {
     // let FieldValue = require('firebase-admin').firestore.FieldValue
     // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
@@ -180,6 +211,7 @@ exports.sendToTopicUpdate = functions.firestore.document('allPosts/{id}').onUpda
         await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
     });
 })
+
 exports.sendToTopicPermissionCreate = functions.firestore.document('notification/{id}').onCreate(async snapshot => {
     let data = snapshot.data();
     let sub = data.sub;
@@ -201,6 +233,7 @@ exports.sendToTopicPermissionCreate = functions.firestore.document('notification
         await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
     });
 })
+
 exports.sendToPermissionUpdate = functions.firestore.document('notification/{id}').onUpdate(async (change, context) => {
     let data = change.after.data();
     let sub = data.sub;
@@ -222,6 +255,7 @@ exports.sendToPermissionUpdate = functions.firestore.document('notification/{id}
         await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
     });
 })
+
 exports.sendToTopicDelete = functions.firestore.document('allPosts/{id}').onDelete(async snapshot => {
     let data = snapshot.data();
     let sub = data.sub;
@@ -328,3 +362,27 @@ exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
     }
     await db.collection('users').doc(user.uid).set(account);
 });
+
+exports.getStudData = functions.https.onRequest(async function (req, res) {
+    try {
+        let db = await mongoose.connect(url, options);
+        let data = await getAllStudData();
+        db.disconnect();
+        res.json(data);
+        res.end();
+    } catch (error) {
+        let data = JSON.parse(fs.readFileSync('hexml.json'));
+        res.json(data);
+        res.end();        
+    }
+})
+
+exports.updateStudData = functions.https.onRequest(async function (req, res) {
+    // needs `roll` to perform the edits: `hall`, `room`
+    let db = await mongoose.connect(url, options);
+    let data = req.body;
+    await updateStudData(data);
+    db.disconnect();
+    res.json(data);
+    res.end();
+})
