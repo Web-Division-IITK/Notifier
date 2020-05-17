@@ -555,8 +555,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return President(
-                                );
+                                return President();
                               }));
                           },
                           child: Container(
@@ -649,11 +648,11 @@ class _HomePageState extends State<HomePage> {
                             }));
                         },
                         child:Container(
-                  height: 55.0,
-                  padding: EdgeInsets.only(left:15.0),
-                  child:  Row(
+                        height: 55.0,
+                        padding: EdgeInsets.only(left:15.0),
+                        child:  Row(
                           children: <Widget>[
-                            Icon(Octicons.settings),Container(
+                            Icon(MaterialCommunityIcons.account_search),Container(
                                 padding: EdgeInsets.only(left: 15.0, top: 15.0, bottom: 15.0),
                                 child: Text('Student Search',
                                   style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito')),
@@ -698,12 +697,12 @@ class _HomePageState extends State<HomePage> {
                   ),
                   InkWell(
                     onTap: () async{
-                      showSuccessToast('Your ppost has been published successfully');
-                      // Navigator.of(context).pop();
-                      // Navigator.of(context).push(MaterialPageRoute(
-                      //   builder: (BuildContext context) {
-                      //     return AboutPage();
-                      // }));
+                      // showSuccessToast('Your ppost has been published successfully');
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) {
+                          return AboutPage();
+                      }));
                       // Fluttertoast.showToast(msg: 'Updating Done!!!!');                        
                     },
                     child:Container(

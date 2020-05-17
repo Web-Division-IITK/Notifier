@@ -84,12 +84,14 @@ class StudentCard extends StatelessWidget {
                         }
                       }),
                 ),
-                SizedBox(height: 5.0),
+                SizedBox(height: 10.0),
                 Text(
                   userData.name,
                   style: TextStyle(fontSize: 20.0),
                 ),
+                SizedBox(height: 5.0),
                 Text('(${userData.rollno})'),
+                SizedBox(height: 5.0),
                 Text('${userData.program}, ${userData.dept}'),
                 SizedBox(height: 3.0),
                 Text('${userData.room}, ${userData.hall}'),
@@ -99,7 +101,7 @@ class StudentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                SizedBox(height: 5.0),
+                SizedBox(height: 10.0),
                 Row(
                   children: <Widget>[
                     Icon(FontAwesome.home),
@@ -123,12 +125,11 @@ class StudentCard extends StatelessWidget {
                     RichText(
                       text: TextSpan(
                         text: '${userData.username}@iitk.ac.in',
-                        style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline),
+                        // style: TextStyle(
+                        //     color: Colors.blue,
+                        //     decoration: TextDecoration.underline),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // _service.sendEmail(b[0]);
                             launchMail('${userData.username}@iitk.ac.in');
                           },
                       ),
@@ -136,21 +137,31 @@ class StudentCard extends StatelessWidget {
                   ],
                 ),
                 Center(
-                  child: FlatButton.icon(
-                      onPressed: () {
-                        launchUrl(
-                            'https://home.iitk.ac.in/~${userData.username}');
-                      },
-                      icon: Icon(
-                        Entypo.globe,
-                        color: Colors.blue,
-                      ),
-                      label: Text(
-                        'HomePage',
-                        style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline),
-                      )),
+                  child: IconButton(
+                    icon:Icon(
+                      Entypo.globe,
+                      color: Colors.blue,
+                    ),
+                    tooltip: 'Homepage', 
+                    onPressed: () async{
+                      await launchUrl('http://home.iitk.ac.in/~${userData.username}');
+                    },
+                  ),
+                  // child: FlatButton.icon(
+                  //     onPressed: () {
+                  //       launchUrl(
+                  //           'https://home.iitk.ac.in/~${userData.username}');
+                  //     },
+                  //     icon: Icon(
+                  //       Entypo.globe,
+                  //       color: Colors.blue,
+                  //     ),
+                  //     label: Text(
+                  //       'HomePage',
+                  //       style: TextStyle(
+                  //           color: Colors.blue,
+                  //           decoration: TextDecoration.underline),
+                  //     )),
                 )
               ],
             )

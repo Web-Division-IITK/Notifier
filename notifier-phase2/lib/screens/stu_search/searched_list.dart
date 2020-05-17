@@ -14,7 +14,13 @@ class SearchedList extends StatelessWidget {
   Widget build(BuildContext context) {
     list.sort((a, b) => a.name.compareTo(b.name));
     return Scaffold(
-      appBar: AppBar(title: Text('Search Results')),
+      appBar: AppBar(title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Text('Search Results'),
+          list.length !=0?(list.length.toString()):Container(),
+        ],
+      )),
       body: list == null || list.length == 0
           ? Container(
               child: Center(
@@ -31,14 +37,11 @@ class SearchedList extends StatelessWidget {
                               size: 35.0,
                             ),
                             SizedBox(width: 10.0),
-                            Text('No Results found!!.',
+                            Text('No results found !!!',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 18.0)),
                           ],
                         ),
-                        // Text('\nYou can search only with title, \nclub/entity, tags and\n council ( also short forms like snt ) of a post',
-                        //   textAlign: TextAlign.center,
-                        // ),
                       ],
                     ),
                   ],
@@ -169,7 +172,6 @@ class ListItemStudent extends StatelessWidget {
           if (res.statusCode != 200) {
             return 'assets/profilepic.jpg';
           }
-          // print(res.bodyBytes);
           return url1;
         }
         return url;

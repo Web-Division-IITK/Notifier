@@ -386,7 +386,7 @@ class _StudentSearchState extends State<StudentSearch> {
                           initialValue: search1,
                           decoration: new InputDecoration(
                             // labelText: '',
-                            hintText: 'Name, UserName or Roll No',
+                            hintText: 'Name, Username or Roll No',
                           ),
                           onSaved: (value){
                             if(value!=null && value.isNotEmpty && value.trim()!=null && value.trim().isNotEmpty){
@@ -395,7 +395,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                     // return true;
                                     values.username = value;
                                     values.rollno = value;
-                                     return  values.name =  value;
+                                     return  values.name = value;
                                   }else{
                                     values.username = '';
                                     values.rollno = '';
@@ -414,10 +414,6 @@ class _StudentSearchState extends State<StudentSearch> {
                         child: RaisedButton.icon(
                           onPressed: ()async{
                             _formKey.currentState.save();
-                            // print(h);
-                            // print(studentData);
-                            // studentData.
-                            
                             String gendervalue ="";
                             studentData = _studentBox.toMap().values.toList().cast<SearchModel>();
                             if(values.gender == 'Any'){
@@ -469,7 +465,6 @@ bool checkifThereisAvalue(String value,String checkingValue){
   // if(value!=null && value.isNotEmpty && value.trim()!=null && value.trim().isNotEmpty){
     // print(checkingValue.toLowerCase().contains(value.toLowerCase()));
     return checkingValue.toLowerCase().contains(value.toLowerCase());
-    // return true;
   // }
   // return true;
 }
