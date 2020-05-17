@@ -32,7 +32,7 @@ class SearchModel{
 
   SearchModel({this.bloodGroup,this.dept,this.gender,this.hall,this.hometown,this.name,this.program,this.rollno,this.room,this.username,this.year});
   factory SearchModel.fromMap(jsonData){
-    String roll = jsonData['roll'].toString().substring(0,2);
+    String roll = jsonData['rollno'].toString().substring(0,2);
     String yearIndex = "";
     if(!roll.startsWith(RegExp(r'[0-9]')) ){
       yearIndex = "Others";
@@ -44,20 +44,32 @@ class SearchModel{
       }
     }
     return SearchModel(
-      bloodGroup: jsonData['blood_group'],
+      bloodGroup: jsonData['bloodGroup'],
       dept: jsonData['dept'],
       gender: jsonData['gender'],
       hall: jsonData['hall'],
       hometown: jsonData['hometown'],
       name: jsonData['name'],
       program: jsonData['program'],
-      rollno: jsonData['roll'],
+      rollno: jsonData['rollno'],
       room: jsonData['room'],
       username: jsonData['username'],
       year: yearIndex
     );
   }
-
+  fromMaptoMap(Map<String,dynamic> jsonData) =>{
+   'bloodGroup': jsonData['blood_group'],
+      'dept': jsonData['dept'],
+      'gender': jsonData['gender'],
+      'hall': jsonData['hall'],
+      'hometown': jsonData['hometown'],
+      'name': jsonData['name'],
+      'program': jsonData['program'],
+      'rollno': jsonData['roll'],
+      'room': jsonData['room'],
+      'username': jsonData['username'],
+      'year': 'Others'
+  };
   Map<String, dynamic> toMap() =>{
     'rollno':rollno,
     'name':name,

@@ -1,144 +1,19 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
-import 'package:notifier/model/options.dart';
 import 'package:notifier/model/hive_models/people_hive.dart';
 import 'package:notifier/model/posts.dart';
-import 'package:notifier/screens/home.dart';
 import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-// Future<String> get _localPath async {
-//   final directory = await getApplicationDocumentsDirectory();
-//   return directory.path;
-// }
 
-// Future<File> get _localFile async {
-//   print('users');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'users' + '.txt');
-// }
-
-// Future<File> get _localFileAllPosts async {
-//   final path = await _localPath;
-//   print('snt');
-//   return File('$path' + '/' + 'allPosts' + '.txt');
-// }
-
-// Future<File> get _localFilePeople async {
-//   print('people');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'people' + '.txt');
-// }
-// Future<File> get _localFileAllData async {
-//   print('allData');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'allData' + '.txt');
-// }
-// // Future<File> get _localFileNots async {
-// //   print('notification');
-// //   final path = await _localPath;
-// //   return File('$path' + '/' + 'nots' + '.txt');
-// // }
-
-// Future<File> get _localFilePosts async {
-//   print('posts');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'posts' + '.txt');
-// }
-// Future<File> get _localFileDrafts async {
-//   print('drafts');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'drafts' + '.txt');
-// }
-// Future<bool> fileExists(String fileName) async {
-//   final path = await _localPath;
-//   final file = File('$path' + '/' + '$fileName' + '.txt');
-//   return file.exists();
-// }
-
-// Future<File> createFile(String fileName) async {
-//   try {
-//     final path = await _localPath;
-//     final file = File('$path' + '/' + '$fileName' + '.txt');
-//     return file.create();
-//   } catch (e) {
-//     print('error ' + e.toString());
-//     return null;
-//   }
-// }
-
-// Future<Map<String, dynamic>> readPeople() async {
-//   try {
-//     final file = await _localFilePeople;
-//     // Read the file
-//     String content = await file.readAsString();
-//     // print(content);
-//     var contents = json.decode(content);
-//     // Returning the contents of the file
-//     print(contents.toString());
-//     return contents;
-//   } catch (e) {
-//     print('Error' + e.toString());
-//     // If encountering an error, return
-//     return null;
-//   }
-// }
-// Future<List<dynamic>> readContentDrafts(String fileName)async{
-//   try{
-//     final file = await _localFileDrafts;
-//     var contents=  await file.readAsString();
-//     return await json.decode(contents);
-
-//   }
-//   catch(e){
-//     print(e);
-//     return null;
-//   }
-// }
-// Future<Map<String, dynamic>> readContent(String fileName) async {
-//   try {
-//     String content ;
-//     switch (fileName) {
-//       case 'allPosts': final file = await _localFileAllPosts;
-//         content  = await file.readAsString();
-//       break;
-//       case 'posts': final file = await _localFilePosts;
-//         content  = await file.readAsString();
-//       break;
-//       case 'drafts': final file = await _localFileDrafts;
-//         content  = await file.readAsString();
-//       break;
-//       case'allData':final file = await _localFileAllData;
-//         content  = await file.readAsString();        
-//       break;
-//       case 'people':
-//         final file = await _localFilePeople;
-//         content = await file.readAsString();
-//         break;
-//       default: final file = await _localFile;
-//         content  = await file.readAsString();
-//       break;
-//     }
-//     var contents = json.decode(content);
-//     // Returning the contents of the file
-//     // print(contents.toString());
-//     return await contents;
-//   } catch (e) {
-//     print(e);
-//     // If encountering an error, return
-//     return null;
-//   }
-// }
 class DBProvider {
   final String databaseName = 'posts';
   // DBProvider();

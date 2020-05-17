@@ -12,6 +12,9 @@ class StudentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
+      backgroundColor: Theme.of(context).colorScheme.brightness == Brightness.dark?
+              Colors.blueGrey[800]
+              : Colors.blueGrey,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -87,14 +90,26 @@ class StudentCard extends StatelessWidget {
                 SizedBox(height: 10.0),
                 Text(
                   userData.name,
-                  style: TextStyle(fontSize: 20.0),
+                  style: TextStyle(fontSize: 20.0,color: Colors.white),
                 ),
                 SizedBox(height: 5.0),
-                Text('(${userData.rollno})'),
+                Text('(${userData.rollno})',
+                style: TextStyle(
+                            color:Colors.white
+                            // Theme.of(context).appBarTheme.textTheme.title.color,
+                            ),),
                 SizedBox(height: 5.0),
-                Text('${userData.program}, ${userData.dept}'),
+                Text('${userData.program}, ${userData.dept}',
+                style: TextStyle(
+                            color:Colors.white
+                            // Theme.of(context).appBarTheme.textTheme.title.color,
+                            ),),
                 SizedBox(height: 3.0),
-                Text('${userData.room}, ${userData.hall}'),
+                Text('${userData.room}, ${userData.hall}',
+                style: TextStyle(
+                            color:Colors.white
+                            // Theme.of(context).appBarTheme.textTheme.title.color,
+                            ),),
               ],
             ),
             Column(
@@ -104,30 +119,39 @@ class StudentCard extends StatelessWidget {
                 SizedBox(height: 10.0),
                 Row(
                   children: <Widget>[
-                    Icon(FontAwesome.home),
+                    Icon(FontAwesome.home,color: Colors.white,),
                     SizedBox(width: 5.0),
-                    Text(userData.hometown),
+                    Text(userData.hometown,
+                    style: TextStyle(
+                            color:Colors.white
+                            // Theme.of(context).appBarTheme.textTheme.title.color,
+                            ),),
                   ],
                 ),
                 SizedBox(height: 5.0),
                 Row(
                   children: <Widget>[
-                    Icon(Entypo.drop),
+                    Icon(Entypo.drop,color: Colors.white,),
                     SizedBox(width: 5.0),
-                    Text(userData.bloodGroup),
+                    Text(userData.bloodGroup,
+                    style: TextStyle(
+                            color:Colors.white
+                            // Theme.of(context).appBarTheme.textTheme.title.color,
+                            ),),
                   ],
                 ),
                 SizedBox(height: 5.0),
                 Row(
                   children: <Widget>[
-                    Icon(Ionicons.md_mail),
+                    Icon(Ionicons.md_mail,color: Colors.white,),
                     SizedBox(width: 5.0),
                     RichText(
                       text: TextSpan(
                         text: '${userData.username}@iitk.ac.in',
-                        // style: TextStyle(
-                        //     color: Colors.blue,
-                        //     decoration: TextDecoration.underline),
+                        style: TextStyle(
+                            color:Colors.white
+                            // Theme.of(context).appBarTheme.textTheme.title.color,
+                            ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             launchMail('${userData.username}@iitk.ac.in');
@@ -140,7 +164,7 @@ class StudentCard extends StatelessWidget {
                   child: IconButton(
                     icon:Icon(
                       Entypo.globe,
-                      color: Colors.blue,
+                      color: Theme.of(context).brightness == Brightness.dark ?Colors.blue :Colors.blue[900],
                     ),
                     tooltip: 'Homepage', 
                     onPressed: () async{

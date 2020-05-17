@@ -11,6 +11,7 @@ import 'package:notifier/database/reminder.dart';
 import 'package:notifier/database/student_search.dart';
 import 'package:notifier/main.dart';
 import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
+import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/hive_models/people_hive.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/posts.dart';
@@ -803,10 +804,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
   Future<bool>loadUser() async{
+
     if(userData.isNotEmpty && userData.toMap()[0]!=null){
+      var list = await StuSearchDatabase().getAllPostswithQuery(QueryDatabase(['username'], [userData.toMap()[0].id]));
+      // UserModel model = userData.toMap()[0];
       id = userData.toMap()[0].id;
       admin = userData.toMap()[0].admin ?? false;
-      name = userData.toMap()[0].name ?? false;
+      name = (list!=null&&list.length != 0)? userData.toMap()[0].name= list[0].name: '';
+       userData.toMap()[0].rollno= (list!=null&&list.length != 0)? list[0].rollno: '';
+      userData.putAt(0,userData.toMap()[0]);
+      // name = userData.toMap()[0].name ?? false;
       _prefs = userData.toMap()[0].prefs ?? [];
       // print(userData.toMap()[0]);
       subscribeUnsubsTopic(_prefs, []);

@@ -411,7 +411,9 @@ Future getDataNotfs()async{
   var db = Firestore.instance;
   print(allCouncilData.coordOfCouncil);
   if(id == 'adtgupta'){
-    return await db.collection('allPosts').where('type', isEqualTo: 'permission').getDocuments().then((var value)async{
+    return await db.collection('allPosts').where('type', isEqualTo: 'permission')
+    .orderBy('timeStamp',descending: true)
+    .getDocuments().then((var value)async{
       if (value.documents!=null) {
         value.documents.forEach((document){
           var data =  document.data;
@@ -431,6 +433,7 @@ Future getDataNotfs()async{
   else if(allCouncilData.coordOfCouncil[0] =='anc'){
     return await db.collection('allPosts').where('type', isEqualTo: 'permission').where('council',isEqualTo: allCouncilData.coordOfCouncil[0])
       .where('sub',arrayContainsAny: allCouncilData.subCouncil[allCouncilData.coordOfCouncil[0]].coordiOfInCouncil)
+      .orderBy('timeStamp',descending: true)
       .getDocuments().then((var value)async{
       if (value.documents!=null) {
         value.documents.forEach((document){

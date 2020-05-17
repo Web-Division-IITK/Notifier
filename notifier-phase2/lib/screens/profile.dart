@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:notifier/database/hive_database.dart';
+import 'package:notifier/database/student_search.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/home.dart';
@@ -33,20 +34,23 @@ class _ProfilePageState extends State<ProfilePage> {
   Box _stuSearch;
   // List<Widget> preferences = List();
   Future<bool> preferen() async {
-    _stuSearch = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
+    // _stuSearch = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
     userBox = await HiveDatabaseUser().hiveBox;
     if(userBox.isNotEmpty){
-      UserModel model = userBox.toMap()[0];
-      List<SearchModel> list = _stuSearch.toMap().values.toList().cast<SearchModel>();
+      List<SearchModel> list= await StuSearchDatabase().getAllPostswithQuery(QueryDatabase(['username'], [id]));
+      // userBox.toMap()[0];
+      // List<SearchModel> list = _stuSearch.toMap().values.toList().cast<SearchModel>();
       print(list.length);
       List<SearchModel> val = list.where((test)=>test.username == id).toList();
       
-      _jsonData = model.toMap();
+      _jsonData = val[0].toMap();
         setState(() {
-          val[0].name = name;
+          // val[0].name = name;
+          name = val[0].name;
           print(val[0].toMap());
           // name = _jsonData['name'];
-          val[0].rollno = rollno;
+          // val[0].rollno = rollno;
+          rollno = val[0].rollno;
           print(val[0].rollno);
           // rollno = _jsonData['rollno'];
           // print(_jsonData);

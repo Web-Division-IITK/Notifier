@@ -8,6 +8,7 @@ import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 
 import 'database/hive_database.dart';
+import 'database/student_search.dart';
 enum AuthStatus {
   NOT_DETERMINED,
   NOT_LOGGED_IN,
@@ -31,7 +32,7 @@ class _RootPageState extends State<RootPage> {
   void initState() {
     super.initState();
     if (i == 0) {
-      getStudentData();
+      getStudentDataFromServer();
       i++;
     }
     widget.auth.getCurrentUser().then((user) {

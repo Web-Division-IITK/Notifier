@@ -1,6 +1,8 @@
 
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:path/path.dart';
@@ -61,12 +63,16 @@ class StuSearchDatabase{
     }
   }
 
-  Future<int> insertStuData(SearchModel value) async{
+  Future<int> insertStuData(Map<String,dynamic> values,{List<dynamic> listvalues}) async{
     final db = await database;
-    var values= value.toMap();
+    
+    // var values= value.toMap();
     try {
-      var res = await db.insert(table,values,conflictAlgorithm: ConflictAlgorithm.replace);
-      return res;
+      final batch = db.batch();
+      listvalues.forEach((value)=> batch.insert(table, SearchModel().fromMaptoMap(value),conflictAlgorithm: ConflictAlgorithm.replace));
+    var res = batch.commit(noResult: true);
+      // var res = await db.insert(table,values,conflictAlgorithm: ConflictAlgorithm.replace);
+      return 0;
     } catch (e) {
       print(e);
       return -1;
@@ -170,4 +176,24 @@ class StuSearchDatabase{
   final List<String> queryColumn;
   final List<dynamic> queryData;
   QueryDatabase(this.queryColumn,this.queryData);
+ }
+
+ Future<bool>getStudentDataFromServer() async{
+   try {
+     final url = 
+    //  Uri.http('www.mocky.io', '/v2/5ebe46d43100007800c5d129');
+     'https://us-central1-notifier-phase-2.cloudfunctions.net/getStudData';
+      Response res = await get(url);
+      if(res.statusCode == 200){
+        print(json.decode(res.body));
+        return await StuSearchDatabase().insertStuData({},listvalues: json.decode(res.body)).then((v){
+          return (v == 0);
+        });
+      }
+      return false;
+   } catch (e) {
+     print(e);
+     return false;
+   }
+
  }

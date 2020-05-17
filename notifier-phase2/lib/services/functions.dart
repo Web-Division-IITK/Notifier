@@ -9,10 +9,8 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/database/reminder.dart';
-import 'package:notifier/database/student_search.dart';
 import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
-import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/database.dart';
@@ -128,7 +126,7 @@ Future<bool> p1(last,{@required String owner}) async {
     if (lastTime == '0' || last == '0') {
       return await db
           .collection('allPosts')
-          // .where('type',arrayContainsAny: ['create','update'])
+          .where('type',whereIn: ['create','update'])
           .orderBy('timeStamp',descending: true).limit(50)
           .getDocuments()
           .then((QuerySnapshot snapshot) async {
@@ -168,10 +166,10 @@ Future<bool> p1(last,{@required String owner}) async {
             });
     } else {
       return await db.collection('allPosts')
-      // .where('type',arrayContainsAny: ['create','update'])
-          .where('timeStamp', isGreaterThanOrEqualTo: DateTime.parse(lastTime)).orderBy('timeStamp',descending: true).limit(50)
-          .getDocuments()
-          .then((QuerySnapshot snapshot) async {
+        .where('type',whereIn: ['create','update']).where('timeStamp', isGreaterThanOrEqualTo: DateTime.parse(lastTime))
+        .orderBy('timeStamp',descending: true).limit(50)
+        .getDocuments()
+        .then((QuerySnapshot snapshot) async {
             if(snapshot.documents.length!=0){
                   snapshot.documents.forEach((f) async{
                     if(f.data['type'] == 'permission'){}
@@ -724,3 +722,72 @@ List<PostsSort> updateDataInList(List<PostsSort>list,PostsSort data){
   }
 }
 
+
+String convertAbbrvofDeptToF(String abbrv){
+  switch (abbrv.toLowerCase()) {
+    case 'ae':
+    return 'Aerospace Engg.';
+    break;
+    case 'bsbe':
+    return 'Biol.Sci. And Bio.Engg.';
+    break;
+    case 'ce':
+    return 'Civil Engg.';
+    break;
+    case 'che':
+    return 'Chemical Engg.';
+    break;
+    case 'chm':
+    return 'Chemistry';
+    break;
+    case 'cse':
+    return 'Computer Science & Engg.';
+    break;
+    case 'doaa':
+    return 'Dean Of Academic Affairs';
+    break;
+    case 'dora':
+    return 'Dean Of Resource & Alumni';
+    break;
+    case 'eco':
+    return 'Economics';
+    break;
+    case 'ee':
+    return 'Electrical Engg.';
+    break;
+    case 'eem':
+    return 'Environmental Engg. & Mgmt';
+    break;
+    case 'es':
+    return 'Earth Sciences';
+    break;
+    case 'hss':
+    return 'Humanities & Soc. Sciences';
+    break;
+    case 'ime':
+    return 'Ind. & Management Engg.';
+    break;
+    case 'me':
+    return 'Mechanical Engineering';
+    break;
+    case 'mse':
+    return 'Materials Science & Engg.';
+    break;
+    case 'mth':
+    return 'Mathematics';
+    break;
+    case 'nucc. eng.& tech prog.':
+    return 'Nuc. Engg.& Tech Prog.';
+    break;
+    case 'phy':
+    return 'Physics';
+    break;
+    case 'nucc. eng.& tech prog.':
+    return 'Nuc. Engg.& Tech Prog.';
+    break;
+    case 'nucc. eng.& tech prog.':
+    return 'Nuc. Engg.& Tech Prog.';
+    break;
+    default: return abbrv;
+  }
+}
