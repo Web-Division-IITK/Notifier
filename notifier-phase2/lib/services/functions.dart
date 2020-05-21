@@ -284,7 +284,7 @@ Future<bool> getStudentData() async{
           // print(item);
           return SearchModel.fromMap(item);
     });
-    print(map);
+    // print(map);
     if (_stuData != null&&_stuData.isNotEmpty) {
       _stuData.clear();
     }

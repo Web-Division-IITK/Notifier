@@ -1,11 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:async/async.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart';
+// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/database/student_search.dart';
@@ -22,10 +26,12 @@ import 'package:notifier/screens/home/newhome.dart';
 import 'package:notifier/screens/make_coordi.dart';
 import 'package:notifier/screens/posts/create_edit_posts.dart';
 import 'package:notifier/screens/posts/presi.dart';
+import 'package:notifier/screens/profile_page.dart';
+import 'package:notifier/screens/stu_search/floating_anim.dart';
+import 'package:notifier/screens/stu_search/searched_list.dart';
+import 'package:notifier/screens/stu_search/stu_search.dart';
 import 'package:notifier/screens/posts/update_drafts_list.dart';
 import 'package:notifier/screens/preferences.dart';
-import 'package:notifier/screens/profile.dart';
-import 'package:notifier/screens/stu_search/stu_search.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:notifier/database/hive_database.dart';
@@ -55,7 +61,9 @@ class _HomePageState extends State<HomePage> {
   bool _load = true;
   bool _errorWidget;
   bool refreshPost = true;
+  SearchModel searchModel;
   var _errorRefreshFunction;
+  AsyncMemoizer _memorizer = AsyncMemoizer();
   // StreamController streamController = StreamController.broadcast();
   final HiveDatabaseUser hiveUser = HiveDatabaseUser();
   var _prefs = [];
@@ -357,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.of(context).pop();
                       Navigator.of(context)
                           .push(MaterialPageRoute(builder: (BuildContext context) {
-                        return ProfilePage(widget.userId, id);
+                        return Profile(_memorizer);
                       }));
                     },
                     child: Container(
@@ -367,20 +375,51 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              CircleAvatar(
-                                radius: 50.0,
-                                backgroundColor: Theme.of(context).accentColor,
-                                child: Text(
-                                  // 'kjkjbd',
-                                  _errorWidget?'':
-                                    name == null || name == ''
-                                        ? id[0].toUpperCase()
-                                        : name[0].toUpperCase(),
-                                    style: TextStyle(
-                                        fontSize: 40.0,
-                                        color: Colors.white  
-                                      )),
-                              ),
+                              FutureBuilder(
+                                future: getImageURL(SearchModel(rollno: userData.toMap()[0].rollno,name: name),memorizer: _memorizer),
+                                builder: (context,AsyncSnapshot<ImageProvider> snapshot){
+                                switch (snapshot.connectionState) {
+                                  case ConnectionState.done:
+                                    if(snapshot == null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
+                                      return CircleAvatar(
+                                        radius: 50.0,
+                                        backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
+                                        // backgroundColor: Theme.of(context).accentColor,
+                                        // child: Text(
+                                        //   // 'kjkjbd',
+                                        //   _errorWidget?'':
+                                        //     name == null || name == ''
+                                        //         ? id[0].toUpperCase()
+                                        //         : name[0].toUpperCase(),
+                                        //     style: TextStyle(
+                                        //         fontSize: 40.0,
+                                        //         color: Colors.white  
+                                        //       )),
+                                      );
+                                    }else{
+                                      return CircleAvatar(
+                                        radius: 50.0,
+                                        backgroundImage: snapshot.data,
+                                      );
+                                    }
+                                    break;
+                                  default: return CircleAvatar(
+                                        radius: 50.0,
+                                        backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
+                                        // backgroundColor: Theme.of(context).accentColor,
+                                        // child: Text(
+                                        //   _errorWidget?'':
+                                        //     name == null || name == ''
+                                        //         ? id[0].toUpperCase()
+                                        //         : name[0].toUpperCase(),
+                                        //     style: TextStyle(
+                                        //         fontSize: 40.0,
+                                        //         color: Colors.white  
+                                        //       )),
+                                      );
+                                      break;
+                                }
+                              }),
                               SizedBox(height: 20.0),
                               Text(
                                 // 'nmb',
@@ -388,8 +427,6 @@ class _HomePageState extends State<HomePage> {
                                 name == null || name == '' ? id : name,
                                 style: TextStyle(
                                     fontFamily: 'Comfortaa',
-                                    // fontWeight: FontWeight.bold,
-                                    // color: Colors.white,
                                     fontSize: 17.0),
                               ),
                             ],
@@ -645,7 +682,8 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).pop();
                           await Navigator.of(context).push(
                             MaterialPageRoute(builder: (BuildContext context) {
-                              return StudentSearch();
+                             return StudentSearch();
+                            // return FabWithIcons(icons: [Icons.access_alarm],onIconTapped: (v){},);
                             }));
                         },
                         child:Container(
@@ -803,16 +841,42 @@ class _HomePageState extends State<HomePage> {
       // ),
     );
   }
+  // save(String username,String rollno) async{
+  //   String url = 'http://home.iitk.ac.in/~$username/dp';
+  //     var res = await get(url);
+  //     if(res.statusCode!=200){
+  //       String url1 =
+  //           'https://oa.cc.iitk.ac.in:443/Oa/Jsp/Photo/${rollno}_0.jpg';
+  //       res = await get(url1);
+  //       if(res.statusCode == 200){
+  //         url = url1;
+  //         return true;
+  //       }
+  //       return false;
+  //     }
+  //   var imageId = await ImageDownloader.downloadImage(url);
+  //   var path = await ImageDownloader.findPath(imageId);
+  //   await ImageDownloader.open(path);
+  //   return true;
+  // }
   Future<bool>loadUser() async{
 
     if(userData.isNotEmpty && userData.toMap()[0]!=null){
       var list = await StuSearchDatabase().getAllPostswithQuery(QueryDatabase(['username'], [userData.toMap()[0].id]));
+      searchModel = (list!=null&&list.length != 0)?list[0]: SearchModel(gender: '');
       // UserModel model = userData.toMap()[0];
       id = userData.toMap()[0].id;
       admin = userData.toMap()[0].admin ?? false;
       name = (list!=null&&list.length != 0)? userData.toMap()[0].name= list[0].name: '';
        userData.toMap()[0].rollno= (list!=null&&list.length != 0)? list[0].rollno: '';
       userData.putAt(0,userData.toMap()[0]);
+      // if(name!='' && userData.toMap()[0].rollno!=''){
+      //   await save(name, userData.toMap()[0].rollno).then((v){
+      //     if (v) {
+            
+      //     }
+      //   });
+      // }
       // name = userData.toMap()[0].name ?? false;
       _prefs = userData.toMap()[0].prefs ?? [];
       // print(userData.toMap()[0]);

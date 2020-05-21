@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
+import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import 'package:notifier/database/mogo_database.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:path/path.dart';
@@ -65,7 +67,7 @@ class StuSearchDatabase{
 
   Future<int> insertStuData(Map<String,dynamic> values,{List<dynamic> listvalues}) async{
     final db = await database;
-    
+    print(listvalues);
     // var values= value.toMap();
     try {
       final batch = db.batch();
@@ -144,9 +146,10 @@ class StuSearchDatabase{
         "$table",searchModel.toMap(),
         where:"rollno = ?",whereArgs: [searchModel.rollno],
         conflictAlgorithm: ConflictAlgorithm.replace);
-      return res;
+      return res!=0;
     } catch (e) {
       print(e);
+      return false;
     }
   }
   deletePost(String id) async{
@@ -179,21 +182,39 @@ class StuSearchDatabase{
  }
 
  Future<bool>getStudentDataFromServer() async{
-   try {
-     final url = 
-    //  Uri.http('www.mocky.io', '/v2/5ebe46d43100007800c5d129');
-     'https://us-central1-notifier-phase-2.cloudfunctions.net/getStudData';
-      Response res = await get(url);
-      if(res.statusCode == 200){
-        print(json.decode(res.body));
-        return await StuSearchDatabase().insertStuData({},listvalues: json.decode(res.body)).then((v){
+   mongo.Db db;
+  mongo.DbCollection _dbCollection;
+  DBConnection connection;
+  //  try {
+    //  final url = 
+    // //  Uri.http('www.mocky.io', '/v2/5ebe46d43100007800c5d129');
+    //  'https://us-central1-notifier-phase-2.cloudfunctions.net/getStudData';
+    //   // print(json.decode(res.body) + 'response');
+    //   Response res = await get(url);
+    //   print(json.decode(res.body).toString() + 'response');
+      // if(res.statusCode == 200){
+      //   print(json.decode(res.body).toString() + 'response');
+      //   return await StuSearchDatabase().insertStuData({},listvalues: json.decode(res.body)).then((v){
+      //     return (v == 0);
+      //   });
+      // }
+      // return false;
+  //  } catch (e) {
+  //    print(e);
+  //    return false;
+  //  }
+      try {
+        connection = await DBConnection.getInstance();
+        db = await connection.getConnection();
+        _dbCollection = db.collection('users');
+        var v = await _dbCollection.find(mongo.where.sortBy('roll')).toList();
+        print(v.length);
+        return await StuSearchDatabase().insertStuData({},listvalues:v ).then((v){
+          connection.closeConnection();
           return (v == 0);
         });
+      } catch (e) {
+        print(e);
+        return false;
       }
-      return false;
-   } catch (e) {
-     print(e);
-     return false;
-   }
-
  }

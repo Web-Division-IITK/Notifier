@@ -1,11 +1,16 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:async/async.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:http/http.dart';
+import 'package:network_to_file_image/network_to_file_image.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/stu_search/card_details.dart';
+import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 
 import '../../database/student_search.dart';
@@ -45,8 +50,9 @@ class Seraching extends StatelessWidget {
   }
   Future<List<SearchModel>> getList() async{
     // return memorizer.runOnce(()async{
-      return await StuSearchDatabase().getAllStuData().then((list){
-      return list.where((test){
+      return await StuSearchDatabase().getAllStuData().then((list)async{
+      // var data = 
+       return list.where((test){
         return 
         (checkifThereisAvalue(query.bloodGroup, test.bloodGroup) && 
         (checkifThereisAvalue(query.dept, test.dept)||checkifThereisAvalue(convertAbbrvofDeptToF(query.dept), test.dept)) &&
@@ -59,6 +65,7 @@ class Seraching extends StatelessWidget {
         checkifThereisAvalue(query.username, test.username)) &&
         checkifThereisAvalue(query.year,test.year));
       }).toList();
+      // return await Future.delayed(Duration(milliseconds:80),()=>data);
     });
     // });
   }
@@ -72,6 +79,20 @@ class SearchedList extends StatelessWidget {
   Widget build(BuildContext context) {
     if(list != null && list.length != 0)
     list.sort((a, b) => a.name.compareTo(b.name));
+    list.retainWhere((test){
+      return (
+        (test.name !=null && test.name.trim() != "")
+        // && (test.gender != null && test.gender.trim() != "")
+        // && (test.program != null && test.program.trim() != "")
+        && (test.dept != null && test.dept.trim() != "")
+        // && (test.bloodGroup != null && test.bloodGroup.trim() != "")
+        // && (test.hall != null && test.hall.trim() != "")
+        // && (test.hometown != null && test.hometown.trim() != "")
+        // && (test.room != null && test.room.trim() != "")
+        // && (test.rollno != null && test.rollno.trim() != "")
+        // && (test.username != null && test.username.trim() != "")
+      );
+    });
     return Scaffold(
       appBar: AppBar(title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -141,18 +162,18 @@ class ListItemStudent extends StatelessWidget {
           /*Positioned(
             right: 0.0,
             child: */
-          InkWell(
+          Card(
+            margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: InkWell(
             onTap: () {
               return showDialog(
                   context: (context),
                   builder: (context) {
-                    return StudentCard(user,getImageURL(user));
+                    return StudentCard(user,getImageURL(user,memorizer: _memorizer));
                   });
             },
-            // width: double.maxFinite,
-            child: Card(
-              margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            borderRadius: BorderRadius.circular(16),
               child: Row(
                 children: <Widget>[
                   Container(
@@ -172,47 +193,66 @@ class ListItemStudent extends StatelessWidget {
                     ),
                   ),
                   CircleAvatar(
-            radius: 40.0,
-            child: FutureBuilder(
-                future: getImageURL(user),
-                builder: (context, snapshot) {
+          radius: 40.0,
+          child: FutureBuilder(
+                future: getImageURL(user,memorizer: this._memorizer),
+                builder: (context,AsyncSnapshot<ImageProvider> snapshot) {
                   switch (snapshot.connectionState) {
                     case ConnectionState.done:
                       if(snapshot== null || snapshot.data == null || !snapshot.hasData){
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(40),
-                          child: Image.asset('assets/profilepic.jpg'));
-                      }else if (snapshot.data.contains('assets')) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: Image.asset('assets/profilepic.jpg'));
+                          child: Image.asset('assets/${user.gender.toLowerCase()}profile.png'));
+                      // }else if (snapshot.data.contains('assets')\) {
+                      //   return ClipRRect(
+                      //     borderRadius: BorderRadius.circular(40),
+                      //     child: Image.asset('assets/profilepic.jpg'));
                       }
                       else{
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(40),
+                          child: Image(
+                            image: snapshot.data,
+                            // loadingBuilder: ,),
                           // child: Image.network(
                           //   snapshot.data,
-                          //    fit: BoxFit.fill,
-                          //    loadingBuilder: (context,wid,ch){
-                          //      return Center(
-                          //       child: CircularProgressIndicator(),
-                          //     );
-                          //    },
-                          //  ),
-                          child: CachedNetworkImage(
-                            fit: BoxFit.fill,
-                            width: 190,
-                            height: 190,
-                            imageUrl: snapshot.data,
-                            errorWidget: (context, string, dy) {
-                              return Image.asset('assets/profilepic.jpg');
-                            },
-                            progressIndicatorBuilder: (context, st, prog) {
+                            loadingBuilder: (context,widget, event){
+                              if(event == null){
+                                return widget;
+                              }
                               return Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  value: event.expectedTotalBytes!=null ?
+                                  event.cumulativeBytesLoaded/event.expectedTotalBytes : null,
+                                ),
                               );
                             },
-                          ),
+                            frameBuilder: (context,child,frame, wasSyncLoaded){
+                              if(wasSyncLoaded){
+                                return child;
+                              }
+                              return AnimatedOpacity(
+                                child: child,
+                                opacity: frame == null?0:1, 
+                                duration: Duration(seconds: 1),
+                                curve: Curves.easeOut,
+                              );
+                            },
+                          )
+                          // CachedNetworkImage(
+                          //   fit: BoxFit.fill,
+                          //   width: 190,
+                          //   height: 190,
+                          //   imageUrl: snapshot.data,
+                          //   errorWidget: (context, string, dy) {
+                          //     return Image.asset('assets/profilepic.jpg');
+                          //   },
+                          //   progressIndicatorBuilder: (context, st, prog) {
+                          //     return Center(
+                          //       child: CircularProgressIndicator(),
+                          //     );
+                          //   },
+                          // ),
                         );
                       }
                       break;
@@ -231,27 +271,73 @@ class ListItemStudent extends StatelessWidget {
       ),
     );
   }
-  Future<String>getImageURL(SearchModel user) async {
-    return await this._memorizer.runOnce(()async{
-      try {
-        String url = 'http://home.iitk.ac.in/~${user.username}/dp';
-        String url1 =
-            'https://oa.cc.iitk.ac.in:443/Oa/Jsp/Photo/${user.rollno}_0.jpg';
-        Response res = await get(url);
-        if (res.statusCode != 200) {
-          res = await get(url1);
-          if (res.statusCode != 200) {
-            return 'assets/profilepic.jpg';
-          }
-          return url1;
-        }
-        return url;
-      } catch (e) {
-        // print(e);
-        return 'assets/profilepic.jpg';
-      }
-    });
-}
+  
 }
 
+Future<ImageProvider>getImageURL(SearchModel user,{memorizer}) async {
+    final HttpClient _httpClient = HttpClient();
+    File ima = await file('${user.rollno}.jpg');
+    File i_file;
+    try {
+       String url = 'http://home.iitk.ac.in/~${user.username}/dp';
+       Response res = await get(url);
+       if(res.statusCode ==  200){
+         return MemoryImage(res.bodyBytes);
+       }else{
+         return await ima.exists().then((existence)async{
+      // print(existence);
+          if(existence == true){
+            return MemoryImage(ima.readAsBytesSync());
+          }else{
+            return await memorizer.runOnce(()async{
+              try {
+                String url1 =
+                    'https://oa.cc.iitk.ac.in:443/Oa/Jsp/Photo/${user.rollno}_0.jpg';
+                Response res = await get(url1);
+                String format = '.jpg';
+                // print(res.request.url.scheme);
+              
+                if (res.statusCode != 200) {
+                    return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
+                }
+                try {
+                  print(format = res.headers['content-location'].replaceAll('dp', ''));
+                } catch (e) {
+                  print(e);
+                }
+                  try {
+                    i_file = await file('${user.rollno}.jpg');
+                  } catch (e) {
+                    print(e);
+                  }
+                  print(i_file);
+                // }
+
+                return NetworkToFileImage(file: i_file, url: url,debug: true);
+              } catch (e) {
+                print(e);
+                return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
+              }
+            });
+          }
+        });
+       }
+    } catch (e) {
+      print(e);
+      return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
+    }
+    
+    
+    
+    
+}
+// class ImageAnimationLoading extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return AnimatedBuilder(
+//       animation:FadeInImage.memoryNetwork(placeholder: null, image: null),
+      
+//     );
+//   }
+// }
 

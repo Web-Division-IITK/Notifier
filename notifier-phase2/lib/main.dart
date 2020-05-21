@@ -7,6 +7,7 @@ import 'package:flutter/scheduler.dart' as sh;
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/options.dart';
@@ -69,6 +70,9 @@ class _MyAppHomeState extends State<MyAppHome> {
       defaultBrightness: Brightness.dark,
       data: (brightness) => ThemeData(
         fontFamily: 'Raleway',
+        // textTheme: GoogleFonts.ralewayTextTheme(
+        //   Theme.of(context).textTheme,
+        // ),
         
         // primaryColor: brightness == Brightness.dark ? Colors.deepPurple: Colors.amber,
         buttonColor:brightness == Brightness.dark ? Colors.pink: Colors.deepOrange,

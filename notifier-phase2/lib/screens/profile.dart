@@ -32,7 +32,8 @@ class _ProfilePageState extends State<ProfilePage> {
   String rollno;
   Box userBox;
   Box _stuSearch;
-  // List<Widget> preferences = List();
+  bool showMoreInfo = false;
+  SearchModel searchModel = SearchModel();
   Future<bool> preferen() async {
     // _stuSearch = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
     userBox = await HiveDatabaseUser().hiveBox;
@@ -42,9 +43,10 @@ class _ProfilePageState extends State<ProfilePage> {
       // List<SearchModel> list = _stuSearch.toMap().values.toList().cast<SearchModel>();
       print(list.length);
       List<SearchModel> val = list.where((test)=>test.username == id).toList();
-      
+      print(val);
       _jsonData = val[0].toMap();
         setState(() {
+          searchModel = val[0];
           // val[0].name = name;
           name = val[0].name;
           print(val[0].toMap());
@@ -56,15 +58,8 @@ class _ProfilePageState extends State<ProfilePage> {
           // print(_jsonData);
           // print(_jsonData['prefs']);
         });
-        // print(_jsonData);
         return true;
     }    return false;
-    // return await readContent('users').then((var value) {
-    //   if (value != null) {
-        
-    //   }
-    //   return false;
-    // });
   }
 
   Future<bool> writeposts() async {
@@ -76,20 +71,6 @@ class _ProfilePageState extends State<ProfilePage> {
       print(onError);
       return false;
     });
-    
-    // return await writeContent('users', json.encode(_jsonData)).then((bool status) {
-    //   if (status) {
-    //     name = _jsonData['name'] ?? null;
-    //     rollno = _jsonData['rollno'] ?? null;
-    //     print(_jsonData);
-    //     // showSuccessToast(context, 'Updated Successfully!!');
-    //     // Fluttertoast.showToast(msg: 'Done!!');
-    //     return true;
-    //   }
-    //   else{
-    //     return false;
-    //   }
-    // });
   }
 
   @override
@@ -127,6 +108,9 @@ class _ProfilePageState extends State<ProfilePage> {
             Container(
               height: 350.0,
               width: double.infinity,
+              // decoration: BoxDecoration(
+              //   border: Border.all()
+              // ),
             ),
             Container(
               height: 200.0,
@@ -184,13 +168,157 @@ class _ProfilePageState extends State<ProfilePage> {
                 elevation: 3.0,
                 borderRadius: BorderRadius.circular(16.0),
                 child: Container(
-                  height: 200.0,
+                  constraints: BoxConstraints(
+                    minHeight: 200
+                  ),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16.0),
-                      color:Theme.of(context).brightness == Brightness.light
+                    borderRadius: BorderRadius.circular(16.0),
+                    // border: Border.all(color: Colors.white),
+                    color:Theme.of(context).brightness == Brightness.light
                       ?Colors.white:
                       Colors.black),
-                ),
+                // ),
+                child: Container(
+                  margin: EdgeInsets.only(top: 70),
+                  child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Column(
+                      children: <Widget>[
+                        Text(
+                          name == null || name == '' ? widget.id : _jsonData['name'],
+                          style: TextStyle(
+                              fontFamily: 'Comfortaa',
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17.0),
+                        ),
+                        // name == null || name == '' ?
+                        // Container()
+                        // :Container(
+                        //   width: 140,
+                        //   alignment: Alignment.center,
+                        //   decoration: BoxDecoration(
+                        //     border: Border.all()
+                        //   ),
+                        //   child:  RichText(
+                        //       text: TextSpan(
+                        //         text:'Request change in name/ rollno',
+                        //       // minFontSize: 2,
+                        //       style:TextStyle(
+                        //         color: Colors.blue,
+                        //         fontSize: 10,
+                        //         decoration: TextDecoration.underline
+                        //       ),
+                        //       recognizer: TapGestureRecognizer()
+                        //         ..onTap = (){
+                        //            launchMail('webdivisioniitk@gmail.com');
+                        //         },
+                              
+                        //       )
+                        //     )),
+                        // )
+                      ],
+                    ),
+                  // ]
+                  // )
+                  // )
+              // )
+                    // ),
+                    SizedBox(height: 7.0),
+                    name == null || name == ''
+                        ? Text('')
+                        : Text(
+                            widget.id,
+                            style: TextStyle(
+                                fontFamily: 'Comfortaa',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17.0,
+                                color: Colors.grey),
+                          ),
+                   rollno == null || rollno == ''
+                        ?SizedBox():SizedBox(height: 10.0,),
+                          rollno == null || rollno == ''
+                        ? Text('')
+                        : Column(
+                          children: <Widget>[
+                            Text(
+                                _jsonData['rollno'],
+                                style: TextStyle(
+                                    fontFamily: 'Comfortaa',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17.0,
+                                    ),
+                              ),
+                            Container(
+                              margin: EdgeInsets.only(top:10),
+                              width: 200,
+                              alignment: Alignment.center,
+                              child: IconButton(
+                                icon: Icon(Icons.arrow_drop_down_circle), 
+                                onPressed: (){
+                                  setState(() {
+                                    showMoreInfo = !showMoreInfo;
+                                  });
+                                }
+                              ),
+                            
+                          // decoration: BoxDecoration(
+                          //   border: Border.all()
+                          // ),
+                          // child:  RichText(
+                          //     text: TextSpan(
+                          //       text:'Request change in name/rollno',
+                          //     // minFontSize: 2,
+                          //     style:TextStyle(
+                          //       color: Colors.blue,
+                          //       fontSize: 10,
+                          //       decoration: TextDecoration.underline
+                          //     ),
+                          //     recognizer: TapGestureRecognizer()
+                          //       ..onTap = (){
+                          //          launchMail('webdivisioniitk@gmail.com');
+                          //       },
+                              
+                          //     )
+                          //   )
+                            ),
+                            showMoreInfo? Container(
+                              margin: EdgeInsets.only(top:10),
+                              child: Column(
+                                children: <Widget>[
+                                 Text(
+                                  '${searchModel.program}, ${searchModel.dept}',
+                                  style: TextStyle(
+                                      fontFamily: 'Comfortaa',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17.0,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${searchModel.room}, ${hallName(searchModel.hall)}',
+                                    style: TextStyle(
+                                      fontFamily: 'Comfortaa',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17.0,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${searchModel.hometown}',
+                                    style: TextStyle(
+                                      fontFamily: 'Comfortaa',
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ):Container()
+                          ],
+                        ),
+                  ]
+                  ),
+                )
+                )
               ),
             ),
             Positioned(
@@ -207,165 +335,206 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: Colors.white
                       )),
                 )),
-            Positioned(
-              top: 190.0,
-              left: (MediaQuery.of(context).size.width / 2) - 135.0,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Text(
-                        name == null || name == '' ? widget.id : _jsonData['name'],
-                        style: TextStyle(
-                            fontFamily: 'Comfortaa',
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17.0),
-                      ),
-                      // name == null || name == '' ?
-                      // Container()
-                      // :Container(
-                      //   width: 140,
-                      //   alignment: Alignment.center,
-                      //   decoration: BoxDecoration(
-                      //     border: Border.all()
-                      //   ),
-                      //   child:  RichText(
-                      //       text: TextSpan(
-                      //         text:'Request change in name/ rollno',
-                      //       // minFontSize: 2,
-                      //       style:TextStyle(
-                      //         color: Colors.blue,
-                      //         fontSize: 10,
-                      //         decoration: TextDecoration.underline
-                      //       ),
-                      //       recognizer: TapGestureRecognizer()
-                      //         ..onTap = (){
-                      //            launchMail('webdivisioniitk@gmail.com');
-                      //         },
+            // Positioned(
+            //   top: 190.0,
+            //   left: (MediaQuery.of(context).size.width / 2) - 135.0,
+            //   child: Column(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: <Widget>[
+            //       Column(
+            //         children: <Widget>[
+            //           Text(
+            //             name == null || name == '' ? widget.id : _jsonData['name'],
+            //             style: TextStyle(
+            //                 fontFamily: 'Comfortaa',
+            //                 fontWeight: FontWeight.bold,
+            //                 fontSize: 17.0),
+            //           ),
+            //           // name == null || name == '' ?
+            //           // Container()
+            //           // :Container(
+            //           //   width: 140,
+            //           //   alignment: Alignment.center,
+            //           //   decoration: BoxDecoration(
+            //           //     border: Border.all()
+            //           //   ),
+            //           //   child:  RichText(
+            //           //       text: TextSpan(
+            //           //         text:'Request change in name/ rollno',
+            //           //       // minFontSize: 2,
+            //           //       style:TextStyle(
+            //           //         color: Colors.blue,
+            //           //         fontSize: 10,
+            //           //         decoration: TextDecoration.underline
+            //           //       ),
+            //           //       recognizer: TapGestureRecognizer()
+            //           //         ..onTap = (){
+            //           //            launchMail('webdivisioniitk@gmail.com');
+            //           //         },
                             
-                      //       )
-                      //     )),
-                      // )
-                    ],
+            //           //       )
+            //           //     )),
+            //           // )
+            //         ],
                   
-                  ),
-                  SizedBox(height: 7.0),
-                  name == null || name == ''
-                      ? Text('')
-                      : Text(
-                          widget.id,
-                          style: TextStyle(
-                              fontFamily: 'Comfortaa',
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17.0,
-                              color: Colors.grey),
-                        ),
-                 rollno == null || rollno == ''
-                      ?SizedBox():SizedBox(height: 10.0,),
-                        rollno == null || rollno == ''
-                      ? Text('')
-                      : Column(
-                        children: <Widget>[
-                          Text(
-                              _jsonData['rollno'],
-                              style: TextStyle(
-                                  fontFamily: 'Comfortaa',
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 17.0,
-                                  ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(top:10),
-                        width: 200,
-                        alignment: Alignment.center,
-                        // decoration: BoxDecoration(
-                        //   border: Border.all()
-                        // ),
-                        child:  RichText(
-                            text: TextSpan(
-                              text:'Request change in name/rollno',
-                            // minFontSize: 2,
-                            style:TextStyle(
-                              color: Colors.blue,
-                              fontSize: 10,
-                              decoration: TextDecoration.underline
-                            ),
-                            recognizer: TapGestureRecognizer()
-                              ..onTap = (){
-                                 launchMail('webdivisioniitk@gmail.com');
-                              },
+            //       ),
+            //       SizedBox(height: 7.0),
+            //       name == null || name == ''
+            //           ? Text('')
+            //           : Text(
+            //               widget.id,
+            //               style: TextStyle(
+            //                   fontFamily: 'Comfortaa',
+            //                   fontWeight: FontWeight.bold,
+            //                   fontSize: 17.0,
+            //                   color: Colors.grey),
+            //             ),
+            //      rollno == null || rollno == ''
+            //           ?SizedBox():SizedBox(height: 10.0,),
+            //             rollno == null || rollno == ''
+            //           ? Text('')
+            //           : Column(
+            //             children: <Widget>[
+            //               Text(
+            //                   _jsonData['rollno'],
+            //                   style: TextStyle(
+            //                       fontFamily: 'Comfortaa',
+            //                       fontWeight: FontWeight.bold,
+            //                       fontSize: 17.0,
+            //                       ),
+            //                 ),
+            //               Container(
+            //                 margin: EdgeInsets.only(top:10),
+            //                 width: 200,
+            //                 alignment: Alignment.center,
+            //                 child: IconButton(
+            //                   icon: Icon(Icons.arrow_drop_down_circle), 
+            //                   onPressed: (){
+            //                     setState(() {
+            //                       showMoreInfo = !showMoreInfo;
+            //                     });
+            //                   }
+            //                 ),
+                          
+            //             // decoration: BoxDecoration(
+            //             //   border: Border.all()
+            //             // ),
+            //             // child:  RichText(
+            //             //     text: TextSpan(
+            //             //       text:'Request change in name/rollno',
+            //             //     // minFontSize: 2,
+            //             //     style:TextStyle(
+            //             //       color: Colors.blue,
+            //             //       fontSize: 10,
+            //             //       decoration: TextDecoration.underline
+            //             //     ),
+            //             //     recognizer: TapGestureRecognizer()
+            //             //       ..onTap = (){
+            //             //          launchMail('webdivisioniitk@gmail.com');
+            //             //       },
                             
-                            )
-                          )),
-                        ],
-                      ),
-                  SizedBox(height: 10.0),
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        width: 130.0,
-                        child: name == null || name == ''?FlatButton(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          color: Color(0xFFFA624F),
-                          onPressed: () {
-                            _updateDialog('name');
-                          },
-                          child: Text('Add Name',                                
-                            style: TextStyle(
-                                fontFamily: 'Comfortaa',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15.0,
-                                color: Colors.white),
-                          ),
-                        ):
-                        ((rollno == null || rollno == '')?
-                        RaisedButton(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          color: Color(0xFFFA624F),
-                          onPressed:  null,
-                          child: Text('Add Name',                                
-                            style: TextStyle(
-                                fontFamily: 'Comfortaa',
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15.0,
-                                color: Colors.white),
-                          ),
-                        ):
-                        Container())
-                        ,
-                      ),
-                      SizedBox(width: 5.0),
-                      Container(
-                        width: 130.0,
-                        child: rollno == null || rollno == '' 
-                            ? FlatButton(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                ),
-                                color: Colors.grey,
-                                onPressed: () {
-                                  _updateDialog('rollno');
-                                },
-                                child: Text('Add Rollno',
-                                  style: TextStyle(
-                                      fontFamily: 'Comfortaa',
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15.0,
-                                      color: Colors.white),
-                                ),
-                              )
-                            : Container()
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            )
+            //             //     )
+            //             //   )
+            //               ),
+            //               Container(
+            //                 margin: EdgeInsets.only(top:10),
+            //                 child: Column(
+            //                   children: <Widget>[
+            //                    Text(
+            //                     '${searchModel.program}, ${searchModel.dept}',
+            //                     style: TextStyle(
+            //                         fontFamily: 'Comfortaa',
+            //                         fontWeight: FontWeight.bold,
+            //                         fontSize: 17.0,
+            //                       ),
+            //                     ),
+            //                     Text(
+            //                       '${searchModel.room}, ${hallName(searchModel.hall)}',
+            //                       style: TextStyle(
+            //                         fontFamily: 'Comfortaa',
+            //                         fontWeight: FontWeight.bold,
+            //                         fontSize: 17.0,
+            //                       ),
+            //                     ),
+            //                     Text(
+            //                       '${searchModel.hometown}',
+            //                       style: TextStyle(
+            //                         fontFamily: 'Comfortaa',
+            //                         fontWeight: FontWeight.bold,
+            //                         fontSize: 17.0,
+            //                       ),
+            //                     ),
+            //                   ],
+            //                 ),
+            //               )
+            //             ],
+            //           ),
+            //       SizedBox(height: 10.0),
+            //       Row(
+            //         children: <Widget>[
+            //           Container(
+            //             width: 130.0,
+            //             child: name == null || name == ''?FlatButton(
+            //               shape: RoundedRectangleBorder(
+            //                 borderRadius: BorderRadius.circular(16.0),
+            //               ),
+            //               color: Color(0xFFFA624F),
+            //               onPressed: () {
+            //                 _updateDialog('name');
+            //               },
+            //               child: Text('Add Name',                                
+            //                 style: TextStyle(
+            //                     fontFamily: 'Comfortaa',
+            //                     fontWeight: FontWeight.bold,
+            //                     fontSize: 15.0,
+            //                     color: Colors.white),
+            //               ),
+            //             ):
+            //             ((rollno == null || rollno == '')?
+            //             RaisedButton(
+            //               shape: RoundedRectangleBorder(
+            //                 borderRadius: BorderRadius.circular(16.0),
+            //               ),
+            //               color: Color(0xFFFA624F),
+            //               onPressed:  null,
+            //               child: Text('Add Name',                                
+            //                 style: TextStyle(
+            //                     fontFamily: 'Comfortaa',
+            //                     fontWeight: FontWeight.bold,
+            //                     fontSize: 15.0,
+            //                     color: Colors.white),
+            //               ),
+            //             ):
+            //             Container())
+            //             ,
+            //           ),
+            //           SizedBox(width: 5.0),
+            //           Container(
+            //             width: 130.0,
+            //             child: rollno == null || rollno == '' 
+            //                 ? FlatButton(
+            //                     shape: RoundedRectangleBorder(
+            //                       borderRadius: BorderRadius.circular(16.0),
+            //                     ),
+            //                     color: Colors.grey,
+            //                     onPressed: () {
+            //                       _updateDialog('rollno');
+            //                     },
+            //                     child: Text('Add Rollno',
+            //                       style: TextStyle(
+            //                           fontFamily: 'Comfortaa',
+            //                           fontWeight: FontWeight.bold,
+            //                           fontSize: 15.0,
+            //                           color: Colors.white),
+            //                     ),
+            //                   )
+            //                 : Container()
+            //           )
+            //         ],
+            //       ),
+            //     ],
+            //   ),
+            // )
           ],
         ),
         SizedBox(height: 5.0),
@@ -619,7 +788,16 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-
+  hallName(String hall){
+    hall = hall.replaceAll(' ', '');
+    switch(hall.toLowerCase()){
+      case 'hallx':  return 'Hall 10';
+      break;
+      case 'hallxi': return 'Hall 11';
+      break;
+      default: return hall[0].toUpperCase() + hall.substring(1,4).toLowerCase()+ ' ' + hall.substring(4);
+    }
+  }
   Widget menuCard(String title) {
     return Padding(
       padding: EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),

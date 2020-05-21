@@ -14,6 +14,12 @@ import 'package:notifier/services/functions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
+
+Future<File> file(String filename) async {
+  Directory dir = await getApplicationDocumentsDirectory();
+  String pathName = join(dir.path, filename);
+  return File(pathName);
+}
 class DBProvider {
   final String databaseName = 'posts';
   // DBProvider();

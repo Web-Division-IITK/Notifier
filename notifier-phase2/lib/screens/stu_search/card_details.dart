@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -7,8 +7,9 @@ import 'package:notifier/services/beautify_body.dart';
 
 class StudentCard extends StatelessWidget {
   final SearchModel userData;
-  final Future<String> url;
+  final Future<ImageProvider> url;
   StudentCard(this.userData, this.url);
+  
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -49,34 +50,59 @@ class StudentCard extends StatelessWidget {
                   radius: 60.0,
                   child: FutureBuilder(
                       future: url,
-                      builder: (context, snapshot) {
+                      builder: (context,AsyncSnapshot<ImageProvider> snapshot) {
                         switch (snapshot.connectionState) {
                           case ConnectionState.done:
-                            if(snapshot== null || snapshot.data == null || !snapshot.hasData){
+                            if(snapshot== null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
                               return ClipRRect(
                           borderRadius: BorderRadius.circular(60),
-                          child: Image.asset('assets/profilepic.jpg'));
-                            }else if (snapshot.data.contains('assets')) {
-                              return ClipRRect(
-                          borderRadius: BorderRadius.circular(650),
-                          child: Image.asset('assets/profilepic.jpg'));
+                          // child:Image(image: MemoryImage()));
+                          //   }else if (snapshot.data.contains('assets')) {
+                          //     return ClipRRect(
+                          // borderRadius: BorderRadius.circular(650),
+                          child: Image.asset('assets/${userData.gender.toLowerCase()}profile.png'));
                             }
                             else{
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(60),
-                                child: CachedNetworkImage(
-                                  fit: BoxFit.fill,
-                                  width: 190,
-                                  height: 190,
-                                  imageUrl: snapshot.data,
-                                  errorWidget: (context, string, dy) {
-                                    return Image.asset('assets/profilepic.jpg');
-                                  },
-                                  progressIndicatorBuilder: (context, st, prog) {
-                                    return Center(
-                                      child: CircularProgressIndicator(),
-                                    );
-                                  },
+                                child: Image(image: snapshot.data,
+                                fit: BoxFit.fill,
+                                loadingBuilder: (context,widget, event){
+                              if(event == null){
+                                return widget;
+                              }
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  value: event.expectedTotalBytes!=null ?
+                                  event.cumulativeBytesLoaded/event.expectedTotalBytes : null,
+                                ),
+                              );
+                            },
+                            frameBuilder: (context,child,frame, wasSyncLoaded){
+                              if(wasSyncLoaded){
+                                return child;
+                              }
+                              return AnimatedOpacity(
+                                child: child,
+                                opacity: frame == null?0:1, 
+                                duration: Duration(seconds: 1),
+                                curve: Curves.easeOut,
+                              );
+                            },
+                                // ),
+                                // child: CachedNetworkImage(
+                                //   fit: BoxFit.fill,
+                                //   width: 190,
+                                //   height: 190,
+                                //   imageUrl: snapshot.data,
+                                  // errorWidget: (context, string, dy) {
+                                  //   return Image(image: snapshot.data);
+                                  // },
+                                  // progressIndicatorBuilder: (context, st, prog) {
+                                  //   return Center(
+                                  //     child: CircularProgressIndicator(),
+                                  //   );
+                                  // },
                                 ),
                               );
                             }

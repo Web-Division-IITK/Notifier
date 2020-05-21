@@ -179,7 +179,7 @@ class _RootPageState extends State<RootPage> {
   }
   @override
   Widget build(BuildContext context) {
-    print(_userId);
+    // print(_userId);
     switch (authStatus) {
       case AuthStatus.NOT_DETERMINED:
         return buildWaitingScreen();
