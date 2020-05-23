@@ -15,6 +15,9 @@ let options = {
     useFindAndModify: false,
     useCreateIndex: true
 }
+var port = 8080;
+port = process.env.PORT;
+if (port == null || port == "") {port = 8080};
 
 function createUsers(userdata) {
     let promise = new Promise((resolve, reject) => {
@@ -64,7 +67,7 @@ app.post('/updateStudent', async (req, res)=>{
 
 mongoose.connect(url, options, async function (err) {
     // let userx = JSON.parse(fs.readFileSync('hexml.json'));
-    // for(let i=0; i<userx.length; i++) await createUsers(userx[i]);
+    // for(let i=0; i<userx.length; i++){await createUsers(userx[i]);console.log(i+1);}
     app.use('/', router);
     app.listen(port);
     console.log("Connected at: "+port);
