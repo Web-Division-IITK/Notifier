@@ -1,6 +1,20 @@
 let mongoose = require('mongoose');
 const USER = require('./userSchema.js');
 const fs=require('fs');
+let express = require('express');
+let bodyParser = require('body-parser');
+let cors = require('cors');
+
+let app = express();
+app.use(cors());
+let router = express.Router();
+app.use(bodyParser.json({type: 'application/json'}));
+var url = "mongodb://127.0.0.1:27017/oarsscrap";
+let options = {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useCreateIndex: true
+}
 
 function createUsers(userdata) {
     let promise = new Promise((resolve, reject) => {
@@ -38,26 +52,20 @@ function updateStudData(data){
     return prom;    
 }
 
-var url = "mongodb://127.0.0.1:27017/oarsscrap";
-let options = {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useCreateIndex: true
-}
-mongoose.connect(url, options, async function (err) {
-    let userx = JSON.parse(fs.readFileSync('hexml.json'));
-    for(let i=0; i<userx.length; i++){
-        await createUsers(userx[i]);
-        console.log(userx.length);
-    }
-    // console.log(await getAllStudData());
+app.get('/getAllStudents', async (req, res)=>{
+    res.json(await getAllStudData());
+    res.end();
 })
 
-// async function xx(){
-//     let db = await mongoose.connect(url, options);
-//     let data = {roll: "10017", hall: "HALL3"};
-//     await updateStudData(data);
-//     db.disconnect();
-// }
+app.post('/updateStudent', async (req, res)=>{
+    res.json(await updateStudData(req.body));
+    res.end();
+})
 
-// xx();
+mongoose.connect(url, options, async function (err) {
+    // let userx = JSON.parse(fs.readFileSync('hexml.json'));
+    // for(let i=0; i<userx.length; i++) await createUsers(userx[i]);
+    app.use('/', router);
+    app.listen(port);
+    console.log("Connected at: "+port);
+})
