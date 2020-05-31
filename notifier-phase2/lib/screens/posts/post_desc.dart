@@ -657,7 +657,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                 !time ?
                                 (requestPermission ? 'Sending request Approval'
                                 : 'Publishing Post')
-                                : 'Taking too much time, might be your connectivity is slow',
+                                : 'Taking too much time, your connectivity is slow',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white

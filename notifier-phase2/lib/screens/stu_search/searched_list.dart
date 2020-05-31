@@ -7,8 +7,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:http/http.dart';
-import 'package:network_to_file_image/network_to_file_image.dart';
+// import 'package:network_to_file_image/network_to_file_image.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
+import 'package:notifier/screens/profile/profilepic.dart';
 import 'package:notifier/screens/stu_search/card_details.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
@@ -131,6 +132,7 @@ class SearchedList extends StatelessWidget {
             )
           : CupertinoScrollbar(
             child: ListView.builder(
+              shrinkWrap: true,
               itemCount: list.length,
               itemBuilder: (context, index) {
                 return ListItemStudent(
@@ -153,69 +155,69 @@ class ListItemStudent extends StatelessWidget {
         minHeight: 90.0,
       ),
       width: itemWidth,
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[
-          
-
-          /*Positioned(
-            right: 0.0,
-            child: */
-          Card(
-            margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: InkWell(
-            onTap: () {
-              return showDialog(
-                  context: (context),
-                  builder: (context) {
-                    return StudentCard(user,getImageURL(user,memorizer: _memorizer));
-                  });
-            },
-            borderRadius: BorderRadius.circular(16),
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    width: itemWidth -112,
-                    padding: const EdgeInsets.only(left: 16.0,),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          user.name,
-                          style: TextStyle(fontSize: 17),
-                        ),
-                        Text(user.dept),
-                        Text(user.rollno)
-                      ],
-                    ),
+      child: Card(
+        margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: InkWell(
+        onTap: () {
+          return showDialog(
+              context: (context),
+              builder: (context) {
+                return StudentCard(user,ProfilePic(user).getUserProfilePic());
+              });
+        },
+        borderRadius: BorderRadius.circular(16),
+          child: Row(
+            children: <Widget>[
+              Flexible(
+                flex: 6,
+                child: Container(
+                  width: itemWidth -112,
+                  padding: const EdgeInsets.only(left: 16.0,top: 16.0,bottom: 16.0,right: 8),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        user.name,
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      SizedBox(height: 10,),
+                      Text(user.username + '@iitk.ac.in',
+                        style: TextStyle(fontSize: 17),
+                      ),
+                      SizedBox(height: 4,),
+                      Text(user.dept,
+                        style: TextStyle(fontSize: 15),
+                      ),
+                      SizedBox(height: 4,),
+                      Text(user.rollno,
+                        style: TextStyle(fontSize: 15),
+                      )
+                    ],
                   ),
-                  CircleAvatar(
-          radius: 40.0,
-          child: FutureBuilder(
-                future: getImageURL(user,memorizer: this._memorizer),
-                builder: (context,AsyncSnapshot<ImageProvider> snapshot) {
+                ),
+              ),
+              Flexible(
+                flex: 4,
+                child: FutureBuilder(
+                future: ProfilePic(user).getUserProfilePic(),
+                builder: (context, snapshot) {
                   switch (snapshot.connectionState) {
-                    case ConnectionState.done:
-                      if(snapshot== null || snapshot.data == null || !snapshot.hasData){
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
-                          child: Image.asset('assets/${user.gender.toLowerCase()}profile.png'));
-                      // }else if (snapshot.data.contains('assets')\) {
-                      //   return ClipRRect(
-                      //     borderRadius: BorderRadius.circular(40),
-                      //     child: Image.asset('assets/profilepic.jpg'));
-                      }
-                      else{
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(40),
+                  case ConnectionState.done:
+                    if(snapshot== null || snapshot.data == null || !snapshot.hasData){
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset('assets/${user.gender.toLowerCase()}profile.png'));
+                    }
+                    else{
+                      return Container(
+                        constraints: BoxConstraints(maxHeight: double.maxFinite),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
                           child: Image(
                             image: snapshot.data,
-                            // loadingBuilder: ,),
-                          // child: Image.network(
-                          //   snapshot.data,
+                            fit: BoxFit.fitWidth,
                             loadingBuilder: (context,widget, event){
                               if(event == null){
                                 return widget;
@@ -239,98 +241,82 @@ class ListItemStudent extends StatelessWidget {
                               );
                             },
                           )
-                          // CachedNetworkImage(
-                          //   fit: BoxFit.fill,
-                          //   width: 190,
-                          //   height: 190,
-                          //   imageUrl: snapshot.data,
-                          //   errorWidget: (context, string, dy) {
-                          //     return Image.asset('assets/profilepic.jpg');
-                          //   },
-                          //   progressIndicatorBuilder: (context, st, prog) {
-                          //     return Center(
-                          //       child: CircularProgressIndicator(),
-                          //     );
-                          //   },
-                          // ),
-                        );
-                      }
-                      break;
-                    default: return Center(
-                      child: CircularProgressIndicator(),
-                    );
+                        ),
+                      );
+                    }
+                    break;
+                  default: return Center(
+                    child: CircularProgressIndicator(),
+                  );
                   }
                 }),
-          ),
-                ],
               ),
-            ),
-          )
-          // )
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }
   
 }
 
-Future<ImageProvider>getImageURL(SearchModel user,{memorizer}) async {
-    final HttpClient _httpClient = HttpClient();
-    File ima = await file('${user.rollno}.jpg');
-    File i_file;
-    try {
-       String url = 'http://home.iitk.ac.in/~${user.username}/dp';
-       Response res = await get(url);
-       if(res.statusCode ==  200){
-         return MemoryImage(res.bodyBytes);
-       }else{
-         return await ima.exists().then((existence)async{
-      // print(existence);
-          if(existence == true){
-            return MemoryImage(ima.readAsBytesSync());
-          }else{
-            return await memorizer.runOnce(()async{
-              try {
-                String url1 =
-                    'https://oa.cc.iitk.ac.in:443/Oa/Jsp/Photo/${user.rollno}_0.jpg';
-                Response res = await get(url1);
-                String format = '.jpg';
-                // print(res.request.url.scheme);
+// Future<ImageProvider>getImageURL(SearchModel user,{memorizer}) async {
+//     final HttpClient _httpClient = HttpClient();
+//     File ima = await file('${user.rollno}.jpg');
+//     File i_file;
+//     try {
+//        String url = 'http://home.iitk.ac.in/~${user.username}/dp';
+//        Response res = await get(url);
+//        if(res.statusCode ==  200){
+//          return MemoryImage(res.bodyBytes);
+//        }else{
+//          return await ima.exists().then((existence)async{
+//       // print(existence);
+//           if(existence == true){
+//             return MemoryImage(ima.readAsBytesSync());
+//           }else{
+//             return await memorizer.runOnce(()async{
+//               try {
+//                 String url1 =
+//                     'https://oa.cc.iitk.ac.in:443/Oa/Jsp/Photo/${user.rollno}_0.jpg';
+//                 Response res = await get(url1);
+//                 String format = '.jpg';
+//                 // print(res.request.url.scheme);
               
-                if (res.statusCode != 200) {
-                    return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
-                }
-                try {
-                  print(format = res.headers['content-location'].replaceAll('dp', ''));
-                } catch (e) {
-                  print(e);
-                }
-                  try {
-                    i_file = await file('${user.rollno}.jpg');
-                  } catch (e) {
-                    print(e);
-                  }
-                  print(i_file);
-                // }
+//                 if (res.statusCode != 200) {
+//                     return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
+//                 }
+//                 try {
+//                   print(format = res.headers['content-location'].replaceAll('dp', ''));
+//                 } catch (e) {
+//                   print(e);
+//                 }
+//                   try {
+//                     i_file = await file('${user.rollno}.jpg');
+//                   } catch (e) {
+//                     print(e);
+//                   }
+//                   print(i_file);
+//                 // }
 
-                return NetworkToFileImage(file: i_file, url: url,debug: true);
-              } catch (e) {
-                print(e);
-                return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
-              }
-            });
-          }
-        });
-       }
-    } catch (e) {
-      print(e);
-      return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
-    }
+//                 return NetworkToFileImage(file: i_file, url: url,debug: true);
+//               } catch (e) {
+//                 print(e);
+//                 return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
+//               }
+//             });
+//           }
+//         });
+//        }
+//     } catch (e) {
+//       print(e);
+//       return AssetImage('assets/${user.gender.toLowerCase()}profile.png');
+//     }
     
     
     
     
-}
+// }
 // class ImageAnimationLoading extends StatelessWidget {
 //   @override
 //   Widget build(BuildContext context) {

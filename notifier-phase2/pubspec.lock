@@ -50,13 +50,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.5"
-  bson:
-    dependency: transitive
-    description:
-      name: bson
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.3.2"
   build:
     dependency: transitive
     description:
@@ -183,6 +176,27 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.14.11"
+  connectivity:
+    dependency: "direct main"
+    description:
+      name: connectivity
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.8+6"
+  connectivity_macos:
+    dependency: transitive
+    description:
+      name: connectivity_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0+3"
+  connectivity_platform_interface:
+    dependency: transitive
+    description:
+      name: connectivity_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.6"
   convert:
     dependency: transitive
     description:
@@ -583,29 +597,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.9.6+3"
-  mongo_dart:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "7e251f1c7002c9085ec915f9ffeb735e0f26d39d"
-      url: "https://github.com/tgercek/mongo_dart.git"
-    source: git
-    version: "0.4.0-dev.1"
-  mongo_dart_query:
-    dependency: transitive
-    description:
-      name: mongo_dart_query
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.4.1"
-  more:
-    dependency: transitive
-    description:
-      name: more
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.18.2"
   nested:
     dependency: transitive
     description:
@@ -613,13 +604,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.4"
-  network_to_file_image:
-    dependency: "direct main"
-    description:
-      name: network_to_file_image
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.3.0"
   node_interop:
     dependency: transitive
     description:

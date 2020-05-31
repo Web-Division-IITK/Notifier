@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
-import 'package:mongo_dart/mongo_dart.dart' as mongo;
-import 'package:notifier/database/mogo_database.dart';
+// import 'package:mongo_dart/mongo_dart.dart' as mongo;
+// import 'package:notifier/database/mogo_database.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:path/path.dart';
@@ -139,7 +139,7 @@ class StuSearchDatabase{
       print(e);
     }
   }
-  updatePosts(SearchModel searchModel)async{
+  Future updatePosts(SearchModel searchModel)async{
     try {
         final db= await database;
       var res= await db.update(
@@ -181,11 +181,28 @@ class StuSearchDatabase{
   QueryDatabase(this.queryColumn,this.queryData);
  }
 
- Future<bool>getStudentDataFromServer() async{
-   mongo.Db db;
-  mongo.DbCollection _dbCollection;
-  DBConnection connection;
-  //  try {
+
+Future<bool>getStudentDataFromServer() async{
+  // mongo.Db db;
+  // mongo.DbCollection _dbCollection;
+  // DBConnection connection;
+  // Map<String,dynamic> data = {};
+   try {
+     try {
+       final url = 'http://ec2-18-204-20-179.compute-1.amazonaws.com/getAllStudents';
+       Response res = await get(url);
+       if(res.statusCode == 200){
+         return await StuSearchDatabase().insertStuData({},listvalues: json.decode(res.body)).then((v){
+           return v==0;
+         }).catchError((onError){
+           print(onError);
+           return false;
+         });
+       }
+     } catch (e) {
+       print(e);
+       return false;
+     }
     //  final url = 
     // //  Uri.http('www.mocky.io', '/v2/5ebe46d43100007800c5d129');
     //  'https://us-central1-notifier-phase-2.cloudfunctions.net/getStudData';
@@ -197,24 +214,50 @@ class StuSearchDatabase{
       //   return await StuSearchDatabase().insertStuData({},listvalues: json.decode(res.body)).then((v){
       //     return (v == 0);
       //   });
-      // }
+      // }r
       // return false;
   //  } catch (e) {
   //    print(e);
   //    return false;
   //  }
-      try {
-        connection = await DBConnection.getInstance();
-        db = await connection.getConnection();
-        _dbCollection = db.collection('users');
-        var v = await _dbCollection.find(mongo.where.sortBy('roll')).toList();
-        print(v.length);
-        return await StuSearchDatabase().insertStuData({},listvalues:v ).then((v){
-          connection.closeConnection();
-          return (v == 0);
-        });
-      } catch (e) {
+      // try {
+      //   connection = await DBConnection.getInstance();
+      //   db = await connection.getConnection();
+      //   _dbCollection = db.collection('users');
+      //   return await _dbCollection.find(mongo.where.sortBy('roll')).listen((onData){
+      //     print(onData['_id'].toString().replaceAll('ObjectId("', '').replaceAll('")',''));
+      //      data.update(onData['roll'], (v)=>onData,ifAbsent: ()=>onData);
+      //    },onError: print,onDone: ()async{
+      //      print(data.values.toList());
+      //      return await StuSearchDatabase().insertStuData({},listvalues:data.values.toList() ).then((v){
+      //         // connection.closeConnection();
+      //         return (v == 0);
+      //       }).catchError((e){
+      //         print(e);
+      //         return false;
+      //       });
+      //    }).asFuture().catchError((onError){
+      //      print(onError);
+      //      return false;
+      //    });
+        // var v = await _dbCollection.find(mongo.where.sortBy('roll')).toList()
+        // .catchError((onError){print(onError);
+        //   return false;
+        // });
+        // print(v.length);
+        // return await StuSearchDatabase().insertStuData({},listvalues:v ).then((v){
+        //   // connection.closeConnection();
+        //   return (v == 0);
+        // }).catchError((e){
+        //   print(e);
+        //   return false;
+        // });
+      }on SocketException catch(e){
         print(e);
         return false;
       }
+      // } catch (e) {
+      //   print(e);
+      //   return false;
+      // }
  }

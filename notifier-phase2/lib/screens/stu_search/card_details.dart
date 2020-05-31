@@ -46,8 +46,12 @@ class StudentCard extends StatelessWidget {
                 //               },
                 //             ),
                 //           )),
-                 CircleAvatar(
-                  radius: 60.0,
+                 Container(
+                   width : 150.0,
+                  constraints: BoxConstraints(
+                    maxHeight: 150.0
+                   ),
+                  // radius: 60.0,
                   child: FutureBuilder(
                       future: url,
                       builder: (context,AsyncSnapshot<ImageProvider> snapshot) {
@@ -55,7 +59,7 @@ class StudentCard extends StatelessWidget {
                           case ConnectionState.done:
                             if(snapshot== null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
                               return ClipRRect(
-                          borderRadius: BorderRadius.circular(60),
+                          borderRadius: BorderRadius.circular(16),
                           // child:Image(image: MemoryImage()));
                           //   }else if (snapshot.data.contains('assets')) {
                           //     return ClipRRect(
@@ -66,7 +70,7 @@ class StudentCard extends StatelessWidget {
                               return ClipRRect(
                                 borderRadius: BorderRadius.circular(60),
                                 child: Image(image: snapshot.data,
-                                fit: BoxFit.fill,
+                                fit: BoxFit.fitWidth,
                                 loadingBuilder: (context,widget, event){
                               if(event == null){
                                 return widget;
@@ -116,23 +120,26 @@ class StudentCard extends StatelessWidget {
                 SizedBox(height: 10.0),
                 Text(
                   userData.name,
-                  style: TextStyle(fontSize: 20.0,color: Colors.white),
+                  style: TextStyle(fontSize: 25,color: Colors.white),
                 ),
                 SizedBox(height: 5.0),
                 Text('(${userData.rollno})',
                 style: TextStyle(
-                            color:Colors.white
+                  color:Colors.white,
+                  fontSize: Theme.of(context).textTheme.title.fontSize,
                             // Theme.of(context).appBarTheme.textTheme.title.color,
-                            ),),
+                ),),
                 SizedBox(height: 5.0),
                 Text('${userData.program}, ${userData.dept}',
                 style: TextStyle(
-                            color:Colors.white
+                  color:Colors.white,
+                  fontSize: 17
                             // Theme.of(context).appBarTheme.textTheme.title.color,
-                            ),),
+                ),),
                 SizedBox(height: 3.0),
                 Text('${userData.room}, ${userData.hall}',
                 style: TextStyle(
+                  fontSize: 17,
                             color:Colors.white
                             // Theme.of(context).appBarTheme.textTheme.title.color,
                             ),),
@@ -149,6 +156,7 @@ class StudentCard extends StatelessWidget {
                     SizedBox(width: 5.0),
                     Text(userData.hometown,
                     style: TextStyle(
+                      fontSize: 17,
                             color:Colors.white
                             // Theme.of(context).appBarTheme.textTheme.title.color,
                             ),),
@@ -161,6 +169,7 @@ class StudentCard extends StatelessWidget {
                     SizedBox(width: 5.0),
                     Text(userData.bloodGroup,
                     style: TextStyle(
+                      fontSize: 17,
                             color:Colors.white
                             // Theme.of(context).appBarTheme.textTheme.title.color,
                             ),),
@@ -175,6 +184,7 @@ class StudentCard extends StatelessWidget {
                       text: TextSpan(
                         text: '${userData.username}@iitk.ac.in',
                         style: TextStyle(
+                          fontSize: 17,
                             color:Colors.white
                             // Theme.of(context).appBarTheme.textTheme.title.color,
                             ),

@@ -914,7 +914,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                 !time ?
                                 (requestPerm ? 'Sending request Approval'
                                 : 'Publishing Post')
-                                : 'Taking too much time, might be your connectivity is slow',
+                                : 'Your connectivity seems to be slow',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white

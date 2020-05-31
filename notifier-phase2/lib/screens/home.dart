@@ -26,7 +26,8 @@ import 'package:notifier/screens/home/newhome.dart';
 import 'package:notifier/screens/make_coordi.dart';
 import 'package:notifier/screens/posts/create_edit_posts.dart';
 import 'package:notifier/screens/posts/presi.dart';
-import 'package:notifier/screens/profile_page.dart';
+import 'package:notifier/screens/new_profile.dart';
+import 'package:notifier/screens/profile/profilepic.dart';
 import 'package:notifier/screens/stu_search/floating_anim.dart';
 import 'package:notifier/screens/stu_search/searched_list.dart';
 import 'package:notifier/screens/stu_search/stu_search.dart';
@@ -376,7 +377,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               FutureBuilder(
-                                future: getImageURL(SearchModel(rollno: userData.toMap()[0].rollno,name: name),memorizer: _memorizer),
+                                future: ProfilePic(searchModel).getUserProfilePic(),
                                 builder: (context,AsyncSnapshot<ImageProvider> snapshot){
                                 switch (snapshot.connectionState) {
                                   case ConnectionState.done:

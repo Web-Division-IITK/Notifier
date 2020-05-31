@@ -14,6 +14,7 @@ import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/rootpage.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
+import 'package:notifier/services/connectivity.dart';
 import 'package:notifier/services/database.dart';
 
 NotificationAppLaunchDetails notificationAppLaunchDetails;
@@ -45,9 +46,15 @@ class MyAppHome extends StatefulWidget {
 }
 
 class _MyAppHomeState extends State<MyAppHome> {
+  Map _source = {ConnectionState.none : false};
+  CheckNetworkConnectivity _connectivity = CheckNetworkConnectivity.instance;
   // List<SortDateTime> globalPostsArray = [];
   @override
   void initState() {
+    _connectivity.initialise();
+    _connectivity.myStream.listen((source){
+
+    });
     var initializationSettingsAndroid =
     new AndroidInitializationSettings('launch');
     var initializationSettingsIOS = new IOSInitializationSettings();
@@ -63,7 +70,11 @@ class _MyAppHomeState extends State<MyAppHome> {
     appReview();
     super.initState();
   }
-  
+  @override
+  void dispose() { 
+    _connectivity.disposeStream();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return DynamicTheme(
