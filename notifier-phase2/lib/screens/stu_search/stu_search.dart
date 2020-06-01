@@ -129,20 +129,7 @@ class _StudentSearchState extends State<StudentSearch> {
       appBar: AppBar(
         // title: Text('Student Search'),
         actions: <Widget>[
-          // PopupMenuButton<String>(
-          //   onSelected: (strig) async{
-          //     await getStudentData();
-          //   },
-          //   itemBuilder: (BuildContext context) {
-          //     return {'Update Database',}.map((String choice) {
-          //       return PopupMenuItem<String>(
-          //         value: choice,
-          //         child: Text(choice),
-          //       );
-          //     }).toList();
-          //   },
-          // ),
-          FlatButton(onPressed: ()=>_formKey.currentState.reset(), child: Text('Reset')),
+          // FlatButton(onPressed: ()=>_formKey.currentState.reset(), child: Text('Reset')),
           IconButton(icon: Icon(Icons.refresh), onPressed: ()async{
              if(mounted){
                setState(() {
@@ -151,7 +138,7 @@ class _StudentSearchState extends State<StudentSearch> {
             }
             
             await getStudentDataFromServer().then((var v){
-              if(v){
+              if(v == true){
                 showSuccessToast('Database updated successfully !!!');
               }else{
                 showErrorToast('An error occured while updating database');
@@ -161,9 +148,21 @@ class _StudentSearchState extends State<StudentSearch> {
                   _isLoading = false;
                 });
               }
-              // setState(() {
-              //   if(mounted){_isLoading = false;}
-              // });
+            }).catchError((onError){
+              print(onError);
+              showErrorToast('An error occured while updating database');
+              if(mounted){
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+            }).timeout(Duration(seconds: 40),onTimeout: (){
+              showErrorToast('Your request has timeout out!!! Seems like your internet is slow');
+              if(mounted){
+                setState(() {
+                  _isLoading = false;
+                });
+              }
             });
           })
         ],
@@ -245,7 +244,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                               decoration: InputDecoration(
                                                 // labelText: 'Year',
                                                 hintText: 'Choose Year...',
-                                                isDense: true
+                                                // isDense: true
                                               ),
                                               onChanged: (value)=> setState(()=>yearIndex = value),
                                               value: yearIndex,
@@ -269,7 +268,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                               decoration: InputDecoration(
                                                 // labelText: 'Gender',
                                                 hintText: 'Choose Gender...',
-                                                isDense: true
+                                                // isDense: true
                                               ),
                                               onChanged: (value)=> setState(()=>gen = value),
                                               value: gen,
@@ -286,6 +285,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                     ),
                                     Container(
                                       width: MediaQuery.of(context).size.width,
+                                      height: 80,
                                       child: Row(
                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                         // crossAxisAlignment: CrossAxisAlignment.center,
@@ -299,10 +299,11 @@ class _StudentSearchState extends State<StudentSearch> {
                                                   value: hl,
                                                 );
                                               }).toList(), 
+                                              // isExpanded: true,
                                               decoration: InputDecoration(
                                                 // labelText: 'Hall',
                                                 hintText: 'Choose Hall...',
-                                                isDense: true
+                                                // isDense: true
                                               ),
                                               onChanged: (value)=> setState(()=>h = value),
                                               value: h,
@@ -329,10 +330,11 @@ class _StudentSearchState extends State<StudentSearch> {
                                                   value: prg,
                                                 );
                                               }).toList(),
-                                              decoration: InputDecoration(
-                                                // labelText: 'Programme',
-                                                isDense: true
-                                              ),
+                                              isExpanded: true,
+                                              // decoration: InputDecoration(
+                                              //   // labelText: 'Programme',
+                                              //   // isDense: true
+                                              // ),
                                               onChanged: (value)=> setState(()=>prog = value),
                                               value: prog,
                                               onSaved: (value){
@@ -358,7 +360,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                         }).toList(),
                                         decoration: InputDecoration(
                                           // labelText: 'Department',
-                                          isDense: true
+                                          // isDense: true
                                         ),
                                         onChanged: (value)=> setState(()=>department = value),
                                         value: department,
@@ -382,7 +384,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                         }).toList(),
                                         decoration: InputDecoration(
                                           // labelText: 'Blood Group',
-                                          isDense: true
+                                          // isDense: true
                                         ),
                                         onChanged: (value)=> setState(()=>bloodGrp = value),
                                         value: bloodGrp,

@@ -25,29 +25,31 @@ class Seraching extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // var list = [];
-    return StatefulBuilder(builder: (context,setState){
-      return Scaffold(
-        // appBar: AppBar(title: Row(
-        //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //   children: <Widget>[
-        //     Text('Search Results'),
-        //     // list == null || list.length ==0 ? Container():Text('${list.length}')
-        //   ],
-        // )),
-        body: FutureBuilder(
-          future: getList(),
-          builder: (context,AsyncSnapshot<List<SearchModel>> snapshot){
-            switch (snapshot.connectionState) {
-              case ConnectionState.done:
-              // setState((){list = snapshot.data;});
-              // list = snapshot.data;
-                return SearchedList(snapshot.data);
-                break;
-              default: return Center(child: CircularProgressIndicator(),);
-            }
-        }),
-      );
-    });
+    return SafeArea(
+      child: StatefulBuilder(builder: (context,setState){
+        return Scaffold(
+          // appBar: AppBar(title: Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: <Widget>[
+          //     Text('Search Results'),
+          //     // list == null || list.length ==0 ? Container():Text('${list.length}')
+          //   ],
+          // )),
+          body: FutureBuilder(
+            future: getList(),
+            builder: (context,AsyncSnapshot<List<SearchModel>> snapshot){
+              switch (snapshot.connectionState) {
+                case ConnectionState.done:
+                // setState((){list = snapshot.data;});
+                // list = snapshot.data;
+                  return SearchedList(snapshot.data);
+                  break;
+                default: return Center(child: CircularProgressIndicator(),);
+              }
+          }),
+        );
+      }),
+    );
   }
   Future<List<SearchModel>> getList() async{
     // return memorizer.runOnce(()async{
@@ -94,51 +96,53 @@ class SearchedList extends StatelessWidget {
         // && (test.username != null && test.username.trim() != "")
       );
     });
-    return Scaffold(
-      appBar: AppBar(title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Text('Search Results'),
-          list == null || list.length ==0 ? Container():Text('${list.length}')
-        ],
-      )),
-      body:
-       list == null || list.length == 0
-          ? Container(
-              child: Center(
-                child: Wrap(
-                   children: <Widget>[
-                    Column(
-                      children: <Widget>[
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(
-                              MaterialIcons.sentiment_dissatisfied,
-                              size: 35.0,
-                            ),
-                            SizedBox(width: 10.0),
-                            Text('No results found !!!',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 18.0)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Text('Search Results'),
+            list == null || list.length ==0 ? Container():Text('${list.length}')
+          ],
+        )),
+        body:
+         list == null || list.length == 0
+            ? Container(
+                child: Center(
+                  child: Wrap(
+                     children: <Widget>[
+                      Column(
+                        children: <Widget>[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(
+                                MaterialIcons.sentiment_dissatisfied,
+                                size: 35.0,
+                              ),
+                              SizedBox(width: 10.0),
+                              Text('No results found !!!',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 18.0)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          : CupertinoScrollbar(
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                return ListItemStudent(
-                  MediaQuery.of(context).size.width, list[index]);
-              }),
-          ),
+              )
+            : CupertinoScrollbar(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  return ListItemStudent(
+                    MediaQuery.of(context).size.width, list[index]);
+                }),
+            ),
+      ),
     );
   }
 }
@@ -150,108 +154,110 @@ class ListItemStudent extends StatelessWidget {
   AsyncMemoizer _memorizer = AsyncMemoizer();
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(
-        minHeight: 90.0,
-      ),
-      width: itemWidth,
-      child: Card(
-        margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: InkWell(
-        onTap: () {
-          return showDialog(
-              context: (context),
-              builder: (context) {
-                return StudentCard(user,ProfilePic(user).getUserProfilePic());
-              });
-        },
-        borderRadius: BorderRadius.circular(16),
-          child: Row(
-            children: <Widget>[
-              Flexible(
-                flex: 6,
-                child: Container(
-                  width: itemWidth -112,
-                  padding: const EdgeInsets.only(left: 16.0,top: 16.0,bottom: 16.0,right: 8),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        user.name,
-                        style: TextStyle(fontSize: 20),
-                      ),
-                      SizedBox(height: 10,),
-                      Text(user.username + '@iitk.ac.in',
-                        style: TextStyle(fontSize: 17),
-                      ),
-                      SizedBox(height: 4,),
-                      Text(user.dept,
-                        style: TextStyle(fontSize: 15),
-                      ),
-                      SizedBox(height: 4,),
-                      Text(user.rollno,
-                        style: TextStyle(fontSize: 15),
-                      )
-                    ],
+    return SafeArea(
+      child: Container(
+        constraints: BoxConstraints(
+          minHeight: 90.0,
+        ),
+        width: itemWidth,
+        child: Card(
+          margin: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: InkWell(
+          onTap: () {
+            return showDialog(
+                context: (context),
+                builder: (context) {
+                  return StudentCard(user,ProfilePic(user).getUserProfilePic());
+                });
+          },
+          borderRadius: BorderRadius.circular(16),
+            child: Row(
+              children: <Widget>[
+                Flexible(
+                  flex: 6,
+                  child: Container(
+                    width: itemWidth -112,
+                    padding: const EdgeInsets.only(left: 16.0,top: 16.0,bottom: 16.0,right: 8),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          user.name,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        SizedBox(height: 10,),
+                        Text(user.username + '@iitk.ac.in',
+                          style: TextStyle(fontSize: 17),
+                        ),
+                        SizedBox(height: 4,),
+                        Text(user.dept,
+                          style: TextStyle(fontSize: 15),
+                        ),
+                        SizedBox(height: 4,),
+                        Text(user.rollno,
+                          style: TextStyle(fontSize: 15),
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Flexible(
-                flex: 4,
-                child: FutureBuilder(
-                future: ProfilePic(user).getUserProfilePic(),
-                builder: (context, snapshot) {
-                  switch (snapshot.connectionState) {
-                  case ConnectionState.done:
-                    if(snapshot== null || snapshot.data == null || !snapshot.hasData){
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset('assets/${user.gender.toLowerCase()}profile.png'));
-                    }
-                    else{
-                      return Container(
-                        constraints: BoxConstraints(maxHeight: double.maxFinite),
-                        child: ClipRRect(
+                Flexible(
+                  flex: 4,
+                  child: FutureBuilder(
+                  future: ProfilePic(user).getUserProfilePic(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                    case ConnectionState.done:
+                      if(snapshot== null || snapshot.data == null || !snapshot.hasData){
+                        return ClipRRect(
                           borderRadius: BorderRadius.circular(16),
-                          child: Image(
-                            image: snapshot.data,
-                            fit: BoxFit.fitWidth,
-                            loadingBuilder: (context,widget, event){
-                              if(event == null){
-                                return widget;
-                              }
-                              return Center(
-                                child: CircularProgressIndicator(
-                                  value: event.expectedTotalBytes!=null ?
-                                  event.cumulativeBytesLoaded/event.expectedTotalBytes : null,
-                                ),
-                              );
-                            },
-                            frameBuilder: (context,child,frame, wasSyncLoaded){
-                              if(wasSyncLoaded){
-                                return child;
-                              }
-                              return AnimatedOpacity(
-                                child: child,
-                                opacity: frame == null?0:1, 
-                                duration: Duration(seconds: 1),
-                                curve: Curves.easeOut,
-                              );
-                            },
-                          )
-                        ),
-                      );
+                          child: Image.asset('assets/${user.gender.toLowerCase()}profile.png'));
+                      }
+                      else{
+                        return Container(
+                          constraints: BoxConstraints(maxHeight: double.maxFinite),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image(
+                              image: snapshot.data,
+                              fit: BoxFit.fitWidth,
+                              loadingBuilder: (context,widget, event){
+                                if(event == null){
+                                  return widget;
+                                }
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: event.expectedTotalBytes!=null ?
+                                    event.cumulativeBytesLoaded/event.expectedTotalBytes : null,
+                                  ),
+                                );
+                              },
+                              frameBuilder: (context,child,frame, wasSyncLoaded){
+                                if(wasSyncLoaded){
+                                  return child;
+                                }
+                                return AnimatedOpacity(
+                                  child: child,
+                                  opacity: frame == null?0:1, 
+                                  duration: Duration(seconds: 1),
+                                  curve: Curves.easeOut,
+                                );
+                              },
+                            )
+                          ),
+                        );
+                      }
+                      break;
+                    default: return Center(
+                      child: CircularProgressIndicator(),
+                    );
                     }
-                    break;
-                  default: return Center(
-                    child: CircularProgressIndicator(),
-                  );
-                  }
-                }),
-              ),
-            ],
+                  }),
+                ),
+              ],
+            ),
           ),
         ),
       ),

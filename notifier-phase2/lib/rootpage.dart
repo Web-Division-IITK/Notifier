@@ -201,11 +201,11 @@ class _RootPageState extends State<RootPage> {
       break;
       case AuthStatus.LOGGED_IN:
         if (_userId.length > 0 && _userId != null && _userId != 'notverified') {
-          return HomePage(
+          return SafeArea(child: HomePage(
             userId: _userId,
             auth: widget.auth,
             logoutCallback: logoutCallback,
-          );
+          ));
         } else
           return buildWaitingScreen();
         break;

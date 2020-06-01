@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:async/async.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
@@ -8,14 +7,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
-import 'package:http/http.dart';
-// import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/database/student_search.dart';
 import 'package:notifier/main.dart';
 import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
-import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/hive_models/people_hive.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/model/posts.dart';
@@ -28,8 +24,7 @@ import 'package:notifier/screens/posts/create_edit_posts.dart';
 import 'package:notifier/screens/posts/presi.dart';
 import 'package:notifier/screens/new_profile.dart';
 import 'package:notifier/screens/profile/profilepic.dart';
-import 'package:notifier/screens/stu_search/floating_anim.dart';
-import 'package:notifier/screens/stu_search/searched_list.dart';
+import 'package:notifier/screens/event_management/calendar.dart';
 import 'package:notifier/screens/stu_search/stu_search.dart';
 import 'package:notifier/screens/posts/update_drafts_list.dart';
 import 'package:notifier/screens/preferences.dart';
@@ -441,13 +436,13 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).pop();
                           final result =await Navigator.of(context).push(
                             MaterialPageRoute(builder: (BuildContext context) {
-                              return Preferences(
+                              return SafeArea(child: Preferences(
                                     widget.auth,
                                     loadApp,
                                     userData.toMap()[0].uid,
                                     allCouncilData,
                                     userData
-                                  );
+                                  ));
                             }));
                         },
                         child:Container(
@@ -472,9 +467,9 @@ class _HomePageState extends State<HomePage> {
                           return StreamBuilder(
                             stream: userData.watch(key: 0), 
                             builder: (context,AsyncSnapshot<BoxEvent> sn)=>
-                              AllPostGetData(
+                              SafeArea(child: AllPostGetData(
                                (sn == null || sn.data == null || sn.data.value == null)? userData.toMap()[0]:sn.data.value,
-                              )
+                              ))
                           );
                         }));
                     },
@@ -499,14 +494,14 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return MakeCoordi(
+                                return SafeArea(child: MakeCoordi(
                                   ids,
                                   allCouncilData,
                                   id,
                                   widget.auth,
                                   widget.logoutCallback,
                                   widget.userId,
-                                );
+                                ));
                               }));
                           },
                           child: Container(
@@ -536,7 +531,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
                                   // return CreatePosts(id, _subs,name);
-                                return CreateEditPosts('Create', null, PostsSort(author: name,owner:id));
+                                return SafeArea(child: CreateEditPosts('Create', null, PostsSort(author: name,owner:id)));
                             }));
                           },
                           child: Container(
@@ -565,7 +560,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             await Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return PostList('Update',id,_prefs);
+                                return SafeArea(child: PostList('Update',id,_prefs));
                             }));
                           },
                           child: Container(
@@ -594,7 +589,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return President();
+                                return SafeArea(child: President());
                               }));
                           },
                           child: Container(
@@ -623,7 +618,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return PostList('Drafts',widget.userId,_prefs);
+                                return SafeArea(child: PostList('Drafts',widget.userId,_prefs));
                             }));
                           },
                           child: Container(
@@ -651,7 +646,34 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return BookMarked();
+                                return SafeArea(child: BookMarked());
+                            }));
+                          },
+                          child: Container(
+                            height: 55.0,
+                            padding: EdgeInsets.only(left:15.0),
+                            child: Row(
+                              children: <Widget>[
+                                Icon(MaterialIcons.collections_bookmark),
+                                Container(
+                                  padding: EdgeInsets.only(
+                                    left: 15.0, top: 15.0, bottom: 15.0),
+                                  child: Text(
+                                    'Bookmarked Posts',
+                                    style: TextStyle(
+                                      fontSize: 20.0, fontFamily: 'Nunito'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ),
+                  InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (BuildContext context) {
+                                return SafeArea(child: Calendar());
                             }));
                           },
                           child: Container(
@@ -683,7 +705,7 @@ class _HomePageState extends State<HomePage> {
                           Navigator.of(context).pop();
                           await Navigator.of(context).push(
                             MaterialPageRoute(builder: (BuildContext context) {
-                             return StudentSearch();
+                             return SafeArea(child: StudentSearch());
                             // return FabWithIcons(icons: [Icons.access_alarm],onIconTapped: (v){},);
                             }));
                         },
@@ -741,7 +763,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.of(context).pop();
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (BuildContext context) {
-                          return AboutPage();
+                          return SafeArea(child: AboutPage());
                       }));
                       // Fluttertoast.showToast(msg: 'Updating Done!!!!');                        
                     },

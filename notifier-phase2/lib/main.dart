@@ -169,6 +169,7 @@ class _MyAppHomeState extends State<MyAppHome> {
       ),
       themedWidgetBuilder: (context, theme) {
         return StyledToast(
+          locale: Locale('en', 'US'),
           dismissOtherOnShow: true,
           child: MaterialApp(
             // navigatorObservers: [BotToastNavigatorObserver()],
@@ -180,7 +181,7 @@ class _MyAppHomeState extends State<MyAppHome> {
               //   '/home': (context) => RootPage(auth:new Auth()),
               // },
             home:  /*DataHolderAndProvider(
-              // child:*/ FeatureDiscovery(child: RootPage(auth: new Auth())),
+              // child:*/ FeatureDiscovery(child: SafeArea(child: RootPage(auth: new Auth()))),
               // data: inheritedStream,
             // )
           ),

@@ -184,25 +184,36 @@ class StuSearchDatabase{
 
 Future<bool>getStudentDataFromServer() async{
   // mongo.Db db;
+
   // mongo.DbCollection _dbCollection;
   // DBConnection connection;
   // Map<String,dynamic> data = {};
-   try {
-     try {
-       final url = 'http://ec2-18-204-20-179.compute-1.amazonaws.com/getAllStudents';
-       Response res = await get(url);
-       if(res.statusCode == 200){
-         return await StuSearchDatabase().insertStuData({},listvalues: json.decode(res.body)).then((v){
-           return v==0;
-         }).catchError((onError){
-           print(onError);
-           return false;
-         });
-       }
-     } catch (e) {
-       print(e);
-       return false;
-     }
+  try {
+    try {
+      final url = 'http://ec2-18-204-20-179.compute-1.amazonaws.com/getAllStudents';
+      // Uri.
+      // final httpRequest = await HttpClient().getUrl(Uri.parse(url));
+      // final httpResponse = await httpRequest.close();
+      Response httpResponse = await get(url);
+      if(httpResponse.statusCode == 200){
+        final requestBody = httpResponse.body;
+        // await httpResponse.transform(utf8.decoder).join();
+        return await StuSearchDatabase().insertStuData({},listvalues: json.decode(requestBody)).then((v){
+          return v==0;
+        }).catchError((onError){
+          print(onError);
+          return false;
+        }).timeout(Duration(seconds: 40),onTimeout:(){
+          print('student timeout');
+          return false;
+        });
+      }else {
+        return false;
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
     //  final url = 
     // //  Uri.http('www.mocky.io', '/v2/5ebe46d43100007800c5d129');
     //  'https://us-central1-notifier-phase-2.cloudfunctions.net/getStudData';
