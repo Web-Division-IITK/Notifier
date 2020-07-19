@@ -46,7 +46,6 @@ class MyAppHome extends StatefulWidget {
 }
 
 class _MyAppHomeState extends State<MyAppHome> {
-  Map _source = {ConnectionState.none : false};
   CheckNetworkConnectivity _connectivity = CheckNetworkConnectivity.instance;
   // List<SortDateTime> globalPostsArray = [];
   @override
@@ -123,7 +122,7 @@ class _MyAppHomeState extends State<MyAppHome> {
               // color: Colors.white
             ),
             textTheme: TextTheme(
-              title: TextStyle(
+              headline1: TextStyle(
                 fontSize: 20.0,
                 color: brightness == Brightness.dark ?Colors.white:Colors.black,
               )

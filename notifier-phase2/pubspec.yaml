@@ -22,7 +22,7 @@ dependencies:
   firebase_auth:
   shared_preferences:
   hive: ^1.4.1+1
-  hive_flutter: ^0.3.0+2
+  hive_flutter: 
   flutter_spinkit: "^4.1.2"
   intl:
   google_maps_flutter: ^0.5.27+1

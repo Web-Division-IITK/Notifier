@@ -7,7 +7,7 @@ import 'package:notifier/services/beautify_body.dart';
 
 class StudentCard extends StatelessWidget {
   final SearchModel userData;
-  final Future<ImageProvider> url;
+  final Future<dynamic> url;
   StudentCard(this.userData, this.url);
   
   @override
@@ -54,7 +54,7 @@ class StudentCard extends StatelessWidget {
                   // radius: 60.0,
                   child: FutureBuilder(
                       future: url,
-                      builder: (context,AsyncSnapshot<ImageProvider> snapshot) {
+                      builder: (context, snapshot) {
                         switch (snapshot.connectionState) {
                           case ConnectionState.done:
                             if(snapshot== null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
@@ -126,7 +126,8 @@ class StudentCard extends StatelessWidget {
                 Text('(${userData.rollno})',
                 style: TextStyle(
                   color:Colors.white,
-                  fontSize: Theme.of(context).textTheme.title.fontSize,
+                  fontSize: 20
+                  // Theme.of(context).textTheme.headline1.fontSize,
                             // Theme.of(context).appBarTheme.textTheme.title.color,
                 ),),
                 SizedBox(height: 5.0),

@@ -606,7 +606,12 @@ class _HomeDescriptionState extends State<HomeDescription> {
 _navigateToPostDesc(context,index,arrayWithPrefs)async {
     return await Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
-            return FeatureDiscovery(child: PostDescription(listOfPosts: arrayWithPrefs, type: 'display',index: index,));
+            return FeatureDiscovery(
+              child: PostDescription(
+                listOfPosts: arrayWithPrefs, 
+                type: 'display',
+                index: index,
+            ));
       }
     ));
     // if( result!=null &&result == 'reload'){

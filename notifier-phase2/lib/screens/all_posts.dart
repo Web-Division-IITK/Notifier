@@ -74,9 +74,9 @@ class AllPostGetData extends StatelessWidget {
             ),
             body: StatefulBuilder(
               builder: (context,setState){
-                void callBack(){
-                  setState((){});
-                }
+                // void callBack(){
+                //   setState((){});
+                // }
                 return TabBarView(
                   children: [
                     FutureBuilder(

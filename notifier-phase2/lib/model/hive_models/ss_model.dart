@@ -1,6 +1,5 @@
 
 import 'package:hive/hive.dart';
-import 'package:intl/intl.dart';
 
 part 'ss_model.g.dart';
 

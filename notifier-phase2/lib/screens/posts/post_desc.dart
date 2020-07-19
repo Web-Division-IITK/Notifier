@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:math';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
@@ -16,7 +13,6 @@ import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/beautify_body.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
-import 'package:notifier/widget/loading.dart';
 import 'package:notifier/widget/showtoast.dart';
 
 class PostDescription extends StatefulWidget {
@@ -170,7 +166,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                           children: <Widget>[
                             Text('Set priority',
                               style: TextStyle(
-                                color: Theme.of(context).appBarTheme.textTheme.title.color
+                                color: Theme.of(context).appBarTheme.textTheme.headline1.color
                               ),
                             ),
                             Switch(

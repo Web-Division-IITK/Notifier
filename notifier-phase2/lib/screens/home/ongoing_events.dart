@@ -6,11 +6,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:notifier/database/reminder.dart';
-import 'package:notifier/model/notification.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home/upcoming_events.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
-import 'package:notifier/services/functions.dart';
 
 
 checkDateForONisBetween(DateTime startTime,DateTime endTime,PostsSort postsSort){
@@ -195,7 +193,7 @@ Duration minutes;
   @override
   void initState() {
     super.initState();
-    var date = DateTime.fromMillisecondsSinceEpoch(widget.post.startTime);
+    DateTime.fromMillisecondsSinceEpoch(widget.post.startTime);
     DateTime endTime= DateTime.fromMillisecondsSinceEpoch(widget.post.endTime);
     minutes = DateTime.fromMillisecondsSinceEpoch(widget.post.endTime).difference(DateTime.now());
     // streamSubscription = widget.streamController.stream.listen((onData){

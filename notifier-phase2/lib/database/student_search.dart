@@ -72,7 +72,7 @@ class StuSearchDatabase{
     try {
       final batch = db.batch();
       listvalues.forEach((value)=> batch.insert(table, SearchModel().fromMaptoMap(value),conflictAlgorithm: ConflictAlgorithm.replace));
-    var res = batch.commit(noResult: true);
+     batch.commit(noResult: true);
       // var res = await db.insert(table,values,conflictAlgorithm: ConflictAlgorithm.replace);
       return 0;
     } catch (e) {

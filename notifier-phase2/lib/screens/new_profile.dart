@@ -2,19 +2,15 @@ import 'dart:convert';
 
 import 'package:async/async.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:notifier/database/hive_database.dart';
-import 'package:notifier/database/mogo_database.dart';
 import 'package:notifier/database/student_search.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/profile/profilepic.dart';
-import 'package:notifier/screens/stu_search/searched_list.dart';
 import 'package:notifier/widget/showtoast.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-// import 'package:mongo_dart/mongo_dart.dart' as mongo;
 
 class Profile extends StatefulWidget {
   final AsyncMemoizer memorizer;

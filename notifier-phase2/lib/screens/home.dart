@@ -58,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   bool _errorWidget;
   bool refreshPost = true;
   SearchModel searchModel;
-  var _errorRefreshFunction;
+  // var _errorRefreshFunction;
   AsyncMemoizer _memorizer = AsyncMemoizer();
   // StreamController streamController = StreamController.broadcast();
   final HiveDatabaseUser hiveUser = HiveDatabaseUser();
@@ -93,7 +93,7 @@ class _HomePageState extends State<HomePage> {
       else{
         setState(() {
           _errorWidget = true;
-          _errorRefreshFunction = loadHome();
+          // _errorRefreshFunction = loadHome();
           _load = false;
         });
       }
@@ -114,7 +114,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _errorWidget = true;
           _load = false;
-          _errorRefreshFunction = fullData();
+          // _errorRefreshFunction = fullData();
         });
         return null;
       }
@@ -140,7 +140,7 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _errorWidget = true;
               _load = false;
-              _errorRefreshFunction = fullData();
+              // _errorRefreshFunction = fullData();
             });
             setState(() {
             });
@@ -373,7 +373,7 @@ class _HomePageState extends State<HomePage> {
                             children: <Widget>[
                               FutureBuilder(
                                 future: ProfilePic(searchModel).getUserProfilePic(),
-                                builder: (context,AsyncSnapshot<ImageProvider> snapshot){
+                                builder: (context, snapshot){
                                 switch (snapshot.connectionState) {
                                   case ConnectionState.done:
                                     if(snapshot == null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
@@ -434,7 +434,7 @@ class _HomePageState extends State<HomePage> {
                 InkWell(
                         onTap: () async {
                           Navigator.of(context).pop();
-                          final result =await Navigator.of(context).push(
+                          await Navigator.of(context).push(
                             MaterialPageRoute(builder: (BuildContext context) {
                               return SafeArea(child: Preferences(
                                     widget.auth,
@@ -668,33 +668,33 @@ class _HomePageState extends State<HomePage> {
                             ),
                           )
                         ),
-                  InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return SafeArea(child: Calendar());
-                            }));
-                          },
-                          child: Container(
-                            height: 55.0,
-                            padding: EdgeInsets.only(left:15.0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(MaterialIcons.collections_bookmark),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 15.0, top: 15.0, bottom: 15.0),
-                                  child: Text(
-                                    'Bookmarked Posts',
-                                    style: TextStyle(
-                                      fontSize: 20.0, fontFamily: 'Nunito'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        ),
+                  // InkWell(
+                  //         onTap: () {
+                  //           Navigator.of(context).pop();
+                  //           Navigator.of(context).push(MaterialPageRoute(
+                  //             builder: (BuildContext context) {
+                  //               return SafeArea(child: Calendar());
+                  //           }));
+                  //         },
+                  //         child: Container(
+                  //           height: 55.0,
+                  //           padding: EdgeInsets.only(left:15.0),
+                  //           child: Row(
+                  //             children: <Widget>[
+                  //               Icon(MaterialIcons.collections_bookmark),
+                  //               Container(
+                  //                 padding: EdgeInsets.only(
+                  //                   left: 15.0, top: 15.0, bottom: 15.0),
+                  //                 child: Text(
+                  //                   'Events',
+                  //                   style: TextStyle(
+                  //                     fontSize: 20.0, fontFamily: 'Nunito'),
+                  //                 ),
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         )
+                  //       ),
                   InkWell(
                         onTap: () async {
                           // getStudentData();

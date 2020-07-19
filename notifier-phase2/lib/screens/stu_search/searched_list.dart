@@ -1,17 +1,11 @@
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:http/http.dart';
-// import 'package:network_to_file_image/network_to_file_image.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/profile/profilepic.dart';
 import 'package:notifier/screens/stu_search/card_details.dart';
-import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 
 import '../../database/student_search.dart';
@@ -21,7 +15,7 @@ import 'stu_search.dart';
 class Seraching extends StatelessWidget {
   final SearchModel query;
   Seraching(this.query);
-  AsyncMemoizer memorizer = AsyncMemoizer();
+  final AsyncMemoizer memorizer = AsyncMemoizer();
   @override
   Widget build(BuildContext context) {
     // var list = [];
@@ -151,7 +145,7 @@ class ListItemStudent extends StatelessWidget {
   final double itemWidth;
   final SearchModel user;
   ListItemStudent(this.itemWidth, this.user);
-  AsyncMemoizer _memorizer = AsyncMemoizer();
+  // final AsyncMemoizer _memorizer = AsyncMemoizer();
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -207,7 +201,7 @@ class ListItemStudent extends StatelessWidget {
                   flex: 4,
                   child: FutureBuilder(
                   future: ProfilePic(user).getUserProfilePic(),
-                  builder: (context, snapshot) {
+                  builder: (context,  snapshot) {
                     switch (snapshot.connectionState) {
                     case ConnectionState.done:
                       if(snapshot== null || snapshot.data == null || !snapshot.hasData){
@@ -216,12 +210,15 @@ class ListItemStudent extends StatelessWidget {
                           child: Image.asset('assets/${user.gender.toLowerCase()}profile.png'));
                       }
                       else{
+                        // print(snapshot.data);
                         return Container(
                           constraints: BoxConstraints(maxHeight: double.maxFinite),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(16),
                             child: Image(
-                              image: snapshot.data,
+                              image: 
+                              // AssetImage('assets/${user.gender.toLowerCase()}profile.png'),
+                              snapshot.data,
                               fit: BoxFit.fitWidth,
                               loadingBuilder: (context,widget, event){
                                 if(event == null){

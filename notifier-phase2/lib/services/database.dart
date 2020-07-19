@@ -59,32 +59,32 @@ class DBProvider {
     try {
       Directory documentsDirectory = await getApplicationDocumentsDirectory();
       String path = join(documentsDirectory.path,databaseName,'.db');
-      String data;
-      switch (path) {
-        case 'posts':
-          data = "CREATE TABLE Posts("
-              "id TEXT PRIMARY KEY,"
-              "council TEXT,"
-              "owner TEXT,"
-              "sub TEXT,"
-              "tags TEXT,"
-              "timeStamp INTEGER,"
-              "title TEXT,"
-              "message TEXT,"
-              "body TEXT,"
-              "author TEXT,"
-              "url TEXT,"
-            ")";
-          break;
-        default: data = "CREATE TABLE User("
-              "id TEXT PRIMARY KEY,"
-              "uid TEXT,"
-              "name TEXT,"
-              "rollno INTEGER,"
-              "admin INTEGER,"
-              "email TEXT,"
-            ")";
-      }
+      // String data;
+      // switch (path) {
+      //   case 'posts':
+      //     data = "CREATE TABLE Posts("
+      //         "id TEXT PRIMARY KEY,"
+      //         "council TEXT,"
+      //         "owner TEXT,"
+      //         "sub TEXT,"
+      //         "tags TEXT,"
+      //         "timeStamp INTEGER,"
+      //         "title TEXT,"
+      //         "message TEXT,"
+      //         "body TEXT,"
+      //         "author TEXT,"
+      //         "url TEXT,"
+      //       ")";
+      //     break;
+      //   default: data = "CREATE TABLE User("
+      //         "id TEXT PRIMARY KEY,"
+      //         "uid TEXT,"
+      //         "name TEXT,"
+      //         "rollno INTEGER,"
+      //         "admin INTEGER,"
+      //         "email TEXT,"
+      //       ")";
+      // }
       return await openDatabase(
         path,version:1,
         onCreate: (db,version)async{
@@ -189,7 +189,7 @@ class DBProvider {
       //   return v..addAll(res.map((f) => PostsSort.fromMap(f)));
       // }
         break;
-      };
+      }
       
       // Map<String,PostsSort> list = {};
       // if(res.isNotEmpty) {
@@ -414,7 +414,7 @@ Future<dynamic> populateAppData(String uid) async{
   Box userData;
     userData = await HiveDatabaseUser().hiveBox;
   return await populateUsers(uid).then((status)async{
-    if(status){
+    if(status == true){
       return await p1('5',owner:userData.toMap()[0].id);
     }else{
       return false;

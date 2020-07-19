@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -143,6 +142,7 @@ class _AddImageState extends State<AddImage> {
                           // if(widget.addingImage.url != null){
                           //   await clearSelection();
                           // }
+                          
                           await ImagePicker.pickImage(
                             source: ImageSource.gallery).then((image) {
                               setState(() {
