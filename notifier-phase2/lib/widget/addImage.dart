@@ -171,7 +171,7 @@ class _AddImageState extends State<AddImage> {
                                     
                                   });
                                   
-                                  showSuccessToast('Removed Successfully'); //TODO remove when completed debugging
+                                  // showSuccessToast('Removed Successfully'); //TODO remove when completed debugging
                                   return await uploadFile().then((onValue){
                                     if(onValue){
                                       Navigator.pop(context);

@@ -60,6 +60,8 @@ class _HomePageState extends State<HomePage> {
   SearchModel searchModel;
   // var _errorRefreshFunction;
   AsyncMemoizer _memorizer = AsyncMemoizer();
+  
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
   // StreamController streamController = StreamController.broadcast();
   final HiveDatabaseUser hiveUser = HiveDatabaseUser();
   var _prefs = [];
@@ -372,7 +374,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
                               FutureBuilder(
-                                future: ProfilePic(searchModel).getUserProfilePic(),
+                                future: this._loadUserPic(),
                                 builder: (context, snapshot){
                                 switch (snapshot.connectionState) {
                                   case ConnectionState.done:
@@ -882,6 +884,9 @@ class _HomePageState extends State<HomePage> {
   //   await ImageDownloader.open(path);
   //   return true;
   // }
+  Future<dynamic> _loadUserPic() async {
+    return this._memoizer.runOnce(() async => await UserProfilePic(searchModel).getUserProfilePic() );
+  }
   Future<bool>loadUser() async{
 
     if(userData.isNotEmpty && userData.toMap()[0]!=null){

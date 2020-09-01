@@ -475,7 +475,7 @@ class _ProfileState extends State<Profile> {
                       child: Container(
                         margin: EdgeInsets.only(top: 60.0),
                         child: FutureBuilder(
-                                future: ProfilePic(searchModel).getUserProfilePic(),
+                                future: UserProfilePic(searchModel).getUserProfilePic(),
                                 builder: (context, snapshot){
                                   print(searchModel.gender);
                                 switch (snapshot.connectionState) {

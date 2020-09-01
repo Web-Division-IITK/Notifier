@@ -680,7 +680,7 @@ class _PreferencesState extends State<Preferences> {
 
       if (subscribe.length == 0 && unsubscribe.length == 0) {
         same = true;
-        showSuccessToast('Your preferences has been updated!!');
+        showSuccessToast('Your preferences have been updated!!');
         return true;
       }
       print(same);
@@ -692,7 +692,7 @@ class _PreferencesState extends State<Preferences> {
         print(onError);
       });
       return await updatePrefsInFirebase(widget.usersBox.toMap()[0].uid, data).then((v) {
-        showSuccessToast('Your preferences has been updated!!');
+        showSuccessToast('Your preferences have been updated!!');
         return true;
       }).catchError((onError){
         print(onError);

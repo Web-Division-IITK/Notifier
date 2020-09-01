@@ -373,6 +373,7 @@ class _StudentSearchState extends State<StudentSearch> {
                                       ),
                                     ),
                                     Container(
+                                      padding: EdgeInsets.only(top: 18.0),
                                       width: double.maxFinite,
                                       child: DropdownButtonFormField(
                                         items: bloodGroupList.map((bg){
@@ -399,11 +400,12 @@ class _StudentSearchState extends State<StudentSearch> {
                                     Padding(
                                       padding: const EdgeInsets.symmetric(vertical:8.0),
                                       child: TextFormField(
-                                        toolbarOptions: ToolbarOptions(
-                                          copy: true,
-                                          paste: true,
-                                          selectAll: true,
-                                        ),
+                                        // toolbarOptions: ToolbarOptions(
+                                        //   cut: true,
+                                        //   copy: true,
+                                        //   paste: true,
+                                        //   selectAll: true,
+                                        // ),
                                         maxLines: 1,
                                         keyboardType: TextInputType.text,
                                         autofocus: false,

@@ -125,6 +125,10 @@ class _MyAppHomeState extends State<MyAppHome> {
               headline1: TextStyle(
                 fontSize: 20.0,
                 color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              title: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
               )
             )
           ),
