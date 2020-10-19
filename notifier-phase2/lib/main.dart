@@ -7,7 +7,6 @@ import 'package:flutter/scheduler.dart' as sh;
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/options.dart';
@@ -122,7 +121,31 @@ class _MyAppHomeState extends State<MyAppHome> {
               // color: Colors.white
             ),
             textTheme: TextTheme(
-              headline1: TextStyle(
+              // headline1: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // headline2: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // headline3: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // headline4: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // headline5: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // headline6: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              headline: TextStyle(
                 fontSize: 20.0,
                 color: brightness == Brightness.dark ?Colors.white:Colors.black,
               ),

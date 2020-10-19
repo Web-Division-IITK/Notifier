@@ -356,7 +356,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
       padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
       child: new TextFormField(
         maxLines: 1,
-        obscureText: obsecureText1,
+        obscureText: true,
         autofocus: false,
         decoration: new InputDecoration(
           // suffix:  IconButton(icon: Icon(
@@ -368,22 +368,22 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
           //         obsecureText1 = !obsecureText1;
           //       });
               // }),
-            suffix: Tooltip(
-              message: obsecureText1 ? "Show Password" : "Hide Password",
-              child: InkWell(
-                borderRadius: BorderRadius.circular(40),
-                child: Icon(
-                  obsecureText1?
-                  MaterialIcons.visibility
-                  : MaterialIcons.visibility_off
-                ),
-                onTap: (){
-                  setState(() {
-                    obsecureText1 = !obsecureText1;
-                  });
-                },
-              )
-            ),
+            // suffix: Tooltip(
+            //   message: obsecureText1 ? "Show Password" : "Hide Password",
+            //   child: InkWell(
+            //     borderRadius: BorderRadius.circular(40),
+            //     child: Icon(
+            //       obsecureText1?
+            //       MaterialIcons.visibility
+            //       : MaterialIcons.visibility_off
+            //     ),
+            //     onTap: (){
+            //       setState(() {
+            //         obsecureText1 = !obsecureText1;
+            //       });
+            //     },
+            //   )
+            // ),
             // helperText: '',
             hintText: 'Confirm Password',
             icon: new Icon(
