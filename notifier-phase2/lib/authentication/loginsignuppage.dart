@@ -175,6 +175,8 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
     resetForm();
     setState(() {
       _isLoginForm = !_isLoginForm;
+      obsecureText = false;
+      obsecureText1 = false;
     });
   }
 
@@ -312,15 +314,32 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
               color: Colors.grey,
             ),
             // suffixIcon: Icon(MaterialIcons.visibility)
-            suffix: IconButton(icon: Icon(
-              obsecureText?
-                MaterialIcons.visibility
-                : MaterialIcons.visibility_off
-              ), onPressed: (){
-                setState(() {
-                  obsecureText = !obsecureText;
-                });
-              })
+            // suffix: IconButton(icon: Icon(
+            //   obsecureText?
+            //     MaterialIcons.visibility
+            //     : MaterialIcons.visibility_off
+            //   ), onPressed: (){
+            //     setState(() {
+            //       obsecureText = !obsecureText;
+            //     });
+
+            //   })
+            suffix: Tooltip(
+              message: obsecureText ? "Show Password" : "Hide Password",
+              child: InkWell(
+                borderRadius: BorderRadius.circular(40),
+                child: Icon(
+                  obsecureText?
+                  MaterialIcons.visibility
+                  : MaterialIcons.visibility_off
+                ),
+                onTap: (){
+                  setState(() {
+                    obsecureText = !obsecureText;
+                  });
+                },
+              )
+            ),
           ),
             onChanged: (value){
               _password = value;
@@ -337,18 +356,34 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
       padding: const EdgeInsets.fromLTRB(0.0, 15.0, 0.0, 0.0),
       child: new TextFormField(
         maxLines: 1,
-        obscureText: obsecureText1,
+        obscureText: true,
         autofocus: false,
         decoration: new InputDecoration(
-          suffix:  IconButton(icon: Icon(
-              obsecureText1?
-                MaterialIcons.visibility
-                : MaterialIcons.visibility_off
-              ), onPressed: (){
-                setState(() {
-                  obsecureText = !obsecureText;
-                });
-              }),
+          // suffix:  IconButton(icon: Icon(
+          //     obsecureText1?
+          //       MaterialIcons.visibility
+          //       : MaterialIcons.visibility_off
+          //     ), onPressed: (){
+          //       setState(() {
+          //         obsecureText1 = !obsecureText1;
+          //       });
+              // }),
+            // suffix: Tooltip(
+            //   message: obsecureText1 ? "Show Password" : "Hide Password",
+            //   child: InkWell(
+            //     borderRadius: BorderRadius.circular(40),
+            //     child: Icon(
+            //       obsecureText1?
+            //       MaterialIcons.visibility
+            //       : MaterialIcons.visibility_off
+            //     ),
+            //     onTap: (){
+            //       setState(() {
+            //         obsecureText1 = !obsecureText1;
+            //       });
+            //     },
+            //   )
+            // ),
             // helperText: '',
             hintText: 'Confirm Password',
             icon: new Icon(

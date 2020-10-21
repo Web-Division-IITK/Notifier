@@ -43,7 +43,7 @@ class HiveDatabaseUser{
    
     return await _openBox();
   }
-  Future<Box> _openBox() async {
+  Future _openBox() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
     if(databaseName == 'users'){

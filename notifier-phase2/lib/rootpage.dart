@@ -8,6 +8,7 @@ import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 
 import 'database/hive_database.dart';
+import 'database/student_search.dart';
 enum AuthStatus {
   NOT_DETERMINED,
   NOT_LOGGED_IN,
@@ -31,7 +32,7 @@ class _RootPageState extends State<RootPage> {
   void initState() {
     super.initState();
     if (i == 0) {
-      getStudentData();
+      getStudentDataFromServer();
       i++;
     }
     widget.auth.getCurrentUser().then((user) {
@@ -178,7 +179,7 @@ class _RootPageState extends State<RootPage> {
   }
   @override
   Widget build(BuildContext context) {
-    print(_userId);
+    // print(_userId);
     switch (authStatus) {
       case AuthStatus.NOT_DETERMINED:
         return buildWaitingScreen();
@@ -200,11 +201,11 @@ class _RootPageState extends State<RootPage> {
       break;
       case AuthStatus.LOGGED_IN:
         if (_userId.length > 0 && _userId != null && _userId != 'notverified') {
-          return HomePage(
+          return SafeArea(child: HomePage(
             userId: _userId,
             auth: widget.auth,
             logoutCallback: logoutCallback,
-          );
+          ));
         } else
           return buildWaitingScreen();
         break;

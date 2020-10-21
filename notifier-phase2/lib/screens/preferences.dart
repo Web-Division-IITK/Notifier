@@ -1,6 +1,4 @@
-import 'dart:convert';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,12 +6,9 @@ import 'package:hive/hive.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
-import 'package:notifier/model/notification.dart';
-import 'package:notifier/model/options.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
-import 'package:notifier/services/inherited_widget.dart';
 import 'package:notifier/widget/loading.dart';
 import 'package:notifier/widget/showtoast.dart';
 
@@ -685,7 +680,7 @@ class _PreferencesState extends State<Preferences> {
 
       if (subscribe.length == 0 && unsubscribe.length == 0) {
         same = true;
-        showSuccessToast('Your preferences has been updated!!');
+        showSuccessToast('Your preferences have been updated!!');
         return true;
       }
       print(same);
@@ -697,7 +692,7 @@ class _PreferencesState extends State<Preferences> {
         print(onError);
       });
       return await updatePrefsInFirebase(widget.usersBox.toMap()[0].uid, data).then((v) {
-        showSuccessToast('Your preferences has been updated!!');
+        showSuccessToast('Your preferences have been updated!!');
         return true;
       }).catchError((onError){
         print(onError);

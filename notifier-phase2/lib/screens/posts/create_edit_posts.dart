@@ -281,12 +281,19 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                     padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                                     child: DropdownButtonFormField(
                                       icon: Icon(Entypo.chevron_down),
-                                      items: _councilList.map((location) {
-                                      return DropdownMenuItem(
-                                        child: new Text(convertToCouncilName(location)),
-                                        value: location,
-                                      );
-                                    }).toList(),
+                                      items: post.owner!=null && post.owner != id  ?
+                                        [post.council].map((location) {
+                                        return DropdownMenuItem(
+                                          child: new Text(location),
+                                          value: location,
+                                        );
+                                      }).toList()
+                                        :_councilList.map((location) {
+                                        return DropdownMenuItem(
+                                          child: new Text(convertToCouncilName(location)),
+                                          value: location,
+                                        );
+                                      }).toList(),
                                       isDense: true,
                                       decoration: InputDecoration(
                                         labelText: 'Council',
@@ -907,7 +914,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                 !time ?
                                 (requestPerm ? 'Sending request Approval'
                                 : 'Publishing Post')
-                                : 'Taking too much time, might be your connectivity is slow',
+                                : 'Your connectivity seems to be slow',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white

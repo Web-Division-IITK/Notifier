@@ -13,6 +13,7 @@ import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/rootpage.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
+import 'package:notifier/services/connectivity.dart';
 import 'package:notifier/services/database.dart';
 
 NotificationAppLaunchDetails notificationAppLaunchDetails;
@@ -44,9 +45,14 @@ class MyAppHome extends StatefulWidget {
 }
 
 class _MyAppHomeState extends State<MyAppHome> {
+  CheckNetworkConnectivity _connectivity = CheckNetworkConnectivity.instance;
   // List<SortDateTime> globalPostsArray = [];
   @override
   void initState() {
+    _connectivity.initialise();
+    _connectivity.myStream.listen((source){
+
+    });
     var initializationSettingsAndroid =
     new AndroidInitializationSettings('launch');
     var initializationSettingsIOS = new IOSInitializationSettings();
@@ -62,13 +68,20 @@ class _MyAppHomeState extends State<MyAppHome> {
     appReview();
     super.initState();
   }
-  
+  @override
+  void dispose() { 
+    _connectivity.disposeStream();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return DynamicTheme(
       defaultBrightness: Brightness.dark,
       data: (brightness) => ThemeData(
         fontFamily: 'Raleway',
+        // textTheme: GoogleFonts.ralewayTextTheme(
+        //   Theme.of(context).textTheme,
+        // ),
         
         // primaryColor: brightness == Brightness.dark ? Colors.deepPurple: Colors.amber,
         buttonColor:brightness == Brightness.dark ? Colors.pink: Colors.deepOrange,
@@ -108,10 +121,54 @@ class _MyAppHomeState extends State<MyAppHome> {
               // color: Colors.white
             ),
             textTheme: TextTheme(
-              title: TextStyle(
+              headline1: TextStyle(
                 fontSize: 20.0,
                 color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              )
+              ),
+              headline2: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline3: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline4: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline5: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline6: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              subtitle1: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              subtitle2: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              bodyText1: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              bodyText2: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              // headline: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // title: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // )
             )
           ),
           // colorScheme: ColorScheme(
@@ -154,6 +211,7 @@ class _MyAppHomeState extends State<MyAppHome> {
       ),
       themedWidgetBuilder: (context, theme) {
         return StyledToast(
+          locale: Locale('en', 'US'),
           dismissOtherOnShow: true,
           child: MaterialApp(
             // navigatorObservers: [BotToastNavigatorObserver()],
@@ -165,7 +223,7 @@ class _MyAppHomeState extends State<MyAppHome> {
               //   '/home': (context) => RootPage(auth:new Auth()),
               // },
             home:  /*DataHolderAndProvider(
-              // child:*/ FeatureDiscovery(child: RootPage(auth: new Auth())),
+              // child:*/ FeatureDiscovery(child: SafeArea(child: RootPage(auth: new Auth()))),
               // data: inheritedStream,
             // )
           ),

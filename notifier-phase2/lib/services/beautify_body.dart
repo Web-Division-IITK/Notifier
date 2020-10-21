@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:notifier/widget/showtoast.dart';
 // import 'package:get_it/get_it.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -233,28 +232,29 @@ launchMail(String mailId) async{
   print(mailId);
   // final String subject = "Subject:";
   //   final String stringText = "Same Message:";
-  //   String uri = 'mailto:administrator@gmail.com?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(stringText)}';
-  //   if (await canLaunch(uri)) {
-  //     await launch(uri);
-  //   } else {
-  //     print("No email client found");
-  //   }
-      try {
-        final Email email = Email(
-          body: '',
-          subject: '',
-          recipients: ['$mailId'],
-          // cc: ['cc@example.com'],
-          // bcc: ['bcc@example.com'],
-          // attachmentPaths: ['/path/to/attachment.zip'],
-          isHTML: false,
-        );
+    String uri = 'mailto:administrator@gmail.com?subject=&body=';
+    if (await canLaunch(uri)) {
+      await launch(uri);
+    } else {
+      print("No email client found");
+      showErrorToast('Could not launch mail app');
+    }
+      // try {
+      //   final Email email = Email(
+      //     body: '',
+      //     subject: '',
+      //     recipients: ['$mailId'],
+      //     // cc: ['cc@example.com'],
+      //     // bcc: ['bcc@example.com'],
+      //     // attachmentPaths: ['/path/to/attachment.zip'],
+      //     isHTML: false,
+      //   );
 
-        await FlutterEmailSender.send(email);
-      } catch (e) {
-        print(e);
-        showErrorToast('Could not launch mail app');
-      }
+      //   await FlutterEmailSender.send(email);
+      // } catch (e) {
+      //   print(e);
+      //   showErrorToast('Could not launch mail app');
+      // }
     // } else {
     //   print( 'Could not launch $url');
     //   showErrorToast('Could not launch mail app');

@@ -22,10 +22,11 @@ dependencies:
   firebase_auth:
   shared_preferences:
   hive: ^1.4.1+1
-  hive_flutter: ^0.3.0+2
+  hive_flutter: 
   flutter_spinkit: "^4.1.2"
   intl:
   google_maps_flutter: ^0.5.27+1
+  google_fonts: ^1.0.0
   # simple_animations: ^1.3.12
   flutter_icons: ^1.1.0
   async: ^2.4.0
@@ -34,9 +35,20 @@ dependencies:
   path_provider:
   image_picker:
   geolocator:
+  # mongo_dart:
+  #   git:
+  #       url: "https://github.com/tgercek/mongo_dart.git"
+  connectivity: ^0.4.8
   # frideos: ^1.0.0+1
   # scoped_model: ^1.0.1
   sqflite: ^1.3.0
+  # network_to_file_image: ^2.3.0
+  # image_gallery_saver: ^1.2.2
+  # image: ^2.1.12
+  # image_downloader: ^0.19.2
+  # flutter_full_pdf_viewer: ^1.0.6
+  # flutter_image: ^3.0.0
+  # dio: ^3.0.9
   firebase_storage:
   cached_network_image: ^2.0.0-rc
   liquid_pull_to_refresh: ^1.1.2
@@ -51,14 +63,15 @@ dependencies:
   # firebase_core:
   firebase_messaging:
   keyboard_visibility: ^0.5.6
-  flutter_email_sender: ^3.0.1
-  recase: ^2.0.1
+  # flutter_email_sender: ^3.0.1
+  # recase: ^2.0.1
   # fluttertoast:
   http:
   dynamic_theme:
   qr_flutter: ^3.1.0
   # webview_flutter:
-  app_review: ^1.1.0+1
+  # app_review: ^1.1.0+1
+  rate_my_app:
   feature_discovery: ^0.8.0
   # get_it: ^1.0.3+2
 
@@ -67,8 +80,8 @@ dependencies:
   cupertino_icons: ^0.1.2
 
 dev_dependencies:
-  hive_generator: ^0.7.0+2
-  build_runner: ^1.9.0
+  # hive_generator: ^0.7.0+2
+  # build_runner: ^1.9.0
   flutter_test:
     sdk: flutter
 

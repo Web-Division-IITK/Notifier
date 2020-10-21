@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:async/async.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +18,16 @@ import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/about.dart';
 import 'package:notifier/screens/all_posts.dart';
 import 'package:notifier/screens/bookmark.dart';
-import 'package:notifier/screens/home/newhome.dart';
+import 'package:notifier/screens/home/home_descp.dart';
 import 'package:notifier/screens/make_coordi.dart';
 import 'package:notifier/screens/posts/create_edit_posts.dart';
 import 'package:notifier/screens/posts/presi.dart';
+import 'package:notifier/screens/profile_page.dart';
+import 'package:notifier/screens/profile/profilepic.dart';
+import 'package:notifier/screens/event_management/calendar.dart';
+import 'package:notifier/screens/stu_search/stu_search.dart';
 import 'package:notifier/screens/posts/update_drafts_list.dart';
 import 'package:notifier/screens/preferences.dart';
-import 'package:notifier/screens/profile.dart';
-import 'package:notifier/screens/stu_search/stu_search.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:notifier/database/hive_database.dart';
@@ -34,71 +37,73 @@ class HomePage extends StatefulWidget {
   final BaseAuth auth;
   final VoidCallback logoutCallback;
   final String userId;
-  // final DisplayPosts displayPosts;
   HomePage({this.auth, this.userId, this.logoutCallback});
   @override
   _HomePageState createState() => _HomePageState();
 }
-
+/// contains all ids of council heads i.e. level1+level2
 List<String> ids = [];
-  
+/// current email id [excluding @iik.ac.in] of user
 String id;
+///current name of user
 String name;
+///the json file downloaded from internet
 Councils allCouncilData;
+/// boolean for the admin field
 bool admin;
 
 class _HomePageState extends State<HomePage> {
+  /// all posts are loaded firstly into this array after retreivel from database
   static List<PostsSort> globalPostsArray;
+  /// hive data for the current active user
   Box userData;
   final FirebaseMessaging _fcm = FirebaseMessaging();
   bool _load = true;
   bool _errorWidget;
   bool refreshPost = true;
-  var _errorRefreshFunction;
+  /// this is model for the student search and here is used to
+  SearchModel searchModel;
+  AsyncMemoizer _memorizer = AsyncMemoizer();
+  
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
   // StreamController streamController = StreamController.broadcast();
   final HiveDatabaseUser hiveUser = HiveDatabaseUser();
+  /// preferneces of the current user
   var _prefs = [];
   bool darkMode;
+  /// minimum time between two referesh queries
   DateTime timeOfRefresh;
+
+  /// after user's data is retreived then all the posts in database are retreived as well as a function is trigerred to retreive that data from internet if there is no post available
   Future loadHome()async{
     return await loadPosts().then((var status){
-      print('loadingposts');
+      print('loading Posts....');
+      subscribeUnsubsTopic(_prefs, []);
+      if(status == null || status == true){
         subscribeUnsubsTopic(_prefs, []);
-      /*if(status == null){
         setState(() {
-          print('64');
-          _noPosts = true;
+          print('everything seems alright [line85] ... moving ahead ....');
           _errorWidget = false;
           _load = false;
         });
-
-      }else */if(status == null || status == true){
-        subscribeUnsubsTopic(_prefs, []);
-        setState(() {
-          print('gdsbv');
-          _errorWidget = false;
-          _load = false;
-          
-          print(globalPostsArray);
-        });
-        print(_load);
-        print('prefsdone');
+        print('preferences is completed');
         setState(() {});
       }
       else{
         setState(() {
           _errorWidget = true;
-          _errorRefreshFunction = loadHome();
+          // _errorRefreshFunction = loadHome();
           _load = false;
         });
       }
     });
   }
-  
+  /// function to retreive the json from internet and then save to allcouncilData variable
+  /// returns the data retreived is everything is alright otherwise returns null with setting _errorWidget value as true
   Future<Councils> fullData()async{
     return await councilData().then((var data) async{
       if(data!=null){
-        print('data from council'+
+        print('Data retreived from council == '+
             data.toString());
         allCouncilData = data;
         for (var i in allCouncilData.subCouncil.values.toList()) {
@@ -109,12 +114,12 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _errorWidget = true;
           _load = false;
-          _errorRefreshFunction = fullData();
         });
         return null;
       }
     });
   }
+  /// initiates the app logic and background fetch
   loadApp() async{
     setState(() {
       _load = true;
@@ -123,11 +128,10 @@ class _HomePageState extends State<HomePage> {
     // streamController.addStream(userData.watch());
     return await fullData().then((var status)async{
       if(status != null){
-        print('loadinguser');
+        print('loading User ...');
         return await loadUser().then((v)async{
           if(v){
-
-            print('loadinghome');
+            print('initiating Home function ...');
             return await loadHome();
           }else{
             subscribeUnsubsTopic(_prefs, []);
@@ -135,7 +139,6 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _errorWidget = true;
               _load = false;
-              _errorRefreshFunction = fullData();
             });
             setState(() {
             });
@@ -335,7 +338,7 @@ class _HomePageState extends State<HomePage> {
             IconButton(icon: Icon(Icons.replay,) ,onPressed:(){
               if(timeOfRefresh == null){
                 loadApp();
-              }else if((DateTime.now().millisecondsSinceEpoch - timeOfRefresh.millisecondsSinceEpoch) > 5) {
+              }else if((DateTime.now().millisecondsSinceEpoch - timeOfRefresh.millisecondsSinceEpoch) > 5000) {
                 loadApp();
               }else{
                 setState(() {
@@ -356,7 +359,7 @@ class _HomePageState extends State<HomePage> {
                       Navigator.of(context).pop();
                       Navigator.of(context)
                           .push(MaterialPageRoute(builder: (BuildContext context) {
-                        return ProfilePage(widget.userId, id);
+                        return Profile(_memorizer);
                       }));
                     },
                     child: Container(
@@ -366,20 +369,51 @@ class _HomePageState extends State<HomePage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
-                              CircleAvatar(
-                                radius: 50.0,
-                                backgroundColor: Theme.of(context).accentColor,
-                                child: Text(
-                                  // 'kjkjbd',
-                                  _errorWidget?'':
-                                    name == null || name == ''
-                                        ? id[0].toUpperCase()
-                                        : name[0].toUpperCase(),
-                                    style: TextStyle(
-                                        fontSize: 40.0,
-                                        color: Colors.white  
-                                      )),
-                              ),
+                              FutureBuilder(
+                                future: this._loadUserPic(),
+                                builder: (context, snapshot){
+                                switch (snapshot.connectionState) {
+                                  case ConnectionState.done:
+                                    if(snapshot == null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
+                                      return CircleAvatar(
+                                        radius: 50.0,
+                                        backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
+                                        // backgroundColor: Theme.of(context).accentColor,
+                                        // child: Text(
+                                        //   // 'kjkjbd',
+                                        //   _errorWidget?'':
+                                        //     name == null || name == ''
+                                        //         ? id[0].toUpperCase()
+                                        //         : name[0].toUpperCase(),
+                                        //     style: TextStyle(
+                                        //         fontSize: 40.0,
+                                        //         color: Colors.white  
+                                        //       )),
+                                      );
+                                    }else{
+                                      return CircleAvatar(
+                                        radius: 50.0,
+                                        backgroundImage: snapshot.data,
+                                      );
+                                    }
+                                    break;
+                                  default: return CircleAvatar(
+                                        radius: 50.0,
+                                        backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
+                                        // backgroundColor: Theme.of(context).accentColor,
+                                        // child: Text(
+                                        //   _errorWidget?'':
+                                        //     name == null || name == ''
+                                        //         ? id[0].toUpperCase()
+                                        //         : name[0].toUpperCase(),
+                                        //     style: TextStyle(
+                                        //         fontSize: 40.0,
+                                        //         color: Colors.white  
+                                        //       )),
+                                      );
+                                      break;
+                                }
+                              }),
                               SizedBox(height: 20.0),
                               Text(
                                 // 'nmb',
@@ -387,8 +421,6 @@ class _HomePageState extends State<HomePage> {
                                 name == null || name == '' ? id : name,
                                 style: TextStyle(
                                     fontFamily: 'Comfortaa',
-                                    // fontWeight: FontWeight.bold,
-                                    // color: Colors.white,
                                     fontSize: 17.0),
                               ),
                             ],
@@ -400,15 +432,15 @@ class _HomePageState extends State<HomePage> {
                 InkWell(
                         onTap: () async {
                           Navigator.of(context).pop();
-                          final result =await Navigator.of(context).push(
+                          await Navigator.of(context).push(
                             MaterialPageRoute(builder: (BuildContext context) {
-                              return Preferences(
+                              return SafeArea(child: Preferences(
                                     widget.auth,
                                     loadApp,
                                     userData.toMap()[0].uid,
                                     allCouncilData,
                                     userData
-                                  );
+                                  ));
                             }));
                         },
                         child:Container(
@@ -433,9 +465,9 @@ class _HomePageState extends State<HomePage> {
                           return StreamBuilder(
                             stream: userData.watch(key: 0), 
                             builder: (context,AsyncSnapshot<BoxEvent> sn)=>
-                              AllPostGetData(
+                              SafeArea(child: AllPostGetData(
                                (sn == null || sn.data == null || sn.data.value == null)? userData.toMap()[0]:sn.data.value,
-                              )
+                              ))
                           );
                         }));
                     },
@@ -460,14 +492,14 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return MakeCoordi(
+                                return SafeArea(child: MakeCoordi(
                                   ids,
                                   allCouncilData,
                                   id,
                                   widget.auth,
                                   widget.logoutCallback,
                                   widget.userId,
-                                );
+                                ));
                               }));
                           },
                           child: Container(
@@ -497,7 +529,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
                                   // return CreatePosts(id, _subs,name);
-                                return CreateEditPosts('Create', null, PostsSort(author: name,owner:id));
+                                return SafeArea(child: CreateEditPosts('Create', null, PostsSort(author: name,owner:id)));
                             }));
                           },
                           child: Container(
@@ -526,7 +558,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             await Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return PostList('Update',id,_prefs);
+                                return SafeArea(child: PostList('Update',id,_prefs));
                             }));
                           },
                           child: Container(
@@ -555,7 +587,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return President();
+                                return SafeArea(child: President());
                               }));
                           },
                           child: Container(
@@ -584,7 +616,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return PostList('Drafts',widget.userId,_prefs);
+                                return SafeArea(child: PostList('Drafts',widget.userId,_prefs));
                             }));
                           },
                           child: Container(
@@ -612,7 +644,7 @@ class _HomePageState extends State<HomePage> {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
                               builder: (BuildContext context) {
-                                return BookMarked();
+                                return SafeArea(child: BookMarked());
                             }));
                           },
                           child: Container(
@@ -634,19 +666,41 @@ class _HomePageState extends State<HomePage> {
                             ),
                           )
                         ),
+                  /*InkWell(
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (BuildContext context) {
+                                return SafeArea(child: Calendar());
+                            }));
+                          },
+                          child: Container(
+                            height: 55.0,
+                            padding: EdgeInsets.only(left:15.0),
+                            child: Row(
+                              children: <Widget>[
+                                Icon(MaterialIcons.collections_bookmark),
+                                Container(
+                                  padding: EdgeInsets.only(
+                                    left: 15.0, top: 15.0, bottom: 15.0),
+                                  child: Text(
+                                    'Events',
+                                    style: TextStyle(
+                                      fontSize: 20.0, fontFamily: 'Nunito'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        ),*/
                   InkWell(
-                        onTap: () async {
-                          // getStudentData();
-                          // List<SearchModel> list = await StuSearchDatabase().getAllStuData();
-                          // print(list);
-                          // list.retainWhere((text)=>text.rollno.toLowerCase().contains("1900") && text.name.toLowerCase().contains("ad"));
-                          // print(list);
+                    onTap: () async {
                           Navigator.of(context).pop();
                           await Navigator.of(context).push(
                             MaterialPageRoute(builder: (BuildContext context) {
-                              return StudentSearch();
+                             return SafeArea(child: StudentSearch());
                             }));
-                        },
+                    },
                         child:Container(
                         height: 55.0,
                         padding: EdgeInsets.only(left:15.0),
@@ -665,10 +719,7 @@ class _HomePageState extends State<HomePage> {
                     height: 55.0,
                     padding: EdgeInsets.only(left:15.0, top: 15.0, bottom: 15.0),
                     child: Row(
-                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        // darkMode?
-                        // Icon(MaterialCommunityIcons.weather_night),
                         Icon(Ionicons.ios_color_palette),
                         Container(
                           padding: EdgeInsets.only(left:15.0),
@@ -677,7 +728,6 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito'),
                           ),
                         ),
-                        // SizedBox(width: 40.0),
                         Container(
                           padding: EdgeInsets.only(left: 50.0),
                           child: Switch(
@@ -697,13 +747,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                   InkWell(
                     onTap: () async{
-                      // showSuccessToast('Your ppost has been published successfully');
                       Navigator.of(context).pop();
                       Navigator.of(context).push(MaterialPageRoute(
                         builder: (BuildContext context) {
-                          return AboutPage();
-                      }));
-                      // Fluttertoast.showToast(msg: 'Updating Done!!!!');                        
+                          return SafeArea(child: AboutPage());
+                      }));                      
                     },
                     child:Container(
                       height: 55.0,
@@ -760,7 +808,7 @@ class _HomePageState extends State<HomePage> {
             children: <Widget>[
               Center(
                 child: Text(
-                  'An Unknown Error occured while loading Posts!!\nTry checking your internet connectivity',
+                  'An Unknown Error occured while loading Posts!!\nTry checking your internet connectivity and refereshing',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.red)
                 ),
@@ -768,7 +816,7 @@ class _HomePageState extends State<HomePage> {
               RaisedButton.icon(onPressed: (){
                 if(timeOfRefresh == null){
                   loadApp();
-                }else if((DateTime.now().millisecondsSinceEpoch - timeOfRefresh.millisecondsSinceEpoch) > 5) {
+                }else if((DateTime.now().millisecondsSinceEpoch - timeOfRefresh.millisecondsSinceEpoch) > 5000) {
                   loadApp();
                 }else{
                   setState(() {
@@ -786,15 +834,14 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             return StreamBuilder(
               stream: userData.watch(key: 0),
-                // print(snapshot.data.prefs);
-                builder: (context,AsyncSnapshot<BoxEvent> sn){
-                        return  HomeDescription(
-                          arrayWithPrefs: snapshot.data??globalPostsArray,
-                          userModel:(sn == null || sn.data == null || sn.data.value == null)? userData.toMap()[0]:sn.data.value,
-                          userID: userData.toMap()[0].uid,
-                          load: refreshPost,
-                        );
-                }
+              builder: (context,AsyncSnapshot<BoxEvent> sn){
+                return  HomeDescription(
+                  postArray: snapshot.data??globalPostsArray,
+                  userModel:(sn == null || sn.data == null || sn.data.value == null)? userData.toMap()[0]:sn.data.value,
+                  userID: userData.toMap()[0].uid,
+                  load: refreshPost,
+                );
+              }
             );
           }
         )
@@ -802,13 +849,24 @@ class _HomePageState extends State<HomePage> {
       // ),
     );
   }
+
+  Future<dynamic> _loadUserPic() async {
+    return this._memoizer.runOnce(() async => await UserProfilePic(searchModel).getUserProfilePic() );
+  }
+
+  /// loads the current user data from hive database if found else fetches from firebase ;
+  /// also calls loadPeopleData if admin is true
   Future<bool>loadUser() async{
+
     if(userData.isNotEmpty && userData.toMap()[0]!=null){
+      var list = await StuSearchDatabase().getAllPostswithQuery(QueryDatabase(['username'], [userData.toMap()[0].id]));
+      searchModel = (list!=null&&list.length != 0)?list[0]: SearchModel(gender: '');
       id = userData.toMap()[0].id;
       admin = userData.toMap()[0].admin ?? false;
-      name = userData.toMap()[0].name ?? false;
+      name = (list!=null&&list.length != 0)? userData.toMap()[0].name= list[0].name: '';
+      userData.toMap()[0].rollno= (list!=null&&list.length != 0)? list[0].rollno: '';
+      userData.putAt(0,userData.toMap()[0]);
       _prefs = userData.toMap()[0].prefs ?? [];
-      // print(userData.toMap()[0]);
       subscribeUnsubsTopic(_prefs, []);
       if(admin == true){
         return await loadPeopleData();
@@ -840,6 +898,7 @@ class _HomePageState extends State<HomePage> {
       });
     }
   }
+  ///loads data from people collection from firebase about the user and its admin rights and saves this in a hive database
   Future<bool> loadPeopleData() async{
     Box peopleBox = await HiveDatabaseUser(databaseName: 'people').hiveBox;
     if(peopleBox.isNotEmpty){
@@ -884,9 +943,9 @@ class _HomePageState extends State<HomePage> {
     }
   }
   
-  /// has return type true (for all is well) ;false(for error retreiving);null(not found anyhting)
+  /// has return type true (for all is well) ;false(for error retreiving);null(not found anyhting).
+  ///  Retreives all post from local database and loads them into [globalPostsArray] variable.
   Future<bool> loadPosts()async{
-    // return true;
     return await DBProvider().getAllPosts().then((var v)async{
       if(v!=null && v.length != 0){
         setState(() {

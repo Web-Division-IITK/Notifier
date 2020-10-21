@@ -1,144 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
-import 'package:notifier/model/options.dart';
 import 'package:notifier/model/hive_models/people_hive.dart';
 import 'package:notifier/model/posts.dart';
-import 'package:notifier/screens/home.dart';
 import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-// Future<String> get _localPath async {
-//   final directory = await getApplicationDocumentsDirectory();
-//   return directory.path;
-// }
 
-// Future<File> get _localFile async {
-//   print('users');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'users' + '.txt');
-// }
 
-// Future<File> get _localFileAllPosts async {
-//   final path = await _localPath;
-//   print('snt');
-//   return File('$path' + '/' + 'allPosts' + '.txt');
-// }
-
-// Future<File> get _localFilePeople async {
-//   print('people');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'people' + '.txt');
-// }
-// Future<File> get _localFileAllData async {
-//   print('allData');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'allData' + '.txt');
-// }
-// // Future<File> get _localFileNots async {
-// //   print('notification');
-// //   final path = await _localPath;
-// //   return File('$path' + '/' + 'nots' + '.txt');
-// // }
-
-// Future<File> get _localFilePosts async {
-//   print('posts');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'posts' + '.txt');
-// }
-// Future<File> get _localFileDrafts async {
-//   print('drafts');
-//   final path = await _localPath;
-//   return File('$path' + '/' + 'drafts' + '.txt');
-// }
-// Future<bool> fileExists(String fileName) async {
-//   final path = await _localPath;
-//   final file = File('$path' + '/' + '$fileName' + '.txt');
-//   return file.exists();
-// }
-
-// Future<File> createFile(String fileName) async {
-//   try {
-//     final path = await _localPath;
-//     final file = File('$path' + '/' + '$fileName' + '.txt');
-//     return file.create();
-//   } catch (e) {
-//     print('error ' + e.toString());
-//     return null;
-//   }
-// }
-
-// Future<Map<String, dynamic>> readPeople() async {
-//   try {
-//     final file = await _localFilePeople;
-//     // Read the file
-//     String content = await file.readAsString();
-//     // print(content);
-//     var contents = json.decode(content);
-//     // Returning the contents of the file
-//     print(contents.toString());
-//     return contents;
-//   } catch (e) {
-//     print('Error' + e.toString());
-//     // If encountering an error, return
-//     return null;
-//   }
-// }
-// Future<List<dynamic>> readContentDrafts(String fileName)async{
-//   try{
-//     final file = await _localFileDrafts;
-//     var contents=  await file.readAsString();
-//     return await json.decode(contents);
-
-//   }
-//   catch(e){
-//     print(e);
-//     return null;
-//   }
-// }
-// Future<Map<String, dynamic>> readContent(String fileName) async {
-//   try {
-//     String content ;
-//     switch (fileName) {
-//       case 'allPosts': final file = await _localFileAllPosts;
-//         content  = await file.readAsString();
-//       break;
-//       case 'posts': final file = await _localFilePosts;
-//         content  = await file.readAsString();
-//       break;
-//       case 'drafts': final file = await _localFileDrafts;
-//         content  = await file.readAsString();
-//       break;
-//       case'allData':final file = await _localFileAllData;
-//         content  = await file.readAsString();        
-//       break;
-//       case 'people':
-//         final file = await _localFilePeople;
-//         content = await file.readAsString();
-//         break;
-//       default: final file = await _localFile;
-//         content  = await file.readAsString();
-//       break;
-//     }
-//     var contents = json.decode(content);
-//     // Returning the contents of the file
-//     // print(contents.toString());
-//     return await contents;
-//   } catch (e) {
-//     print(e);
-//     // If encountering an error, return
-//     return null;
-//   }
-// }
+Future<File> file(String filename) async {
+  Directory dir = await getApplicationDocumentsDirectory();
+  String pathName = join(dir.path, filename);
+  return File(pathName);
+}
 class DBProvider {
   final String databaseName = 'posts';
   // DBProvider();
@@ -178,32 +59,32 @@ class DBProvider {
     try {
       Directory documentsDirectory = await getApplicationDocumentsDirectory();
       String path = join(documentsDirectory.path,databaseName,'.db');
-      String data;
-      switch (path) {
-        case 'posts':
-          data = "CREATE TABLE Posts("
-              "id TEXT PRIMARY KEY,"
-              "council TEXT,"
-              "owner TEXT,"
-              "sub TEXT,"
-              "tags TEXT,"
-              "timeStamp INTEGER,"
-              "title TEXT,"
-              "message TEXT,"
-              "body TEXT,"
-              "author TEXT,"
-              "url TEXT,"
-            ")";
-          break;
-        default: data = "CREATE TABLE User("
-              "id TEXT PRIMARY KEY,"
-              "uid TEXT,"
-              "name TEXT,"
-              "rollno INTEGER,"
-              "admin INTEGER,"
-              "email TEXT,"
-            ")";
-      }
+      // String data;
+      // switch (path) {
+      //   case 'posts':
+      //     data = "CREATE TABLE Posts("
+      //         "id TEXT PRIMARY KEY,"
+      //         "council TEXT,"
+      //         "owner TEXT,"
+      //         "sub TEXT,"
+      //         "tags TEXT,"
+      //         "timeStamp INTEGER,"
+      //         "title TEXT,"
+      //         "message TEXT,"
+      //         "body TEXT,"
+      //         "author TEXT,"
+      //         "url TEXT,"
+      //       ")";
+      //     break;
+      //   default: data = "CREATE TABLE User("
+      //         "id TEXT PRIMARY KEY,"
+      //         "uid TEXT,"
+      //         "name TEXT,"
+      //         "rollno INTEGER,"
+      //         "admin INTEGER,"
+      //         "email TEXT,"
+      //       ")";
+      // }
       return await openDatabase(
         path,version:1,
         onCreate: (db,version)async{
@@ -282,6 +163,35 @@ class DBProvider {
       return [];
     }
   }
+  
+  Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
+    try {
+      final db= await database;
+      final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
+      final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
+      var res = await db.rawQuery(
+        ''' SELECT * FROM $Posts
+            WHERE startTime BETWEEN 
+            $startDate AND $endDate
+            ORDER BY startTime
+        '''
+      );
+      // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
+      // print(res);
+      
+      List<PostsSort> v = [];
+      if(res.isNotEmpty){
+        // print(res.first);
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
   Future<List<PostsSort>> getAllPostswithQuery(GetPosts query,{orderBy = "timeStamp",type = 'update'})async{
     try {
       final db= await database;
@@ -308,7 +218,7 @@ class DBProvider {
       //   return v..addAll(res.map((f) => PostsSort.fromMap(f)));
       // }
         break;
-      };
+      }
       
       // Map<String,PostsSort> list = {};
       // if(res.isNotEmpty) {
@@ -492,6 +402,7 @@ class DBProvider {
 //   }
 // }
 final databaseReference = Firestore.instance;
+/// return false for any error while true for evrything alright and saves data in hive database
 Future<bool> populateUsers(String uid) async{
   return await databaseReference.collection('users').document(uid).get().then((snapshot)async{
     Box userData;
@@ -524,7 +435,7 @@ Future<bool> populateUsers(String uid) async{
         }
       }
   }).catchError((onError){
-      print('error in populateUsers ' '$onError ');
+      print('error in populateUsers function $onError ');
       return false;
     });
 }
@@ -533,7 +444,7 @@ Future<dynamic> populateAppData(String uid) async{
   Box userData;
     userData = await HiveDatabaseUser().hiveBox;
   return await populateUsers(uid).then((status)async{
-    if(status){
+    if(status == true){
       return await p1('5',owner:userData.toMap()[0].id);
     }else{
       return false;
