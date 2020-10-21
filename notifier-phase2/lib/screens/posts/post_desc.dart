@@ -241,7 +241,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                   .difference(DateTime.now()).inMinutes > 0){
                                     var min = DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)
                                   .difference(DateTime.now()).inMinutes ;
-                                    await ReminderNotification('An event you have saved is starting in $min',reminder: widget.listOfPosts[indexOfPage],
+                                    await ReminderNotification('An event you have saved is starting in $min minutes',reminder: widget.listOfPosts[indexOfPage],
                                       time: DateTime.now()).initiate;
                                 }else if(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].endTime,)
                                   .difference(DateTime.now()).inMinutes <=0){
@@ -630,6 +630,59 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                     ),
                                   ),
                                 // ),
+                                Container(
+                                    // width:150.0,
+                                    constraints: BoxConstraints(
+                                      minWidth: 150
+                                    ),
+                                    height: 40,
+                                    child: RaisedButton.icon(
+                                      elevation: 10.0,
+                                      highlightElevation: 5.0,
+                                      onPressed: ()async{
+                                        if(allCouncilData.level3.contains(id))
+                                        // requestPermission? 
+                                        // showInfoToast('Sending Request'):
+                                          showInfoToast('Publishing Post');
+                                        else return;
+                                        setState(() {
+                                          _load = true;
+                                          // time = DateTime.now();
+                                          
+                                        });
+                                        if(widget.type.toLowerCase().contains('drafted post')){
+                                          widget.listOfPosts[indexOfPage].id = '';
+                                        }
+                                        Future.delayed(Duration(seconds: 10),(){
+                                          if(mounted){setState(()=>time = true);}
+                                        });
+                                        print('${widget.listOfPosts[indexOfPage]?.id}' + 'id tot string');
+                                        await publishPosts(null, widget.listOfPosts[indexOfPage],priority,permission: false).then((res){
+                                          if(res.statusCode == 200){
+                                            
+                                            if(mounted){
+                                              setState(() {
+                                              _load = false;
+                                            });
+                                              Navigator.pop(context);
+                                              Navigator.pop(context);
+                                            }
+                                             showSuccessToast('Your Posts has been published Successfully');
+                                          }
+                                          else{
+                                            setState(() {
+                                              _load = false;
+                                            });
+                                            showErrorToast('Error while publishing posts '+'!!!');
+                                          }
+                                        });
+                                      }, 
+                                      icon: Icon(Entypo.publish), 
+                                      label: Text(
+                                        'Publish'
+                                      )
+                                    ),
+                                  ),
                               ],
                             ),
                           ):Container()

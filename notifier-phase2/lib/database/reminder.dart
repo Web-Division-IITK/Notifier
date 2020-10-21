@@ -119,7 +119,7 @@ class DatabaseProvider{
       var res = await db.query(
         "$tableName",orderBy: "timeStamp DESC"
       );
-      print(res);
+      // print(res);
       List<PostsSort> v = [];
       if(res.isNotEmpty){
         return v..addAll( res.map((f) => PostsSort.fromMap(f)));
@@ -142,7 +142,7 @@ class DatabaseProvider{
       //   list.update(f['id'], (_)=>PostsSort.fromMap(f),ifAbsent: ()=>PostsSort.fromMap(f));
       // });
       // }
-      print(res);
+      // print(res);
       
       List<PostsSort> v = [];
       if(res.isNotEmpty){
@@ -156,6 +156,34 @@ class DatabaseProvider{
         return [];
       }
       // return res.isNotEmpty?list:{};
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+  Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
+    try {
+      final db= await database;
+      final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
+      final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
+      var res = await db.rawQuery(
+        ''' SELECT * FROM $tableName
+            WHERE startTime BETWEEN 
+            $startDate AND $endDate
+            ORDER BY startTime
+        '''
+      );
+      // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
+      // print(res);
+      
+      List<PostsSort> v = [];
+      if(res.isNotEmpty){
+        // print(res.first);
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      }
+      else{
+        return [];
+      }
     } catch (e) {
       print(e);
       return [];

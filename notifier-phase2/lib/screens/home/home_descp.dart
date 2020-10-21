@@ -25,12 +25,15 @@ class DoubleHolder {
 class HomeDescription extends StatefulWidget {
   final DoubleHolder offset = new DoubleHolder();
 
-  
-  final List<PostsSort> arrayWithPrefs;
+  /// list of all posts inherited from home.dart
+  final List<PostsSort> postArray;
+  /// document id of firebase current user
   final String userID;
+  ///hive database based userModel
   final UserModel userModel;
+  /// [depreciated] may want to remove in future
   final bool load;
-  HomeDescription({Key key,this.arrayWithPrefs,this.load,this.userModel,this.userID}) : super(key: key);
+  HomeDescription({Key key,this.postArray,this.load,this.userModel,this.userID}) : super(key: key);
 double getOffsetMethod() {
     return offset.value;
   }
@@ -261,8 +264,8 @@ class _HomeDescriptionState extends State<HomeDescription> {
                 // margin: EdgeInsets.only(bottom:16.0),
                 child:FutureBuilder(
                       future: Future.sync(() {
-                        widget.arrayWithPrefs.retainWhere((test)=>widget.userModel.prefs.contains(test.sub));
-                        return widget.arrayWithPrefs;
+                        widget.postArray.retainWhere((test)=>widget.userModel.prefs.contains(test.sub));
+                        return widget.postArray;
                       }), 
                       builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
                         switch (snapshot.connectionState) {

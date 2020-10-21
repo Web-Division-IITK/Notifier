@@ -121,38 +121,54 @@ class _MyAppHomeState extends State<MyAppHome> {
               // color: Colors.white
             ),
             textTheme: TextTheme(
-              // headline1: TextStyle(
-              //   fontSize: 20.0,
-              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              // ),
-              // headline2: TextStyle(
-              //   fontSize: 20.0,
-              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              // ),
-              // headline3: TextStyle(
-              //   fontSize: 20.0,
-              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              // ),
-              // headline4: TextStyle(
-              //   fontSize: 20.0,
-              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              // ),
-              // headline5: TextStyle(
-              //   fontSize: 20.0,
-              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              // ),
-              // headline6: TextStyle(
-              //   fontSize: 20.0,
-              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              // ),
-              headline: TextStyle(
+              headline1: TextStyle(
                 fontSize: 20.0,
                 color: brightness == Brightness.dark ?Colors.white:Colors.black,
               ),
-              title: TextStyle(
+              headline2: TextStyle(
                 fontSize: 20.0,
                 color: brightness == Brightness.dark ?Colors.white:Colors.black,
-              )
+              ),
+              headline3: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline4: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline5: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              headline6: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              subtitle1: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              subtitle2: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              bodyText1: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              bodyText2: TextStyle(
+                fontSize: 20.0,
+                color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              ),
+              // headline: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // ),
+              // title: TextStyle(
+              //   fontSize: 20.0,
+              //   color: brightness == Brightness.dark ?Colors.white:Colors.black,
+              // )
             )
           ),
           // colorScheme: ColorScheme(

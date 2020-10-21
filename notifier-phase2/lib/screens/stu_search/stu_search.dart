@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
-import 'package:notifier/screens/new_profile.dart';
+import 'package:notifier/screens/profile_page.dart';
 import 'package:notifier/screens/stu_search/searched_list.dart';
 import 'package:notifier/widget/showtoast.dart';
 

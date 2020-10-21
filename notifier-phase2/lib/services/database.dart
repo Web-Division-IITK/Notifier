@@ -163,6 +163,35 @@ class DBProvider {
       return [];
     }
   }
+  
+  Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
+    try {
+      final db= await database;
+      final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
+      final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
+      var res = await db.rawQuery(
+        ''' SELECT * FROM $Posts
+            WHERE startTime BETWEEN 
+            $startDate AND $endDate
+            ORDER BY startTime
+        '''
+      );
+      // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
+      // print(res);
+      
+      List<PostsSort> v = [];
+      if(res.isNotEmpty){
+        // print(res.first);
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
   Future<List<PostsSort>> getAllPostswithQuery(GetPosts query,{orderBy = "timeStamp",type = 'update'})async{
     try {
       final db= await database;
@@ -373,6 +402,7 @@ class DBProvider {
 //   }
 // }
 final databaseReference = Firestore.instance;
+/// return false for any error while true for evrything alright and saves data in hive database
 Future<bool> populateUsers(String uid) async{
   return await databaseReference.collection('users').document(uid).get().then((snapshot)async{
     Box userData;
@@ -405,7 +435,7 @@ Future<bool> populateUsers(String uid) async{
         }
       }
   }).catchError((onError){
-      print('error in populateUsers ' '$onError ');
+      print('error in populateUsers function $onError ');
       return false;
     });
 }
