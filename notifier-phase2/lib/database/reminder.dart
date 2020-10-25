@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -161,11 +162,11 @@ class DatabaseProvider{
       return [];
     }
   }
-  Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
+  Future<Map<DateTime,List<PostsSort>>> getAllPostswithDate(DateTime date)async{
     try {
       final db= await database;
-      final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
-      final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
+      final startDate = DateTime(date.year,date.month,1,).millisecondsSinceEpoch;
+      final endDate = DateTime(date.year,date.month,noOfDaysInMonths(date.month, date.year),23,59,59).millisecondsSinceEpoch;
       var res = await db.rawQuery(
         ''' SELECT * FROM $tableName
             WHERE startTime BETWEEN 
@@ -176,17 +177,37 @@ class DatabaseProvider{
       // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
       // print(res);
       
-      List<PostsSort> v = [];
-      if(res.isNotEmpty){
-        // print(res.first);
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
-      }
-      else{
-        return [];
-      }
+      // List<PostsSort> v = [];
+      // if(res.isNotEmpty){
+      //   // print(res.first);
+      //   v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      // }
+      Map<DateTime,List<PostsSort>> v = {};
+      res.forEach((post) {
+        DateTime startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
+        v.update(
+          DateTime(startTime.year,startTime.month,startTime.day),
+          (value){
+            value.add(PostsSort.fromMap(post));
+            return value;
+          },
+          ifAbsent: (){
+            return [PostsSort.fromMap(post)];
+          }
+        );
+      });
+      // print(v);
+      return v;
+      // return Map.fromIterable(res,
+      //   key: (post) {
+      //     DateTime startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
+      //     return DateTime(startTime.year,startTime.month,startTime.day);
+      //   },
+      //   value: (post) => post
+      // );
     } catch (e) {
       print(e);
-      return [];
+      return {};
     }
   }
   updateQuery(GetPosts query)async{

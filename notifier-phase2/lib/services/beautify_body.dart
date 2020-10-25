@@ -27,7 +27,7 @@ class _BeautifyPostBodyState extends State<BeautifyPostBody> {
     bodyList = makeList(bodyList, '<a mob=');
     bodyList = makeList(bodyList, '<a mailto=');
     // var bodyList = widget.body.split(' ');
-    print('jhvhj\'\'' + bodyList.length.toString());
+    // print('jhvhj\'\'' + bodyList.length.toString());
     for(var i in bodyList){
       editingbodyList(i);
     }

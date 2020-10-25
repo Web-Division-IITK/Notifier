@@ -233,10 +233,10 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
             userId == 'notverified' || userId == null || userId == "" || userId.trim() == '' || userId.trim() == null ?
             
             (_isLoginForm ?
-            Text('Signing in')
-            : Text('Signing up'))
+            Text('Signing in',style: TextStyle(color: Colors.white))
+            : Text('Signing up',style: TextStyle(color: Colors.white)))
             
-            : Text('Fetching up your data from server!!!'),
+            : Text('Fetching up your data from server!!!',style: TextStyle(color: Colors.white)),
             // CircularProgressIndicator(),
             SizedBox(height: 10,),
             SpinKitThreeBounce(color: Theme.of(context).accentColor,size: 30)
