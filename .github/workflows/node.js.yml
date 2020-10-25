@@ -25,4 +25,4 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: cd VM && npm i
-    - run: cd VM && pm2 start index.js
+    - run: pm2 restart VM/index.js
