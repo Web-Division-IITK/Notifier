@@ -666,7 +666,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           )
                         ),
-                  /*InkWell(
+                  InkWell(
                           onTap: () {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
@@ -692,7 +692,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           )
-                        ),*/
+                        ),
                   InkWell(
                     onTap: () async {
                           Navigator.of(context).pop();
@@ -994,7 +994,7 @@ class _HomePageState extends State<HomePage> {
                 return await  DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
               }
               else{
-                showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
+                // showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
                 return 1;
               }
             });
@@ -1014,7 +1014,7 @@ class _HomePageState extends State<HomePage> {
               return await  DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
             }
             else{
-              showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
+              // showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
               return 1;
             }
       }else{

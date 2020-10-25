@@ -115,6 +115,7 @@ class _MyAppHomeState extends State<MyAppHome> {
             labelColor:  brightness == Brightness.dark ?Colors.white:Colors.black,
           ),
           accentColor: brightness == Brightness.dark ?Colors.deepPurpleAccent:Colors.blueAccent,
+          primaryColor: brightness == Brightness.dark ?Colors.pink:Colors.deepOrange,
           appBarTheme: AppBarTheme(
             color: brightness == Brightness.dark ?Colors.black:Colors.white,
             iconTheme: IconThemeData(
@@ -171,20 +172,8 @@ class _MyAppHomeState extends State<MyAppHome> {
               // )
             )
           ),
-          // colorScheme: ColorScheme(
-          //   primary: brightness == Brightness.dark? Colors.green:Colors.accents, 
-          //   primaryVariant: null, 
-          //   secondary: null, 
-          //   secondaryVariant: null, 
-          //   surface: null, 
-          //   background: null, 
-          //   error: Colors.red, 
-          //   onPrimary: null, 
-          //   onSecondary: null,
-          //   onSurface: null, 
-          //   onBackground: null, 
-          //   onError: Colors.red, 
-          //   brightness: null),          
+          backgroundColor: brightness == Brightness.dark?Colors.black:Colors.white,
+          highlightColor: brightness == Brightness.dark ?Colors.white:Colors.black,        
           toggleableActiveColor: brightness == Brightness.dark ? Colors.teal:Colors.green,
           dialogTheme: DialogTheme(backgroundColor: brightness == Brightness.dark?Colors.black:Colors.white,
             elevation: 5.0,

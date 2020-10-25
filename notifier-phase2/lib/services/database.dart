@@ -497,6 +497,7 @@ Future<bool> updateUserDataInFirebase(String uid,dynamic type,dynamic data)async
     return false;
   });
 }
+// TODO add auth
 Future<bool> updatePrefsInFirebase(String uid,dynamic data)async{
    return await databaseReference.collection('users').document(uid).updateData({'council': data}).then((_){
     return true;

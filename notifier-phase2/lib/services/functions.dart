@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
@@ -237,8 +238,7 @@ Future<dynamic> allData() async {
   final HttpClient _httpClient = HttpClient();
   var jsonResponse;
   try {
-    final uri = Uri.http('notifier-phase-2.firebaseapp.com',
-        '/data.json'); 
+    final uri = Uri.parse(ALL_COUNCIL_DATA_API); 
     final httpRequest = await _httpClient.getUrl(uri);
     final httpResponse = await httpRequest.close();
     if (httpResponse.statusCode != 200) {

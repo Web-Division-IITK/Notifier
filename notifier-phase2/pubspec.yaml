@@ -28,6 +28,13 @@ dependencies:
   google_maps_flutter: ^0.5.27+1
   google_fonts: ^1.0.0
   # simple_animations: ^1.3.12
+  flutter_calendar_carousel: ^1.5.1
+  googleapis_auth: ^0.2.12
+  googleapis: ^0.56.1
+  syncfusion_flutter_calendar: ^18.3.42
+  table_calendar: ^2.3.0
+  flutter_cupertino_date_picker: ^1.0.26+2
+  flutter_datetime_picker: ^1.4.0
   flutter_icons: ^1.1.0
   async: ^2.4.0
   # firebase_database: ^3.0.7

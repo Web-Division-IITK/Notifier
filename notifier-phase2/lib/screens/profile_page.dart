@@ -102,6 +102,7 @@ class _ProfileState extends State<Profile> {
     });
     // writeposts();
   }
+  // TODO: add auth
   Future<bool>changeStudentData(Map<String,dynamic> map) async{
     try {
       Map<String, String> headers = {"Content-type": "application/json"};
