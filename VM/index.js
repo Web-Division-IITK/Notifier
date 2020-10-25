@@ -10,8 +10,8 @@ let express = require('express');
 let bodyParser = require('body-parser');
 let cors = require('cors');
 var admin = require("firebase-admin");
-let structure=JSON.parse(fs.readFileSync('./static/data.json'));
-let serviceAccount=JSON.parse(fs.readFileSync('fbase-creds.json'));
+let structure=JSON.parse(fs.readFileSync(__dirname+'/static/data.json'));
+let serviceAccount=JSON.parse(fs.readFileSync(__dirname+'/fbase-creds.json'));
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -539,7 +539,7 @@ app.post('/updatePrefs', async (req, res)=>{
 })
 
 app.get('/hehe', (req,res)=>{
-    res.send("Test project.... Working.");
+    res.send("Testing project.... Working.");
 })
 
 mongoose.connect(url, options, async function (err) {
