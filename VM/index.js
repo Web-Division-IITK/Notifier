@@ -539,7 +539,7 @@ app.post('/updatePrefs', async (req, res)=>{
 })
 
 app.get('/hehe', (req,res)=>{
-    res.send("Okay! Runner is working now.");
+    res.send("Test project.... Working.");
 })
 
 mongoose.connect(url, options, async function (err) {
