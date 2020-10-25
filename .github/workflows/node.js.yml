@@ -24,5 +24,5 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: sudo cd VM && npm i
-    - run: sudo cd VM && pm2 start index.js
+    - run: cd VM && npm i
+    - run: cd VM && pm2 start index.js
