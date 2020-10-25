@@ -1,38 +1,8 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
-const fs=require('fs');
 admin.initializeApp();
 const db = admin.firestore();
 const fcm = admin.messaging();
-let mongoose = require('mongoose');
-const USER = require('./userSchema.js');
-var url = "mongodb+srv://webdivision:webdivision@cluster0-ke6fc.mongodb.net/studdata?retryWrites=true&w=majority";
-let options = {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useCreateIndex: true
-}
-
-function getAllStudData(){
-    var promiseforcheck = new Promise(function (resolve, reject) {
-        var userrecord = USER.find({}, function (err, docs) {
-            if (err || typeof docs[0] === 'undefined') reject(); else resolve(docs);
-        });
-    });
-    return promiseforcheck;
-}
-
-function updateStudData(data){
-    var conditions = {roll: data.roll}
-    var update = {$set : data}
-    var opts = {multi : false}
-    var prom = new Promise((resolve, reject) => {
-        USER.update(conditions, update, opts, function(err, numAffected){
-            resolve();
-        })
-    })
-    return prom;    
-}
 
 exports.makePost = functions.https.onRequest(async function (req, res) {
     // let FieldValue = require('firebase-admin').firestore.FieldValue
@@ -68,67 +38,6 @@ exports.makePost = functions.https.onRequest(async function (req, res) {
         posts: x,
     })
     res.send(datax.id);
-})
-
-exports.makeNotification = functions.https.onRequest(async function (req, res) {
-    // let FieldValue = require('firebase-admin').firestore.FieldValue
-    // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
-    // startTime and endTime would be int
-    let data = req.body;
-    let notfID = Date.now();
-    let datax = {
-        "title": data.title,
-        "tags": (data.tags == null) ? '' : data.tags,
-        "council": data.council,
-        "sub": data.sub,
-        "body": data.body,
-        "author": data.author,
-        "url": (data.url == null) ? '' : data.url,
-        "type": "permission",
-        "priority": data.priority,
-        "owner": data.owner,
-        "message": data.message,
-        "startTime": (data.startTime == null) ? '' : data.startTime,
-        'endTime': (data.endTime == null) ? '' : data.endTime,
-        "notfID": notfID,
-        "timeStamp": Date.now(),
-    }
-    let ref = db.collection('notification').doc()
-    datax.id = ref.id;
-    await ref.set(datax);
-    // let coun = data.council.toString();
-    // let x = {};
-    // x[coun] = admin.firestore.FieldValue.arrayUnion(datax.id);
-    // await db.collection('posts').doc('council').update(x)
-    // await db.collection('people').doc(data.owner).update({
-    //     posts: x,
-    // })
-    res.send(datax.id);
-})
-
-exports.updateNotification = functions.https.onRequest(async function (req, res) {
-    // let FieldValue = require('firebase-admin').firestore.FieldValue
-    // input must have these fields: id, owner, council, title, tags, sub, body, author, url, owner, message,startTime,endTime
-    // startTime and endTime would be int
-    let data = req.body;
-    let datax = {
-        "title": data.title,
-        "tags": (data.tags == null) ? '' : data.tags,
-        "council": data.council,
-        "sub": data.sub,
-        "body": data.body,
-        "priority": data.priority,
-        "startTime": (data.startTime == null) ? '' : data.startTime,
-        'endTime': (data.endTime == null) ? '' : data.endTime,
-        "type": "permission",
-        "author": data.author,
-        "url": (data.url == null) ? '' : data.url,
-        "owner": data.owner,
-        "message": data.message,
-        "timeStamp": Date.now(),
-    };
-    await db.collection('notification').doc(data.id).update(datax);
-    res.send(data.id);
 })
 
 exports.editPost = functions.https.onRequest(async function (req, res) {
@@ -202,50 +111,6 @@ exports.sendToTopicUpdate = functions.firestore.document('allPosts/{id}').onUpda
             message: data.message,
             fetchFF: 'true',
             type: data.type,
-            notfID: data.notfID.toString(), // id of notification in integer
-            id: data.id,
-            sub: data.sub[0],
-        }
-    }
-    await sub.forEach(async (element) => {
-        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
-    });
-})
-
-exports.sendToTopicPermissionCreate = functions.firestore.document('notification/{id}').onCreate(async snapshot => {
-    let data = snapshot.data();
-    let sub = data.sub;
-    let payload;
-    payload = {
-        data: {
-            owner: data.owner,
-            title: data.title,
-            council: data.council,
-            message: data.message,
-            fetchFF: 'true',
-            type: "permission",
-            notfID: data.notfID.toString(), // id of notification in integer
-            id: data.id,
-            sub: data.sub[0],
-        }
-    }
-    await sub.forEach(async (element) => {
-        await fcm.sendToTopic(element.replace(/ /g, '_'), payload)
-    });
-})
-
-exports.sendToPermissionUpdate = functions.firestore.document('notification/{id}').onUpdate(async (change, context) => {
-    let data = change.after.data();
-    let sub = data.sub;
-    let payload;
-    payload = {
-        data: {
-            owner: data.owner,
-            title: data.title,
-            council: data.council,
-            message: data.message,
-            fetchFF: 'true',
-            type: "permission",
             notfID: data.notfID.toString(), // id of notification in integer
             id: data.id,
             sub: data.sub[0],
@@ -357,32 +222,6 @@ exports.createAccountDocument = functions.auth.user().onCreate(async (user) => {
         id,
         admin: false,
         council: vals
-        
-        
     }
     await db.collection('users').doc(user.uid).set(account);
 });
-
-exports.getStudData = functions.https.onRequest(async function (req, res) {
-    try {
-        let db = await mongoose.connect(url, options);
-        let data = await getAllStudData();
-        db.disconnect();
-        res.json(data);
-        res.end();
-    } catch (error) {
-        let data = JSON.parse(fs.readFileSync('hexml.json'));
-        res.json(data);
-        res.end();        
-    }
-})
-
-exports.updateStudData = functions.https.onRequest(async function (req, res) {
-    // needs `roll` to perform the edits: `hall`, `room`
-    let db = await mongoose.connect(url, options);
-    let data = req.body;
-    await updateStudData(data);
-    db.disconnect();
-    res.json(data);
-    res.end();
-})

@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-let vals=JSON.parse(fs.readFileSync('vals.json'));
+const fs= require('fs');
+let vals=JSON.parse(fs.readFileSync('./schema/vals.json'));
 var suser = new Schema({
     _id: mongoose.Schema.Types.ObjectId,
     uid: {type:String, required:true, unique: true},

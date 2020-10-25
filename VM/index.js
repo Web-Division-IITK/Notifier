@@ -538,6 +538,10 @@ app.post('/updatePrefs', async (req, res)=>{
     res.send(await updatePrefs(data));
 })
 
+app.get('/hehe', (req,res)=>{
+    res.send("Okay");
+})
+
 mongoose.connect(url, options, async function (err) {
     // let userx = JSON.parse(fs.readFileSync('hexml.json'));
     // for(let i=0; i<userx.length; i++){await createUsers(userx[i]);console.log(i+1);}
