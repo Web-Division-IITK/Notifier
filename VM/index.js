@@ -24,13 +24,13 @@ let app = express();
 app.use(cors());
 let router = express.Router();
 app.use(bodyParser.json({type: 'application/json'}));
+app.use('/', express.static(__dirname + '/static'));
 var url = "mongodb://127.0.0.1:27017/oarsscrap";
 let options = {
     useNewUrlParser: true,
     useFindAndModify: false,
     useCreateIndex: true
 }
-app.use('/', express.static('static'));
 var port = 8080;
 port = process.env.PORT;
 if (port == null || port == "") {port = 8080};
@@ -92,7 +92,7 @@ async function validatePost(data){
 }
 
 async function postingVerification(data){
-    let k = approveDef(data.auth.id, data.auth.uid);
+    let k = await approveDef(data.auth.id, data.auth.uid);
     if(!k) return false;
     if(structure.level3.includes(data.auth.id)) return true;
     if(structure[data.council].level2.includes(data.auth.id)) return true;
@@ -109,13 +109,13 @@ async function postingVerification(data){
 }
 
 async function deletionVerification(data){
-    let k = approveDef(data.auth.id, data.auth.uid);
+    let k = await approveDef(data.auth.id, data.auth.uid);
     if(!k) return false;
     if(data.owner != data.auth.id) return false;
     if(structure.level3.includes(data.auth.id)) return true;
     if(structure[data.council].level2.includes(data.auth.id)) return true;
     let fetchDoc = new Promise(function (resolve, reject) {
-        POST.find({owner: data.auth.id, id: data.id}, function (err, docs) {
+        POST.find({owner: data.auth.id, id: data.id, sub: data.sub}, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') {k=false; resolve({});} else resolve(docs[0]);
         });
     });
@@ -132,7 +132,7 @@ async function authVerify(data){
 }
 
 async function elevationVerify(data){
-    let k = approveDef(data.auth.id, data.auth.uid);
+    let k = await approveDef(data.auth.id, data.auth.uid);
     if(!k) return false;
     if(structure.level3.includes(data.auth.id)) return true;
     if(structure[data.council].level2.includes(data.auth.id)) return true;
@@ -140,7 +140,7 @@ async function elevationVerify(data){
 }
 
 async function verifyApproval(data){
-    if(!approveDef(data.auth.id, data.auth.uid)) return false;
+    if(!(await approveDef(data.auth.id, data.auth.uid))) return false;
     if(structure.level3.includes(data.auth.id)) return true;
     let fetchDoc = new Promise(function (resolve, reject) {
         POST.find({id: data.id}, function (err, docs) {
@@ -471,14 +471,14 @@ app.post('/deletePost', async (req, res)=>{
 
 app.post('/elevatePerson', async (req, res)=>{
     let data = req.body;
-    let v = elevationVerify(data);
+    let v = await elevationVerify(data);
     if(!v) res.send("Fuck Off Impostor!");
     res.send(await elevatePerson(data));
 })
 
 app.post('/createAccount', async (req, res)=>{
     let data = req.body;
-    let v = authVerify(data);
+    let v = await authVerify(data);
     if(!v) res.send("Fuck Off Impostor!");
     await createAccount(data);
     res.end();
@@ -486,7 +486,7 @@ app.post('/createAccount', async (req, res)=>{
 
 app.post('/approvePosts', async (req, res)=>{
     let data = req.body;
-    let v = verifyApproval(data);
+    let v = await verifyApproval(data);
     if(!v) res.send("Fuck Off Impostor!");
     res.send(await approvePosts(data));
 })
@@ -533,13 +533,13 @@ app.post('/updateStudent', async (req, res)=>{
 
 app.post('/updatePrefs', async (req, res)=>{
     let data = req.body;
-    let v = approveDef(data.auth.id, data.auth.uid);
+    let v = await approveDef(data.auth.id, data.auth.uid);
     if(!v) res.send(false);
     res.send(await updatePrefs(data));
 })
 
 app.get('/hehe', (req,res)=>{
-    res.send("Testing project.... Working.");
+    res.send("Testing project.... Working!");
 })
 
 mongoose.connect(url, options, async function (err) {
