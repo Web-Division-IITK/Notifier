@@ -1,7 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var people = new Schema({
-    _id: mongoose.Schema.Types.ObjectId,
     id: {type:String, required: true, unique: true},
     councils: {type: [String], default:[]},
     snt: {type: [String], default:[]},

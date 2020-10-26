@@ -29,7 +29,8 @@ var url = "mongodb://127.0.0.1:27017/oarsscrap";
 let options = {
     useNewUrlParser: true,
     useFindAndModify: false,
-    useCreateIndex: true
+    useCreateIndex: true,
+    useUnifiedTopology: true
 }
 var port = 8080;
 port = process.env.PORT;
@@ -543,7 +544,7 @@ app.get('/hehe', (req,res)=>{
 })
 
 mongoose.connect(url, options, async function (err) {
-    // let userx = JSON.parse(fs.readFileSync('hexml.json'));
+    // let userx = JSON.parse(fs.readFileSync(__dirname + '/hexml.json'));
     // for(let i=0; i<userx.length; i++){await createUsers(userx[i]);console.log(i+1);}
     app.use('/', router);
     app.listen(port);

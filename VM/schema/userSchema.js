@@ -1,7 +1,6 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var user = new Schema({
-    _id: mongoose.Schema.Types.ObjectId,
     username: String,
     hometown: String,
     hall: String,
