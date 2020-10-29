@@ -1,9 +1,15 @@
 
 import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/posts.dart';
+import 'package:notifier/constants.dart';
+import 'package:notifier/screens/event_management/create_event.dart';
+import 'package:notifier/screens/event_management/event_description.dart';
+import 'package:notifier/screens/home.dart';
+import 'package:notifier/screens/posts/post_desc.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 final Map<DateTime, List> _holidays = {
@@ -22,6 +28,7 @@ class Calendar extends StatefulWidget {
 class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
   Map<DateTime, List<PostsSort>> _events;
   List<PostsSort> _selectedEvents;
+  List<PostsSort> _personalEvents;
   AnimationController _animationController;
   CalendarController _calendarController;
     final _selectedDay = DateTime.now();
@@ -29,62 +36,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
   void initState() {
     super.initState();
     _events = {};
-    // _events = await DatabaseProvider().getAllPostswithDate(_selectedDay);
-    // _events = {
-    //   _selectedDay.subtract(Duration(days: 30)): [
-    //     'Event A0',
-    //     'Event B0',
-    //     'Event C0'
-    //   ],
-    //   _selectedDay.subtract(Duration(days: 27)): ['Event A1'],
-    //   _selectedDay.subtract(Duration(days: 20)): [
-    //     'Event A2',
-    //     'Event B2',
-    //     'Event C2',
-    //     'Event D2'
-    //   ],
-    //   _selectedDay.subtract(Duration(days: 16)): ['Event A3', 'Event B3'],
-    //   _selectedDay.subtract(Duration(days: 10)): [
-    //     'Event A4',
-    //     'Event B4',
-    //     'Event C4'
-    //   ],
-    //   _selectedDay.subtract(Duration(days: 4)): [
-    //     'Event A5',
-    //     'Event B5',
-    //     'Event C5'
-    //   ],
-    //   _selectedDay.subtract(Duration(days: 2)): ['Event A6', 'Event B6'],
-    //   _selectedDay: ['Event A7', 'Event B7', 'Event C7', 'Event D7'],
-    //   _selectedDay.add(Duration(days: 1)): [
-    //     'Event A8',
-    //     'Event B8',
-    //     'Event C8',
-    //     'Event D8'
-    //   ],
-    //   _selectedDay.add(Duration(days: 3)):
-    //       Set.from(['Event A9', 'Event A9', 'Event B9']).toList(),
-    //   _selectedDay.add(Duration(days: 7)): [
-    //     'Event A10',
-    //     'Event B10',
-    //     'Event C10'
-    //   ],
-    //   _selectedDay.add(Duration(days: 11)): ['Event A11', 'Event B11'],
-    //   _selectedDay.add(Duration(days: 17)): [
-    //     'Event A12',
-    //     'Event B12',
-    //     'Event C12',
-    //     'Event D12'
-    //   ],
-    //   _selectedDay.add(Duration(days: 22)): ['Event A13', 'Event B13'],
-    //   _selectedDay.add(Duration(days: 26)): [
-    //     'Event A14',
-    //     'Event B14',
-    //     'Event C14'
-    //   ],
-    // };
-
-    // _selectedEvents = _events[_selectedDay] ?? [];
     _calendarController = CalendarController();
 
     _animationController = AnimationController(
@@ -105,7 +56,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
   void _onDaySelected(DateTime day, List events, List holidays) {
     print('CALLBACK: _onDaySelected');
     // print(events);
-    // print(day);
+    print(holidays);
     print(_events);
     setState(() {
       _selectedEvents = _events[DateTime(day.year,day.month,day.day)]??[];
@@ -121,12 +72,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
 
   void _onCalendarCreated(
       DateTime first, DateTime last, CalendarFormat format) async{
-    _events = await DatabaseProvider().getAllPostswithDate(first)/*.then((events){
-      setState(() {
-        _selectedEvents = events[_selectedDay]??[];
-      } );
-      return events;
-    })*/;
+    _events = await DatabaseProvider().getAllPostswithDate(first);
     
     print(_events);
     setState(() {
@@ -152,30 +98,43 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
            })
         ],
       ),
-      body: /*FutureBuilder(
-        future: DatabaseProvider().getAllPostswithDate(_selectedDay),
-        builder: (context, _events){
-          if(_events.connectionState == ConnectionState.done){
-            _selectedEvents = _events.data[_selectedDay] ?? [];
-            return */Column(
-              mainAxisSize: MainAxisSize.max,
-              children: <Widget>[
-                // Switch out 2 lines below to play with TableCalendar's settings
-                //-----------------------
-                _buildTableCalendar(),
-                // _buildTableCalendarWithBuilders(),
-                // const SizedBox(height: 8.0),
-                // _buildButtons(),
-                const SizedBox(height: 8.0),
-                Expanded(child: _buildEventList()),
-              ],
-            )/*;
-          }
-          return Center(
-            child: CircularProgressIndicator(),
-          );
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) => CreateEditEvent(
+              'create', 0, PostsSort(owner: id,)))).then((value) => setState((){}));
         },
-      ),*/
+        child: Icon(Icons.add),
+        tooltip: "Add event",
+      ),
+      body: Column(
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+        // Switch out 2 lines below to play with TableCalendar's settings
+          //-----------------------
+          Container(
+            // height: MediaQuery.of(context).size.height * 0.45,
+            child: _buildTableCalendar(),
+          ),
+           // _buildTableCalendarWithBuilders(),
+          // const SizedBox(height: 8.0),
+          // _buildButtons(),
+          const SizedBox(height: 8.0),
+          Align(
+            alignment: Alignment.topRight,
+            child: FlatButton(
+              onPressed: (){}, 
+              child: Text(
+                'Check TimeTable',
+                style: TextStyle(
+                  color: Colors.blue,
+                ),
+              )
+            ),
+          ),
+          Expanded(child: _buildEventList()),
+        ],
+      )
     );
   }
 
@@ -193,7 +152,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
             Colors.amberAccent
             : Colors.blueGrey[900],
         outsideDaysVisible: false,
-        holidayStyle: TextStyle(color:Colors.red),
+        holidayStyle: TextStyle().copyWith(color: Colors.red,fontWeight: FontWeight.w900),
         weekendStyle: TextStyle(color: Theme.of(context).brightness == Brightness.dark?
             Colors.white70
             : Colors.black45)
@@ -245,8 +204,11 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
           color: Theme.of(context).primaryColor,
           borderRadius: BorderRadius.circular(16.0),
         ),
+        formatButtonVisible: false,
+        centerHeaderTitle: true,
         leftChevronIcon: Icon(Icons.chevron_left, color: Theme.of(context).highlightColor),
         rightChevronIcon: Icon(Icons.chevron_right, color: Theme.of(context).highlightColor),
+        
       ),
       weekendDays: [DateTime.sunday],
       daysOfWeekStyle: DaysOfWeekStyle(
@@ -266,7 +228,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
   // More advanced TableCalendar configuration (using Builders & Styles)
   Widget _buildTableCalendarWithBuilders() {
     return TableCalendar(
-      locale: 'pl_PL',
       calendarController: _calendarController,
       events: _events,
       holidays: _holidays,
@@ -281,7 +242,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
       calendarStyle: CalendarStyle(
         outsideDaysVisible: false,
         weekendStyle: TextStyle().copyWith(color: Colors.blue[800]),
-        holidayStyle: TextStyle().copyWith(color: Colors.blue[800]),
+        holidayStyle: TextStyle().copyWith(color: Colors.red),
       ),
       daysOfWeekStyle: DaysOfWeekStyle(
         weekendStyle: TextStyle().copyWith(color: Colors.blue[600]),
@@ -441,6 +402,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
 
   Widget _buildEventList() {
     return ListView(
+      shrinkWrap: true,
       children: [
         _selectedEvents == null || _selectedEvents.isEmpty ?
           Container(
@@ -448,7 +410,16 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
                   title: Text('No events for this date'),
-                  onTap: () => print('tapped!'),
+                  // onTap: () => Navigator.of(context).push(
+                  //   MaterialPageRoute(
+                  //     builder: (context){
+                  //       if()
+                  //     }
+                  //   )
+                  // ),
+                  onLongPress: (){
+                    //TODO open dialog to delete
+                  },
                 ),
           )
         : Column(
@@ -462,7 +433,26 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
                     const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: ListTile(
                   title: Text(event.title),
-                  onTap: () => print('$event tapped!'),
+                  onTap: () =>Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context){
+                        if(event.type == NOTF_TYPE_CREATE){
+                          return FeatureDiscovery(
+                            child: PostDescription(
+                              listOfPosts: [event], 
+                              type: 'display',
+                              index: 0,
+                          ));
+                        }else{
+                          return EventDescription(
+                            listOfPosts: [event],
+                            type: 'display',
+                            index: 0,
+                          );
+                        }
+                      }
+                    )
+                  ),
                 ),
               ))
           .toList(),

@@ -5,6 +5,7 @@ import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/main.dart';
@@ -588,7 +589,6 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                         setState(() {
                                           _load = true;
                                           // time = DateTime.now();
-                                          
                                         });
                                         if(widget.type.toLowerCase().contains('drafted post')){
                                           widget.listOfPosts[indexOfPage].id = '';
@@ -596,10 +596,12 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                         Future.delayed(Duration(seconds: 10),(){
                                           if(mounted){setState(()=>time = true);}
                                         });
-                                        print('${widget.listOfPosts[indexOfPage]?.id}' + 'id tot string');
-                                        await publishPosts(null, widget.listOfPosts[indexOfPage],priority,permission: requestPermission).then((res){
+                                        print('${widget.listOfPosts[indexOfPage]?.id}' + 'id to string');
+                                        Response res = requestPermission ? 
+                                          await createEditPosts(widget.listOfPosts[indexOfPage],priority,isCreate: true)
+                                          : await approvePost(widget.listOfPosts[indexOfPage]); 
+                                        // .then((res){
                                           if(res.statusCode == 200){
-                                            
                                             if(mounted){
                                               setState(() {
                                               _load = false;
@@ -619,7 +621,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                             showErrorToast('Error while sending requset')
                                             :showErrorToast('Error while publishing posts '+'!!!');
                                           }
-                                        });
+                                        // });
                                       }, 
                                       icon: Icon(Entypo.publish), 
                                       label: Text(
@@ -630,8 +632,8 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                     ),
                                   ),
                                 // ),
-                                Container(
-                                    // width:150.0,
+                                allCouncilData.level3.contains(id) ?
+                                  Container(
                                     constraints: BoxConstraints(
                                       minWidth: 150
                                     ),
@@ -641,14 +643,10 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                       highlightElevation: 5.0,
                                       onPressed: ()async{
                                         if(allCouncilData.level3.contains(id))
-                                        // requestPermission? 
-                                        // showInfoToast('Sending Request'):
                                           showInfoToast('Publishing Post');
                                         else return;
                                         setState(() {
                                           _load = true;
-                                          // time = DateTime.now();
-                                          
                                         });
                                         if(widget.type.toLowerCase().contains('drafted post')){
                                           widget.listOfPosts[indexOfPage].id = '';
@@ -657,9 +655,11 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                           if(mounted){setState(()=>time = true);}
                                         });
                                         print('${widget.listOfPosts[indexOfPage]?.id}' + 'id tot string');
-                                        await publishPosts(null, widget.listOfPosts[indexOfPage],priority,permission: false).then((res){
+                                        Response res =  
+                                          // await createEditPosts(widget.listOfPosts[indexOfPage],priority,isCreate: true)
+                                           await approvePost(widget.listOfPosts[indexOfPage]); 
+                                          // then((res){
                                           if(res.statusCode == 200){
-                                            
                                             if(mounted){
                                               setState(() {
                                               _load = false;
@@ -675,14 +675,15 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                             });
                                             showErrorToast('Error while publishing posts '+'!!!');
                                           }
-                                        });
+                                        // });
                                       }, 
                                       icon: Icon(Entypo.publish), 
                                       label: Text(
                                         'Publish'
                                       )
                                     ),
-                                  ),
+                                  )
+                                : Container(),
                               ],
                             ),
                           ):Container()
@@ -703,7 +704,6 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                               Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                                 child: Text(
-                                  
                                   !time ?
                                   (requestPermission ? 'Sending request Approval'
                                   : 'Publishing Post')

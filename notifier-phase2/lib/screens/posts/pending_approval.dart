@@ -9,22 +9,23 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
-import 'package:notifier/database/reminder.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/posts/create_edit_posts.dart';
+import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:notifier/widget/showtoast.dart';
 
-class President extends StatefulWidget {
-  President({Key key}) : super(key: key);
+class PendingApproval extends StatefulWidget {
+  PendingApproval({Key key}) : super(key: key);
 
   @override
-  _PresidentState createState() => _PresidentState();
+  _PendingApprovalState createState() => _PendingApprovalState();
 }
 
-class _PresidentState extends State<President>{
+class _PendingApprovalState extends State<PendingApproval>{
   Repository repo = Repository(allCouncilData);
   static DateTime time;
   // List<String> _entity = [];
@@ -45,7 +46,11 @@ class _PresidentState extends State<President>{
         ),
       body:
           FutureBuilder(
-            future : DatabaseProvider(databaseName: 'permission',tableName: 'perm').getAllPosts(),
+            // future : DatabaseProvider(databaseName: 'permission',tableName: 'perm').getAllPosts(),
+            future : DBProvider().getAllApprovalPost(
+              GetPosts(
+                queryColumn: 'council', queryData: allCouncilData.coordOfCouncil[0]),
+               islevel2, id),
             builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
@@ -202,7 +207,7 @@ class _PresidentState extends State<President>{
                               padding: EdgeInsets.only(left:10),
                               child: islevel2?
                               Container()
-                              : (postAccToCouncil[index].type.toLowerCase() == 'permission'?
+                              : (postAccToCouncil[index].type.toLowerCase() == NOTF_TYPE_PERMISSION?
                               SpinKitThreeBounce(size:20,
                                 color: Theme.of(context).accentColor,
                               )
@@ -317,9 +322,9 @@ class _PresidentState extends State<President>{
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      !islevel2 ?
-                      'Doing this will permanently delete this post for everyone'
-                      : 'Doing this will delete this post for you',
+                      // !islevel2 ?
+                      'Doing this will permanently delete this post for everyone',
+                      // : 'Doing this will delete this post for you',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
@@ -358,13 +363,13 @@ class _PresidentState extends State<President>{
                                   return Container();
                                 }
                               );
-                              if(!islevel2){
+                              // if(!islevel2){
                                 Response res = await deletePost(
                                   postsSort
                                 );
                                 if (res.statusCode == 200) {
                                   if(postsSort.url!=null) clearSelection(postsSort.url);
-                                  DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+                                  DBProvider().deletePost(postsSort.id);
                                   showSuccessToast('Deleted post successfully');
                                   return true;
                                 } else {
@@ -372,11 +377,11 @@ class _PresidentState extends State<President>{
                                   _listKey.currentState.insertItem(index);
                                   return false;
                                 }
-                              }else{
-                                await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
-                                showSuccessToast('Deleted post successfully');
-                                return true;
-                              }
+                              // }else{
+                              //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+                              //   showSuccessToast('Deleted post successfully');
+                              //   return true;
+                              // }
                             },
                             child: Text(
                               'Confirm',
@@ -400,7 +405,7 @@ class _PresidentState extends State<President>{
         return false;
       });
     } catch (e) {
-      print('Error while deleteing image $e');
+      print('Error while deleting image $e');
       return false;
     }
     // StorageUploadTask uploadTask = storageReference.putFile(_image);
@@ -410,60 +415,82 @@ class _PresidentState extends State<President>{
 Future getDataNotfs()async{
   var db = Firestore.instance;
   print(allCouncilData.coordOfCouncil);
-  if(id == 'adtgupta'){
-    return await db.collection('allPosts').where('type', isEqualTo: 'permission')
-    .orderBy('timeStamp',descending: true)
-    .getDocuments().then((var value)async{
-      if (value.documents!=null) {
-        value.documents.forEach((document){
-          var data =  document.data;
-          data.update('sub', (v)=>v[0]);
-          DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
-        });
-      } else {
+  if(ids.contains(id)){
+  //   return await db.collection('allPosts').where('type', isEqualTo: 'permission')
+  //   .orderBy('timeStamp',descending: true)
+  //   .getDocuments().then((var value)async{
+  //     if (value.documents!=null) {
+  //       value.documents.forEach((document){
+  //         var data =  document.data;
+  //         data.update('sub', (v)=>v[0]);
+  //         DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+  //       });
+  //     } else {
+  //       return 1;
+  //     }
+  //   }).catchError((onError){
+  //     print(onError);
+  //     return 1;
+  //   });
+  // }else if(!ids.contains(id)){
+  //   //TODO
+  // }
+  // else if(allCouncilData.coordOfCouncil[0] =='anc'){
+  //   return await db.collection('allPosts').where('type', isEqualTo: 'permission').where('council',isEqualTo: allCouncilData.coordOfCouncil[0])
+  //     .where('sub',arrayContainsAny: allCouncilData.subCouncil[allCouncilData.coordOfCouncil[0]].coordiOfInCouncil)
+  //     .orderBy('timeStamp',descending: true)
+  //     .getDocuments().then((var value)async{
+  //     if (value.documents!=null) {
+  //       value.documents.forEach((document){
+  //         var data =  document.data;
+  //         data.update('sub', (v)=>v[0]);
+  //         DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+  //       });
+  //     } else {
+  //       return 1;
+  //     }
+  //   }).catchError((onError){
+  //     print(onError);
+  //     return 1;
+  //   });
+  // }
+  // else{
+    try {
+      Response res = await post(FETCH_PENDINGAPPR_POST_WITH_COUNCIL_API, headers: HEADERS, 
+        body: json.encode({TYPE: NOTF_TYPE_PERMISSION, POST_COUNCIL: allCouncilData.coordOfCouncil[0]})
+      );
+      print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+      print(res.body);
+
+      if(res == null || res.statusCode != 200 || res.body == null){
+        print("ERROR WHILE FETCHING APPROVAL POST FOR LEVEL2");
         return 1;
-      }
-    }).catchError((onError){
-      print(onError);
-      return 1;
-    });
-  }else if(!ids.contains(id)){
-    //TODO
-  }
-  else if(allCouncilData.coordOfCouncil[0] =='anc'){
-    return await db.collection('allPosts').where('type', isEqualTo: 'permission').where('council',isEqualTo: allCouncilData.coordOfCouncil[0])
-      .where('sub',arrayContainsAny: allCouncilData.subCouncil[allCouncilData.coordOfCouncil[0]].coordiOfInCouncil)
-      .orderBy('timeStamp',descending: true)
-      .getDocuments().then((var value)async{
-      if (value.documents!=null) {
-        value.documents.forEach((document){
-          var data =  document.data;
-          data.update('sub', (v)=>v[0]);
-          DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+      }else{
+        var data = json.decode(res.body);
+        data.forEach((post){
+          data.update(SUB, (v)=>v[0]);
+          DBProvider().newPost(postsFromJson(json.encode(post)));
         });
-      } else {
-        return 1;
       }
-    }).catchError((onError){
-      print(onError);
+    } catch (e) {
+      print("ERROR WHILE FETCHING APPROVAL POST FOR LEVEL2");
+      print(e);
       return 1;
-    });
-  }
-  else{
-    return await db.collection('allPosts').where('type', isEqualTo: 'permission').where('council',isEqualTo: allCouncilData.coordOfCouncil[0])
-    .getDocuments().then((var value)async{
-      if (value.documents!=null) {
-        value.documents.forEach((document){
-          var data =  document.data;
-          data.update('sub', (v)=>v[0]);
-          DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
-        });
-      } else {
-        return 1;
-      }
-    }).catchError((onError){
-      print(onError);
-      return 1;
-    });
+    }
+    // return await db.collection('allPosts').where('type', isEqualTo: 'permission').where('council',isEqualTo: allCouncilData.coordOfCouncil[0])
+    // .getDocuments().then((var value)async{
+    //   if (value.documents!=null) {
+    //     value.documents.forEach((document){
+    //       var data =  document.data;
+    //       data.update('sub', (v)=>v[0]);
+    //       DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+    //     });
+    //   } else {
+    //     return 1;
+    //   }
+    // }).catchError((onError){
+    //   print(onError);
+    //   return 1;
+    // });
   }
 }

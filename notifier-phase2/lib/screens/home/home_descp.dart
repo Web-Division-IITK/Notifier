@@ -111,20 +111,20 @@ class _HomeDescriptionState extends State<HomeDescription> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     FutureBuilder(
-                      future: DatabaseProvider().getAllPosts(),
+                      future: DatabaseProvider().getAllPostsForOngoingEvent(),
                       builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
                         switch (snapshot.connectionState) {
                           case ConnectionState.done:
                           // print(snapshot.data);
                           var array = snapshot.data;
-                          array.retainWhere((i){
-                            var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
-                            DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
+                          // array.retainWhere((i){
+                          //   var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
+                          //   DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
                             
                           // print('array  + $date');
-                            return date.isBefore(DateTime.now())&& endTime.isAfter(DateTime.now());
-                          });
-                          loadONGoingEvent(snapshot.data);
+                          //   return date.isBefore(DateTime.now())&& endTime.isAfter(DateTime.now());
+                          // });
+                          // loadONGoingEvent(snapshot.data);
                             return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
                             Container(
                               padding: EdgeInsets.symmetric(vertical: 5.0),
@@ -134,31 +134,31 @@ class _HomeDescriptionState extends State<HomeDescription> {
                                   'You have no Ongoing Events right now'
                                 ),
                               ),
-                            ) :
-                            FutureBuilder(
-                              future: Future.delayed(Duration(milliseconds: 80),(){
-                                // print('array + $array ');
-                              return array;
-                            }),
-                              builder: (context,snapshot){
-                                switch (snapshot.connectionState) {
-                                  case ConnectionState.done:
-                                    var array = snapshot.data;
-                                    if(snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0){
+                            ):
+                            // FutureBuilder(
+                            //   future: Future.delayed(Duration(milliseconds: 80),(){
+                            //     // print('array + $array ');
+                            //   return array;
+                            // }),
+                            //   builder: (context,snapshot){
+                            //     switch (snapshot.connectionState) {
+                            //       case ConnectionState.done:
+                                    // var array = snapshot.data;
+                                    // if(snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0){
                                       // streamSubscription.pause();
-                                      return Container(
-                                        padding: EdgeInsets.symmetric(vertical: 5.0),
-                                        constraints: BoxConstraints(
-                                          maxHeight: 80
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            'You have no Ongoing Events right now'
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return Column(
+                                      // return Container(
+                                      //   padding: EdgeInsets.symmetric(vertical: 5.0),
+                                      //   constraints: BoxConstraints(
+                                      //     maxHeight: 80
+                                      //   ),
+                                      //   child: Center(
+                                      //     child: Text(
+                                      //       'You have no Ongoing Events right now'
+                                      //     ),
+                                      //   ),
+                                      // );
+                                    // }
+                                     Column(
                                       children: <Widget>[
                                         AnimatedList(
                                           physics: NeverScrollableScrollPhysics(),
@@ -211,16 +211,16 @@ class _HomeDescriptionState extends State<HomeDescription> {
                                 ),
                                       ],
                                     );
-                                    break;
-                                  default: return Container(
-                                    height: 80.0,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                              }
-                            );
+                                    // break;
+                            //       default: return Container(
+                            //         height: 80.0,
+                            //         child: Center(
+                            //           child: CircularProgressIndicator(),
+                            //         ),
+                            //       );
+                            //     }
+                            //   }
+                            // );
                             
                             
                             break;
@@ -423,18 +423,18 @@ class _HomeDescriptionState extends State<HomeDescription> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     FutureBuilder(
-                      future: DatabaseProvider().getAllPosts(),
+                      future: DatabaseProvider().getAllPostsForUpcomingEvents(),
                       builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
                         switch (snapshot.connectionState) {
                           case ConnectionState.done:
                           // print(snapshot.data);
                           var array = snapshot.data;
-                          array.retainWhere((i){
-                            var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
-                            // DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
-                            return date.isAfter(DateTime.now());
-                          });
-                          loadUpcomingEvents(array);
+                          // array.retainWhere((i){
+                          //   var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
+                          //   // DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
+                          //   return date.isAfter(DateTime.now());
+                          // });
+                          // loadUpcomingEvents(array);
                             return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
                             Container(
                               padding: EdgeInsets.symmetric(vertical: 5.0),
@@ -447,24 +447,24 @@ class _HomeDescriptionState extends State<HomeDescription> {
                                   'You have no Upcoming Events right now'
                                 ),
                               ),
-                            ) :
-                            FutureBuilder(
-                              future: Future.delayed(Duration(milliseconds: 80),(){
-                              return array;
-                            }),
-                              builder: (context,snapshot){
-                                switch (snapshot.connectionState) {
-                                  case ConnectionState.done:
-                                    var array = snapshot.data;
-                                    return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
-                                    Container(
-                                      padding: EdgeInsets.symmetric(vertical: 5.0),
-                                      height: 80.0,
-                                      child: Center(
-                                        child: Text(
-                                          'You have no Upcoming Events right now'
-                                        ),
-                                      ),
+                            // ) :
+                            // FutureBuilder(
+                            //   future: Future.delayed(Duration(milliseconds: 80),(){
+                            //   return array;
+                            // }),
+                            //   builder: (context,snapshot){
+                            //     switch (snapshot.connectionState) {
+                            //       case ConnectionState.done:
+                            //         var array = snapshot.data;
+                            //         return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
+                            //         Container(
+                            //           padding: EdgeInsets.symmetric(vertical: 5.0),
+                            //           height: 80.0,
+                            //           child: Center(
+                            //             child: Text(
+                            //               'You have no Upcoming Events right now'
+                            //             ),
+                            //           ),
                                     ) :Column(
                                       children: <Widget>[
                                         AnimatedList(
@@ -517,18 +517,16 @@ class _HomeDescriptionState extends State<HomeDescription> {
                                 ),
                                       ],
                                     );
-                                    break;
-                                  default: return Container(
-                                    height: 80.0,
-                                    child: Center(
-                                      child: CircularProgressIndicator(),
-                                    ),
-                                  );
-                                }
-                              }
-                            );
-                            
-                            
+                            //         break;
+                            //       default: return Container(
+                            //         height: 80.0,
+                            //         child: Center(
+                            //           child: CircularProgressIndicator(),
+                            //         ),
+                            //       );
+                            //     }
+                            //   }
+                            // );
                             break;
                           default: return Container(
                             padding: EdgeInsets.symmetric(vertical: 5.0),
@@ -558,18 +556,21 @@ class _HomeDescriptionState extends State<HomeDescription> {
     else{
       for (var i in array) {
         if(i.reminder == true){
-           var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
-          DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
-          if(checkDateForONisBetween(date,
-              endTime,i)){
-              // var minutes = endTime.difference(DateTime.now());
-          }
-          else if(endTime.isBefore(DateTime.now())){
+          if(i.endTime < DateTime.now().millisecondsSinceEpoch){
             DatabaseProvider().deletePost(i.id);
           }
-          else{
-            // array.removeWhere((test) => test.id == i.id);
-          }
+          //  var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
+          // DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
+          // if(checkDateForONisBetween(date,
+          //     endTime,i)){
+          //     // var minutes = endTime.difference(DateTime.now());
+          // }
+          // else if(endTime.isBefore(DateTime.now())){
+          //   DatabaseProvider().deletePost(i.id);
+          // }
+          // else{
+          //   // array.removeWhere((test) => test.id == i.id);
+          // }
         }
     }
     

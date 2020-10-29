@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/authentication/loginsignuppage.dart';
@@ -31,10 +32,10 @@ class _RootPageState extends State<RootPage> {
   @override
   void initState() {
     super.initState();
-    if (i == 0) {
-      getStudentDataFromServer();
-      i++;
-    }
+    // if (i == 0) {
+    //   getStudentDataFromServer();
+    //   i++;
+    // }
     widget.auth.getCurrentUser().then((user) {
       print(user);
       setState(() {
@@ -145,7 +146,20 @@ class _RootPageState extends State<RootPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
-
+        actions: [
+          IconButton(
+            icon: Icon(AntDesign.logout),
+            onPressed: ()async{
+              try {
+                // subscribeUnsubsTopic([], (userData.toMap()[0]?.prefs == null)? []:userData.toMap()[0]?.prefs);
+                await widget.auth.signOut();
+                logoutCallback();
+              } catch (e) {
+                print(e);
+              }
+            },
+          )
+        ],
       ),
       
       body: Container(
@@ -156,7 +170,7 @@ class _RootPageState extends State<RootPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Center(
-                child: Text('Error while doing your operation, pleasetry again later!! \nCheck your internet connection',
+                child: Text('Error while fetching your data , please try again later \nor try checking your connectivity',
                 textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.red,

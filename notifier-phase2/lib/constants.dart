@@ -1,9 +1,13 @@
 /*RESTAPIs*/
+import 'dart:convert';
+
 /// auth contains, current account cc-id, email
 /// auth : {id,uid}
 /// [id] === [user to update cc-id]
+/// headers for post request
+const Map<String, String> HEADERS = {"Content-type": "application/json"};
 /// deafult url
-const String URL_INITIALS = "/"; //TODO
+const String URL_INITIALS = "http://ec2-13-233-71-199.ap-south-1.compute.amazonaws.com/"; //TODO
 /// api for allcouncildata
 const String ALL_COUNCIL_DATA_API = URL_INITIALS + 'data.json';
 /// api for user creation
@@ -44,6 +48,9 @@ const String FETCH_POST_WITH_UID_API = URL_INITIALS + "getPostWithID";
 /// api to fetch post with permission and council
 /// type = permission, council
 const String FETCH_PENDINGAPPR_POST_WITH_COUNCIL_API = URL_INITIALS + "getPostWithTypeCouncil";
+/// api to send device id token
+/// auth token
+const String SEND_DEVICE_TOKEN = URL_INITIALS + ""; // TODO at url
 // /// api to fetch post with persmission and counci with sub field being an array sent from me
 // const String FETCH_PENDINGAPPR_POST_WITH_COUNCIL_SUB_API = "";
 /// api to get student search data
@@ -52,14 +59,53 @@ const String GET_STUDENT_SEARCH_DATA_API = URL_INITIALS + "getAllStudents";
 /// auth, only field to update
 const String UPDATE_STUDENT_SEARCH_DATA_API = URL_INITIALS + "updateStudent";
 /// url for directory profile picture
-const String PROFILE_PIC_URL = "";
+const String PROFILE_PIC_URL = "http://home.iitk.ac.in/";
 /// url for default profile picture
-const String PROFILE_PIC_URL_DEFAULT = "";
+const String PROFILE_PIC_URL_DEFAULT = "https://oa.cc.iitk.ac.in:443/Oa/Jsp/Photo/";
 
+String defaultProfileUrl(String gender) => 'assets/${gender.toLowerCase()}profile.png';
+String oarsProfileUrl(String rollno) =>  PROFILE_PIC_URL_DEFAULT + '${rollno}_0.jpg';
+String directoryProfileUrl(String username) => PROFILE_PIC_URL + '~$username/dp';
+const String UPDATE_PROFILE_ROOM = "Room";
+const String UPDATE_PROFILE_HALL = "Hall";
+const String UPDATE_PROFILE_DEPT = "Department";
+const String UPDATE_PROFILE_PROGRM = "Program";
 
+enum UpdateProfile{
+  ROOM,
+  HALL,
+  DEPT,
+  PROGRM
+}
+
+final List<String> program = [
+  'BS',
+  'BS-MBA',
+  'BS-MS',
+  'BS-MT',
+  'BT-MBA',
+  'BT-MS',
+  'BTech',
+  'DIIT',
+  'Exchng Prog.',
+  'MBA',
+  'MDes',
+  'MS-Research',
+  'MSc(2 Yr)',
+  'MSc(Int)',
+  'MSc-PhD(Dual)',
+  'MT(Dual)',
+  'MTech',
+  'PGPEX-VLM',
+  'PhD',
+  'Prep.',
+  'SURGE'
+];
 /* NOTIFICATIONS AND POSTS FIELDS */
 /// representation name of notification type = "permission"
 const String NOTF_TYPE_PERMISSION = "permission";
+/// representation name of notification type = "create"
+const String NOTF_TYPE_CREATE = "create";
 /// representation name of notification type = "delete"
 const String NOTF_TYPE_DELETE = "delete";
 /// representation name of type for notification
@@ -74,6 +120,8 @@ const String TITLE = "title";
 const String MESSAGE = "message";
 /// representation name of priority for notification
 const String PRIORITY = "priority";
+/// representation name of isFeatured for notification
+const String IS_FEATURED = "isFeatured";
 /// representation name to fetch from firebase
 const String FETCH_FROM_FF = "fetchFF";
 /// representation name of timeStamp field
@@ -94,7 +142,15 @@ const String AUTHOR = "author";
 
 /* SUPER USER FIELDS*/
 /// representation name for preferences field in super user
-const String USER_PREFS = "councils";
+const String USER_PREFS = "council";
+/// representation of userID for saved preferences
+const String USERID = "userID";
+const String NOT_VERIFIED = "notverified";
+
+/*CALENDAR EVENT FIELDS*/
+const String EVENT_SUB = "personal_event";
+const String EVENT_COUNCIL = "calendar";
+const String EVENT_TYPE = "calendar";
 
 
 /* SQL DATABASE AND THEIR TABLE NAMES*/
@@ -103,6 +159,9 @@ const String PERM_DATABASE = "permission";
 /// Table name for permission posts
 const String PERM_TABLENAME = "perm";
 
+/*SHARED PREFERENCES */
+/// Profile pic
+const String PICNAME = " pic_name";
 
 /* FONT FAMILY NAMES */
 /// primary font family RALEWAY
@@ -110,6 +169,32 @@ const String PRIMARY_FONTFAMILY = "Raleway";
 /// secondary font family RALEWAY
 const String SECONDARY_FONTFAMILY = "Nunito";
 
+Map<String,String> auth = {
+  "id" :"",
+  "uid":""
+};
+
+class AuthMap{
+  static final Map<String,String> auth = {
+    "id": "", "uid": "" 
+  };
+
+  void intialiseAuthValues(String _id, String _userID){
+    print("INITIALISING AUTH MAP $_id " + _userID + json.encode(auth));
+    // auth.updateAll((key, value) {
+    //   if(key == 'id'){
+    //     return value = _id??"";
+    //   }
+    //   else return value = _userID??"";
+    // });
+    auth["id"] = _id??"";
+    auth["uid"] = _userID??"";
+    // auth.update('id', (value) => "$_id"??"");
+    // auth.update('uid',(value) => "$_userID"??"");
+    print(json.encode(auth) + ' ');
+  }
+  Map<String,String> get authMap => auth;
+}
 
 /// function to determine no. of days in a amonth. Can be used for last date of month.
 /// Here month and year are [int]

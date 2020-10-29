@@ -1,6 +1,8 @@
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:notifier/colors.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/profile_page.dart';
 import 'package:notifier/screens/stu_search/searched_list.dart';
@@ -128,6 +130,13 @@ class _StudentSearchState extends State<StudentSearch> {
       appBar: AppBar(
         // title: Text('Student Search'),
         actions: <Widget>[
+          // Switch(value: Theme.of(context).brightness == Brightness.dark,
+          //  onChanged: (value){
+          //    DynamicTheme.of(context).setBrightness(
+          //                       Theme.of(context).brightness == Brightness.light
+          //                         ? Brightness.dark
+          //                         : Brightness.light);
+          //  }),
           // FlatButton(onPressed: ()=>_formKey.currentState.reset(), child: Text('Reset')),
           IconButton(icon: Icon(Icons.refresh), onPressed: ()async{
              if(mounted){
@@ -499,8 +508,14 @@ class _StudentSearchState extends State<StudentSearch> {
                             ),
                           ),
                         )
-                      )
+                      ),
                     ),
+                    SizedBox(height: 5),
+                    Text(
+                      ''' * Note: If you cannot view the profile photos try searching again after connecting to IITK newtwork.''',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: CustomColors(context).noteColor),
+                    )
                   ],
                 ),
               ),

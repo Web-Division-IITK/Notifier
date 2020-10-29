@@ -162,7 +162,7 @@ class ListItemStudent extends StatelessWidget {
             return showDialog(
                 context: (context),
                 builder: (context) {
-                  return StudentCard(user,ProfilePic(user).getUserProfilePic());
+                  return StudentCard(user,ProfilePic(user).getProfilePic());
                 });
           },
           borderRadius: BorderRadius.circular(16),
@@ -200,7 +200,7 @@ class ListItemStudent extends StatelessWidget {
                 Flexible(
                   flex: 4,
                   child: FutureBuilder(
-                  future: ProfilePic(user).getUserProfilePic(),
+                  future: ProfilePic(user).getProfilePic(),
                   builder: (context,  snapshot) {
                     switch (snapshot.connectionState) {
                     case ConnectionState.done:

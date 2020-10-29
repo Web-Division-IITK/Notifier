@@ -133,6 +133,44 @@ class DatabaseProvider{
       return [];
     }
   }
+  Future<List<PostsSort>> getAllPostsForOngoingEvent() async{
+    final db = await database;
+    try {
+      final today = DateTime.now().millisecondsSinceEpoch;
+      var res = await db.query(
+        "$tableName",where: "$STARTTIME < ? AND $ENDTIME > ? AND $TYPE = ?",whereArgs: [today,today,NOTF_TYPE_CREATE], orderBy: "timeStamp DESC"
+      );
+      List<PostsSort> v = [];
+      if(res.isNotEmpty){
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+  Future<List<PostsSort>> getAllPostsForUpcomingEvents() async{
+    final db = await database;
+    try {
+      final today = DateTime.now().millisecondsSinceEpoch;
+      var res = await db.query(
+        "$tableName",where: "$STARTTIME > ? AND $TYPE = ?",whereArgs: [today,NOTF_TYPE_CREATE], orderBy: "timeStamp DESC"
+      );
+      List<PostsSort> v = [];
+      if(res.isNotEmpty){
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
   Future<List<PostsSort>> getAllPostswithQuery(GetPosts query,{orderBy = "startTime"})async{
     try {
       final db= await database;
@@ -162,7 +200,11 @@ class DatabaseProvider{
       return [];
     }
   }
-  Future<Map<DateTime,List<PostsSort>>> getAllPostswithDate(DateTime date)async{
+  
+      /// givenWeekday is a weekday whoose date is to be find
+      /// 
+      /// This is an integer taking `Monday` as 1
+  Future<Map<DateTime,List<PostsSort>>> getAllPostswithDate(DateTime date,{int givenWeekday})async{
     try {
       final db= await database;
       final startDate = DateTime(date.year,date.month,1,).millisecondsSinceEpoch;
@@ -174,6 +216,35 @@ class DatabaseProvider{
             ORDER BY startTime
         '''
       );
+      int firstDateWithGivenWeekDate;
+      if((givenWeekday - date.weekday) %7 == 0)
+        firstDateWithGivenWeekDate = date.day;
+      else 
+        firstDateWithGivenWeekDate = (givenWeekday + 8 - date.weekday) % 7;
+      
+      var dbRes = await db.query(tableName,where: "council = ?", whereArgs: ['true'], orderBy: "$STARTTIME");
+      int noOfWeekDays = ((date.subtract(Duration(days: givenWeekday)).weekday 
+          - date.day + noOfDaysInMonths(date.month, date.year))/7).floor();
+      Map<DateTime,List<PostsSort>> v = {};
+      res.forEach((post) {
+        List.generate(noOfWeekDays, (index){
+          DateTime _startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
+          DateTime startTime = DateTime(
+            date.year,date.month, firstDateWithGivenWeekDate, _startTime.hour, _startTime.minute
+          ).add(Duration(days: 7*index));
+          v.update(
+            DateTime(startTime.year,startTime.month,startTime.day),
+            (value){
+              value.add(PostsSort.fromMap(post));
+              return value;
+            },
+            ifAbsent: (){
+              return [PostsSort.fromMap(post)];
+            }
+          );
+        });
+        
+      });
       // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
       // print(res);
       
@@ -182,7 +253,7 @@ class DatabaseProvider{
       //   // print(res.first);
       //   v..addAll( res.map((f) => PostsSort.fromMap(f)));
       // }
-      Map<DateTime,List<PostsSort>> v = {};
+      
       res.forEach((post) {
         DateTime startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
         v.update(

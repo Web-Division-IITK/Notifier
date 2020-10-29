@@ -67,6 +67,7 @@ dependencies:
   # flutter_linkify:
     #  notification_reactor: ^0.0.3+1
   # sliding_up_panel:
+  custom_refresh_indicator: ^0.9.0
   # firebase_core:
   firebase_messaging:
   keyboard_visibility: ^0.5.6

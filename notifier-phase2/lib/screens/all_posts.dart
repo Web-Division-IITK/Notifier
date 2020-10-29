@@ -53,7 +53,7 @@ class AllPostGetData extends StatelessWidget {
                           // });
                             // break;
                           // default: 
-                        return await DBProvider().getAllPosts().then((list)async{
+                        return await DBProvider().getAllPostsWithoutPermissions().then((list)async{
                           return await Navigator.of(context).push(MaterialPageRoute(
                           builder: (context){
                             return SearchPost(list,'post');
@@ -95,7 +95,7 @@ class AllPostGetData extends StatelessWidget {
                       }
                     ),
                     FutureBuilder(
-                      future: DBProvider().getAllPosts(),
+                      future: DBProvider().getAllPostsWithoutPermissions(),
                       builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
                         switch (snapshot.connectionState) {
                           case ConnectionState.done:
@@ -119,7 +119,7 @@ class AllPostGetData extends StatelessWidget {
     );
   }
   Future<List<PostsSort>>_fetchData(data) async{
-    var list = await DBProvider().getAllPosts();
+    var list = await DBProvider().getAllPostsWithoutPermissions();
     return list == null || list.length == 0? 
       []
       : Future.microtask((){

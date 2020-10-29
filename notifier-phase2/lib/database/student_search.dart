@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
+
+import 'package:notifier/constants.dart';
 // import 'package:mongo_dart/mongo_dart.dart' as mongo;
 // import 'package:notifier/database/mogo_database.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
@@ -40,8 +42,6 @@ class StuSearchDatabase{
      } catch (e) {
        print(e);
      }
-    
-    // db.close();
   }
   Future<Database> initDB() async{
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
@@ -190,23 +190,28 @@ Future<bool>getStudentDataFromServer() async{
   // Map<String,dynamic> data = {};
   try {
     try {
-      final url = 'http://ec2-18-204-20-179.compute-1.amazonaws.com/getAllStudents';
+      // final url = 'http://ec2-18-204-20-179.compute-1.amazonaws.com/getAllStudents';
       // Uri.
       // final httpRequest = await HttpClient().getUrl(Uri.parse(url));
       // final httpResponse = await httpRequest.close();
-      Response httpResponse = await get(url);
+      Response httpResponse = await get(GET_STUDENT_SEARCH_DATA_API);
       if(httpResponse.statusCode == 200){
         final requestBody = httpResponse.body;
         // await httpResponse.transform(utf8.decoder).join();
-        return await StuSearchDatabase().insertStuData({},listvalues: json.decode(requestBody)).then((v){
+        try{
+          return await StuSearchDatabase().insertStuData({},listvalues: json.decode(requestBody)).then((v){
           return v==0;
-        }).catchError((onError){
-          print(onError);
+          }).catchError((onError){
+            print(onError);
+            return false;
+          }).timeout(Duration(seconds: 40),onTimeout:(){
+            print('student timeout');
+            return false;
+          });
+        }catch(e){
+          print(e);
           return false;
-        }).timeout(Duration(seconds: 40),onTimeout:(){
-          print('student timeout');
-          return false;
-        });
+        }
       }else {
         return false;
       }

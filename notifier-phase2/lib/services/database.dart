@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:async';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/hive_models/people_hive.dart';
@@ -59,32 +60,6 @@ class DBProvider {
     try {
       Directory documentsDirectory = await getApplicationDocumentsDirectory();
       String path = join(documentsDirectory.path,databaseName,'.db');
-      // String data;
-      // switch (path) {
-      //   case 'posts':
-      //     data = "CREATE TABLE Posts("
-      //         "id TEXT PRIMARY KEY,"
-      //         "council TEXT,"
-      //         "owner TEXT,"
-      //         "sub TEXT,"
-      //         "tags TEXT,"
-      //         "timeStamp INTEGER,"
-      //         "title TEXT,"
-      //         "message TEXT,"
-      //         "body TEXT,"
-      //         "author TEXT,"
-      //         "url TEXT,"
-      //       ")";
-      //     break;
-      //   default: data = "CREATE TABLE User("
-      //         "id TEXT PRIMARY KEY,"
-      //         "uid TEXT,"
-      //         "name TEXT,"
-      //         "rollno INTEGER,"
-      //         "admin INTEGER,"
-      //         "email TEXT,"
-      //       ")";
-      // }
       return await openDatabase(
         path,version:1,
         onCreate: (db,version)async{
@@ -97,6 +72,7 @@ class DBProvider {
           startTime INTEGER,
           reminder INTEGER,
           endTime INTEGER,
+          isFeatured INTEGER,
           body TEXT,author TEXT,
           url TEXT)""",);
         }
@@ -163,6 +139,26 @@ class DBProvider {
       return [];
     }
   }
+  Future<List<PostsSort>>getAllPostsWithoutPermissions(
+    {int isFeatured = 0}
+  ) async{
+    try{
+      final db = await database;
+      var res = await db.query("Posts",where: "$TYPE = ? $IS_FEATURED = ?",
+        whereArgs: [NOTF_TYPE_CREATE, isFeatured], orderBy: "timeStamp DESC");
+      List<PostsSort> v = [];
+      if(res.isNotEmpty){
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    }
+    catch(e){
+      print(e);
+      return [];
+    }
+  }
   
   Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
     try {
@@ -198,7 +194,7 @@ class DBProvider {
       List<Map<String,dynamic>> res;
       switch (type) {
         case 'update':
-          res = await db.query("Posts",where: "${query.queryColumn} = ? AND owner = ?",whereArgs: [query.queryData,query.id],orderBy:orderBy );
+          res = await db.query("Posts",where: "${query.queryColumn} = ? AND owner = ? AND type = ?",whereArgs: [query.queryData,query.id,NOTF_TYPE_CREATE],orderBy:orderBy );
       //     List<PostsSort> v = [];
       //   if(res.isNotEmpty){
       // //   res.forEach((value){
@@ -208,7 +204,7 @@ class DBProvider {
       //   return v..addAll(res.map((f) => PostsSort.fromMap(f)));
       // }
           break;
-        default: res = await db.query("Posts",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy:orderBy );
+        default: res = await db.query("Posts",where: "${query.queryColumn} = ? AND type = ?",whereArgs: [query.queryData, NOTF_TYPE_CREATE],orderBy:orderBy );
         // List<PostsSort> v = [];
       //   if(res.isNotEmpty){
       // //   res.forEach((value){
@@ -262,7 +258,33 @@ class DBProvider {
       return [];
     }
   }
-  //id is necessary
+  Future<List<PostsSort>> getAllApprovalPost(GetPosts query, bool islevel2,String id)async{
+    try {
+      final db = await database;
+      // var res = await db.rawQuery(
+      //   islevel2?
+      //   "SELECT * FROM Posts WHERE $POST_COUNCIL = ? AND $TYPE = ? "
+      //   : "SELECT * FROM Posts WHERE $OWNER = ? ",
+      //   islevel2?
+      //   [query.queryData,NOTF_TYPE_PERMISSION] : [id]
+      // );
+      var res = islevel2?
+      await db.query("Posts",where: "$POST_COUNCIL = ? AND $TYPE = ?",whereArgs: [query.queryData,NOTF_TYPE_PERMISSION],orderBy: "timeStamp DESC")
+       : await db.query("Posts",where: "owner = ?",whereArgs: [id], orderBy: "timeStamp DESC");
+      // print(res);
+      List<PostsSort> v = [];
+        if(res.isNotEmpty){
+        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+        }else{
+          return  [];
+        }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+  
+  /// id is necessary
   updateQuery(GetPosts query)async{
     try {
       final db= await database;
@@ -404,10 +426,52 @@ class DBProvider {
 final databaseReference = Firestore.instance;
 /// return false for any error while true for evrything alright and saves data in hive database
 Future<bool> populateUsers(String uid) async{
+  // final String url = FETCH_USERDATA_API;
+  try{
+    print("FETCHING USERDATA ...");
+    Box userBox = await HiveDatabaseUser().hiveBox;
+    print(auth);
+    Response res = await post(FETCH_USERDATA_API,headers: HEADERS, body: json.encode({'auth': auth}));
+    print(res.statusCode);
+    print("BODY "+res.body);
+    if(res == null || res.statusCode != 200){
+      return false;
+    }else{
+      try {
+        var userData = json.decode(res.body);
+          print(userData[ID]);
+          var data = userData[USER_PREFS];
+          var prefs = [];
+          data.forEach((key,value){
+            prefs += value['entity'] + value['misc'];
+          });
+          // return await writeContent('users', json.encode(snaphot.data));
+          UserModel user= UserModel(
+            id: userData[ID]??"",
+            name: userData['name']??"",
+            rollno: userData['rollno']??"",
+            uid: userData['uid']??"",
+            prefs: prefs.cast<String>()??[],
+            admin: (userData['admin'] is bool) ?userData['admin']?? false : userData['admin'] == "true",
+          );
+          // print(user.admin);
+          userBox.add(user);
+          return true;
+        } catch (e) {
+          print("ERROR IN POPULATING USER FUNCTION line 461!!!");
+          print(e);
+          return false;
+        }
+    }
+  }catch(e){
+    print("ERROR IN POPULATING USER FUNCTION !!!");
+    print(e);
+    return false;
+  }
   return await databaseReference.collection('users').document(uid).get().then((snapshot)async{
     Box userData;
     userData = await HiveDatabaseUser().hiveBox;
-     if(snapshot.data == null || snapshot.data==null){
+     if(snapshot.data == null || snapshot.data.isEmpty){
         return false;
       }else{
         try {
@@ -466,6 +530,25 @@ Future<dynamic> populateAppData(String uid) async{
 }
 
 Future<bool> populatePeople(String id)async{
+  try{
+    Box box = await HiveDatabaseUser(databaseName: 'people').hiveBox;
+    print("FETCHING  FROM PEOPLE ...");
+    Response res = await post(FETCH_PEOPLE_DATA_API,headers: HEADERS, body: json.encode({'auth': auth}));
+    print(res.statusCode);
+    print(res.body);
+    if(res == null || res.statusCode != 200|| res.body == null || res.body.isEmpty){
+      return false;
+    }else{
+      PeopleModel model = PeopleModel.fromMap(json.decode(res.body));
+      print(model.councils);
+      box.add(model);
+      return true;
+    }
+  }catch(e){
+    print("ERROR IN POPULATING PEOPLE FUNCTION ...");
+    print(e);
+    return false;
+  }
   return await databaseReference.collection('people').document('$id').get().then((var value)async{
     if(value !=null && value.data!=null){
       Box box = await HiveDatabaseUser(databaseName: 'people').hiveBox;
@@ -499,6 +582,21 @@ Future<bool> updateUserDataInFirebase(String uid,dynamic type,dynamic data)async
 }
 // TODO add auth
 Future<bool> updatePrefsInFirebase(String uid,dynamic data)async{
+  try {
+    print("UPDATING PREFERNCES....");
+    Response res = await post(
+      UPDATE_PREFERENCES_API,
+      headers: HEADERS,
+      body: json.encode({'auth': auth, "council" : data}));
+    if(res.statusCode == 200)
+      return true;
+    return false;
+  } catch (e) {
+    print("ERROR WHILE UPDATING PERFERENCES");
+    print(e);
+    return false;
+  }
+  
    return await databaseReference.collection('users').document(uid).updateData({'council': data}).then((_){
     return true;
   }).catchError((var e){
@@ -506,6 +604,7 @@ Future<bool> updatePrefsInFirebase(String uid,dynamic data)async{
     return false;
   });
 }
+
 final FirebaseMessaging _fcm = FirebaseMessaging();
 void subscribeUnsubsTopic(var subscribe, var unsubscribe) {
  
@@ -526,28 +625,15 @@ checkSpace(String name) {
   return name.replaceAll(' ', '_');
 }
 Future<int> submit(String id, var council,var value) async {
-  Map<String, String> headers = {"Content-type": "application/json"};
-  // value = json.encode(value);
-  // String json = '{
-  //   "id": "$id";
-  //   "councils":"$value["councils"]",
-  //   "snt":"$value["snt"]","ss":"$value["ss"]","mnc":"$value["mnc"],
-  
-  // }';
   String jsonDataBody = json.encode({
+    'auth': auth,
     'id': id,
     'council':council,
     'por':value,
   });
   print(jsonDataBody);
-  // try{
-  String url =
-      'https://us-central1-notifier-phase-2.cloudfunctions.net/elevatePerson';
-  // //   // }catch(e){
-  // //   //   print(e.toString());
-  // //   // }
   try {
-    Response response = await post(url, headers: headers, body: jsonDataBody);
+    Response response = await post(MAKE_COORDINATOR_API, headers: HEADERS, body: jsonDataBody);
     int statusCode = response.statusCode;
     print(statusCode);
     print(response.body.toString());
