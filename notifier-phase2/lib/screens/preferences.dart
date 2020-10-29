@@ -312,7 +312,7 @@ class _PreferencesState extends State<Preferences> {
                           : value != name.entity[key] &&
                                   value !=
                                       name.entity[key].toString().toLowerCase()
-                              ? 'Type the name of topic To Unsubscribe'
+                              ? 'Type the correct name of topic to Unsubscribe it'
                               : null,
                       onSaved: (val) => typed = val,
                     ),

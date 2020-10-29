@@ -12,6 +12,7 @@ import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/rootpage.dart';
+import 'package:notifier/screens/event_management/schedule_reminder.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
 import 'package:notifier/services/connectivity.dart';
 import 'package:notifier/services/database.dart';
@@ -22,6 +23,7 @@ NotificationAppLaunchDetails onNotificationAppLaunchDetail;
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugi = FlutterLocalNotificationsPlugin();
 final FlutterLocalNotificationsPlugin fLNP = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotification = FlutterLocalNotificationsPlugin();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +31,7 @@ void main() async{
   notificationAppLaunchDetails = await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
   onNotificationAppLaunchDetail = await flutterLocalNotificationsPlugi.getNotificationAppLaunchDetails();
   onNotificationAppLaunchDetails = await fLNP.getNotificationAppLaunchDetails();
+  onNotificationAppLaunchDetails = await flutterLocalNotification.getNotificationAppLaunchDetails();
   runApp(MyApp());
 }
 
@@ -64,6 +67,8 @@ class _MyAppHomeState extends State<MyAppHome> {
         onSelectNotification: selectNotificationP);
     fLNP.initialize(initializationSettings,
         onSelectNotification: _onSelectNotification);
+    flutterLocalNotification.initialize(initializationSettings,
+        onSelectNotification: onOpenNotification);
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]);
     appReview();
     super.initState();
@@ -115,6 +120,7 @@ class _MyAppHomeState extends State<MyAppHome> {
             labelColor:  brightness == Brightness.dark ?Colors.white:Colors.black,
           ),
           accentColor: brightness == Brightness.dark ?Colors.deepPurpleAccent:Colors.blueAccent,
+          // primaryColor: brightness == Brightness.dark ?Colors.pink:Colors.deepOrange,
           appBarTheme: AppBarTheme(
             color: brightness == Brightness.dark ?Colors.black:Colors.white,
             iconTheme: IconThemeData(
@@ -171,20 +177,8 @@ class _MyAppHomeState extends State<MyAppHome> {
               // )
             )
           ),
-          // colorScheme: ColorScheme(
-          //   primary: brightness == Brightness.dark? Colors.green:Colors.accents, 
-          //   primaryVariant: null, 
-          //   secondary: null, 
-          //   secondaryVariant: null, 
-          //   surface: null, 
-          //   background: null, 
-          //   error: Colors.red, 
-          //   onPrimary: null, 
-          //   onSecondary: null,
-          //   onSurface: null, 
-          //   onBackground: null, 
-          //   onError: Colors.red, 
-          //   brightness: null),          
+          // backgroundColor: brightness == Brightness.dark?Colors.black:Colors.white,
+          // highlightColor: brightness == Brightness.dark ?Colors.white:Colors.black,        
           toggleableActiveColor: brightness == Brightness.dark ? Colors.teal:Colors.green,
           dialogTheme: DialogTheme(backgroundColor: brightness == Brightness.dark?Colors.black:Colors.white,
             elevation: 5.0,

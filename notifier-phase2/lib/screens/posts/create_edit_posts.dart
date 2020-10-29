@@ -1109,9 +1109,9 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
   validateAndSubmit() async {
 
     if(validateAndSave()){
-      requestPerm?
-      showInfoToast('Sending request !!'):
-      showInfoToast('Updating Posts!!!');
+      // requestPerm?
+      showInfoToast('Sending request !!!');
+      // showInfoToast('Updating Posts!!!');
       setState(() {
         _loadingWidget = true;
       });
@@ -1122,11 +1122,11 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
     
       try{
         post.type = 'update';
-        var response = await publishPosts(post.id, post,true,permission: requestPerm);
+        var response = await createEditPosts(post,true,isCreate: false);
         if(response.statusCode == 200){
-          requestPerm?
-          showSuccessToast('Request Send Successfully!!'):
-          showSuccessToast('Updated Successfully!!!');
+          // requestPerm?
+          showSuccessToast('Request Send Successfully!!!');
+          // showSuccessToast('Updated Successfully!!!');
           Navigator.of(context).pop();
           setState(() {
             _loadingWidget = false;

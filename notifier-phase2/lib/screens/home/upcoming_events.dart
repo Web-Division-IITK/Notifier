@@ -195,8 +195,8 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> with AutomaticK
   @override
   bool get wantKeepAlive => true;
 
-  refresh(){
-    setState(() {});
+  Future<void>refresh(){
+    return Future.delayed(Duration(seconds: 2),()=>setState(() {}));
   }
   // @override
   // void initState() { 
@@ -219,93 +219,103 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> with AutomaticK
         centerTitle: true,
       ),
       body: Container(
-        child: FutureBuilder(
-          future: _fetchData(),
-          builder: (context,AsyncSnapshot<List<PostsSort>> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.done:
-                if(snapshot == null || snapshot.data == null || snapshot.data.length ==0){
-                  // streamController.close();
-                  return Container(
-                    height: MediaQuery.of(context).size.height*0.8,
-                    // height: double.maxFinite,
-                    child: Center(child: Text('No ongoing events right now')),
-                  );
-                }else{
-                  // if(streamController.isClosed){
-                  //   streamController.addStream(Stream.periodic(Duration(minutes: 1)));
-                  // }
-                  return LiquidPullToRefresh(
-                    showChildOpacityTransition: false,
-                    onRefresh: ()async{
-                      refresh();
-                    },
-                    child: ListView(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      children: <Widget>[
-                        snapshot.data == null ||snapshot.data.length == 0?
-                        Container(
+        height: MediaQuery.of(context).size.height - MediaQuery.of(context).viewPadding.top,
+        child: LiquidPullToRefresh(
+          showChildOpacityTransition: true,
+          onRefresh: refresh,
+          child: ListView(
+            children: [
+              FutureBuilder(
+                future: _fetchData(),
+                builder: (context,AsyncSnapshot<List<PostsSort>> snapshot) {
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.done:
+                      if(snapshot == null || snapshot.data == null || snapshot.data.length ==0){
+                        // streamController.close();
+                        return Container(
                           height: MediaQuery.of(context).size.height*0.8,
                           // height: double.maxFinite,
                           child: Center(child: Text('No ongoing events right now')),
-                        ):
-                        AnimatedList(
-                          shrinkWrap: true,
-                          key: _upcomingKey,
-                          physics: NeverScrollableScrollPhysics(),
-                          initialItemCount: snapshot.data.length,
-                          itemBuilder: (context,index,animation){
-                            
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              child: 
-                              (snapshot.data == null ||snapshot.data.length == 0)?
-                              Container(
-                                child: Center(child: Text('No ongoing events right now')),
-                              ):
-                              StreamBuilder(
-                                stream: Stream.periodic(Duration(minutes: 1)),
-                                builder: (context, snapsht) {
-                                  return ListItem(
-                                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                    postsList: snapshot.data,
-                                    // array: snapshot.data,
-                                    load: refresh,
-                                    eventKey: _upcomingKey,
-                                    index: index, 
-                                  );
-                                }
-                              ), 
-                            );
-                          }
-                        ),
-                      ],
-                    ), 
-                    
-                  );
+                        );
+                      }else{
+                        // if(streamController.isClosed){
+                        //   streamController.addStream(Stream.periodic(Duration(minutes: 1)));
+                        // }
+                        // LiquidPullToRefresh(
+                        //   showChildOpacityTransition: false,
+                        //   onRefresh: ()async{
+                        //     refresh();
+                        //   },
+                        return Column(
+                          // itemExtent: MediaQuery.of(context).size.height - MediaQuery.of(context).viewPadding.top,
+                          // shrinkWrap: true,
+                          // padding: EdgeInsets.symmetric(vertical: 16.0),
+                          children: <Widget>[
+                            snapshot.data == null ||snapshot.data.length == 0?
+                            Container(
+                              height: MediaQuery.of(context).size.height*0.8,
+                              // height: double.maxFinite,
+                              child: Center(child: Text('No ongoing events right now')),
+                            ):
+                            AnimatedList(
+                              shrinkWrap: true,
+                              key: _upcomingKey,
+                              physics: NeverScrollableScrollPhysics(),
+                              initialItemCount: snapshot.data.length,
+                              itemBuilder: (context,index,animation){
+                                
+                                return SizeTransition(
+                                  sizeFactor: animation,
+                                  child: 
+                                  (snapshot.data == null ||snapshot.data.length == 0)?
+                                  Container(
+                                    child: Center(child: Text('No ongoing events right now')),
+                                  ):
+                                  StreamBuilder(
+                                    stream: Stream.periodic(Duration(minutes: 1)),
+                                    builder: (context, snapsht) {
+                                      return ListItem(
+                                        key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                        postsList: snapshot.data,
+                                        // array: snapshot.data,
+                                        load: refresh,
+                                        eventKey: _upcomingKey,
+                                        index: index, 
+                                      );
+                                    }
+                                  ), 
+                                );
+                              }
+                            ),
+                          ],
+                        );
+                      }
+                      break;
+                    default: return Container(
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
                 }
-                break;
-              default: return Container(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-          }
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
    Future<List<PostsSort>> _fetchData()async{
-    return await DatabaseProvider().getAllPosts().then((list){
+    return await DatabaseProvider().getAllPostsForUpcomingEvents().then((list){
+      print(list);
       if(list == null || list.length == 0){
         return [];
       }
-      else return Future.microtask((){
-        list.retainWhere((test)=> checkDateForONisBetween(
-          DateTime.fromMillisecondsSinceEpoch(test.startTime), 
-          DateTime.fromMillisecondsSinceEpoch(test.endTime),test));
-        return Future.delayed(Duration(milliseconds: 10),()=>list);
-      });
+      else return list;
+      // Future.microtask((){
+      //   list.retainWhere((test)=> checkDateForONisBetween(
+      //     DateTime.fromMillisecondsSinceEpoch(test.startTime), 
+      //     DateTime.fromMillisecondsSinceEpoch(test.endTime),test));
+      //   return Future.delayed(Duration(milliseconds: 10),()=>list);
+      // });
     });
   } 
 }

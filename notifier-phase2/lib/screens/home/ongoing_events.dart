@@ -128,15 +128,16 @@ class _OnGoingEventPageState extends State<OnGoingEventPage> with AutomaticKeepA
     );
   }
   Future<List<PostsSort>> _fetchData()async{
-    return await DatabaseProvider().getAllPosts().then((list){
+    return await DatabaseProvider().getAllPostsForOngoingEvent().then((list){
       if(list == null || list.length == 0){
         return [];
       }
-      else return Future.microtask((){
-        list.retainWhere((test)=> test.startTime < (DateTime.now().millisecondsSinceEpoch) && 
-          test.endTime > DateTime.now().millisecondsSinceEpoch);
-        return Future.delayed(Duration(milliseconds: 10),()=>list);
-      });
+      else return list;
+      // Future.microtask((){
+      //   list.retainWhere((test)=> test.startTime < (DateTime.now().millisecondsSinceEpoch) && 
+      //     test.endTime > DateTime.now().millisecondsSinceEpoch);
+      //   return Future.delayed(Duration(milliseconds: 10),()=>list);
+      // });
     });
   } 
   // loadONGoingEvent(){

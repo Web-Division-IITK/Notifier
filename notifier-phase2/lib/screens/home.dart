@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
@@ -8,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:hive/hive.dart';
 import 'package:notifier/authentication/authentication.dart';
+import 'package:notifier/colors.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/database/student_search.dart';
 import 'package:notifier/main.dart';
@@ -21,7 +24,7 @@ import 'package:notifier/screens/bookmark.dart';
 import 'package:notifier/screens/home/home_descp.dart';
 import 'package:notifier/screens/make_coordi.dart';
 import 'package:notifier/screens/posts/create_edit_posts.dart';
-import 'package:notifier/screens/posts/presi.dart';
+import 'package:notifier/screens/posts/pending_approval.dart';
 import 'package:notifier/screens/profile_page.dart';
 import 'package:notifier/screens/profile/profilepic.dart';
 import 'package:notifier/screens/event_management/calendar.dart';
@@ -31,7 +34,9 @@ import 'package:notifier/screens/preferences.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:notifier/database/hive_database.dart';
+import 'package:notifier/widget/drawer_tile.dart';
 import 'package:notifier/widget/showtoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   final BaseAuth auth;
@@ -43,7 +48,7 @@ class HomePage extends StatefulWidget {
 }
 /// contains all ids of council heads i.e. level1+level2
 List<String> ids = [];
-/// current email id [excluding @iik.ac.in] of user
+/// current email id `excluding @iik.ac.in` of user
 String id;
 ///current name of user
 String name;
@@ -71,11 +76,26 @@ class _HomePageState extends State<HomePage> {
   /// preferneces of the current user
   var _prefs = [];
   bool darkMode;
+  File profilePic;
   /// minimum time between two referesh queries
   DateTime timeOfRefresh;
-
+  SharedPreferences _profilePicName;
+  String picName;
   /// after user's data is retreived then all the posts in database are retreived as well as a function is trigerred to retreive that data from internet if there is no post available
   Future loadHome()async{
+    try{
+      _profilePicName = await SharedPreferences.getInstance();
+      picName = _profilePicName.getString(PICNAME);
+      if(picName != null && !picName.contains(userData.toMap()[0].rollno)){
+        picName = null;
+      }
+      profilePic = await file(picName?? "${searchModel.rollno}.jpg");
+    }
+    catch(e) {
+      print('ERROR OCCURRED WHILE INITAITING SHARED PREFERENCE FOR PROFILE PIC');
+      print(e);
+      profilePic = null;
+    }
     return await loadPosts().then((var status){
       print('loading Posts....');
       subscribeUnsubsTopic(_prefs, []);
@@ -150,6 +170,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _load = true;
+    /// creating auth map to be use in various functions
+    // auth().intialiseAuthValues(id, widget.userId);
     _fcm.configure(
       onMessage: (Map<String, dynamic> message)async{
         print('onMessage' + '$message');
@@ -174,7 +196,7 @@ class _HomePageState extends State<HomePage> {
                   if(id!="" || id!= null||id.isNotEmpty){
                     await showPermissionNotification(message);
                   }
-                  return await  DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+                  return await DBProvider().newPost(postsFromJson(json.encode(data)));
                 }
                 else{
                   showInfoToast('A request has been published but we are not able to load it,please, load it manually under pending approval section');
@@ -194,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                     await showPermissionNotification(message);
                   }
                   
-                  return await  DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+                  return await DBProvider().newPost(postsFromJson(json.encode(data)));
            }
           }
           print('nothing');
@@ -202,9 +224,9 @@ class _HomePageState extends State<HomePage> {
         }
         else if(data['type'] == 'delete'){
           print('deleting');
-          await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(
-                  data['id']
-                );
+          // await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(
+          //         data['id']
+          //       );
           return await DBProvider().deletePost(data['id']);
         }else{
           print('line78');
@@ -223,13 +245,11 @@ class _HomePageState extends State<HomePage> {
                 if(id!="" || id!= null||id.isNotEmpty){
                   await showNotification(message);
                 }
-                if(!ids.contains(id) && data['owner'] == id) {
-                  await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(
-                    postsSortFromJson(json.encode(data))
-                  );
-                }else{
-                  await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
-                }
+                // if(!ids.contains(id) && data['owner'] == id) {
+                //   await await DBProvider().newPost(postsFromJson(json.encode(data)));
+                // }else{
+                //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
+                // }
                 return await  DBProvider().newPost(postsFromJson(json.encode(data))).then((v)=>setState((){}));
               }
             });
@@ -249,13 +269,11 @@ class _HomePageState extends State<HomePage> {
             }
             
               globalPostsArray.add(postsSortFromJson(json.encode(data)));
-            if(!ids.contains(id) && data['owner'] == id) {
-              await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(
-                postsSortFromJson(json.encode(data))
-              );
-            }else{
-              await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
-            }
+            // if(!ids.contains(id) && data['owner'] == id) {
+            //   await await DBProvider().newPost(postsFromJson(json.encode(data)));
+            // }else{
+            //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
+            // }
             return await  DBProvider().newPost(postsFromJson(json.encode(data)));
           }
         }
@@ -354,80 +372,126 @@ class _HomePageState extends State<HomePage> {
             elevation: 5.0,
             child: ListView(
               children: <Widget>[
-                InkWell(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context)
-                          .push(MaterialPageRoute(builder: (BuildContext context) {
-                        return Profile(_memorizer);
-                      }));
-                    },
-                    child: Container(
-                        height: MediaQuery.of(context).size.width * 0.7,  
-                        color: Theme.of(context).brightness == Brightness.dark ?Colors.black:Colors.white,
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              FutureBuilder(
-                                future: this._loadUserPic(),
-                                builder: (context, snapshot){
-                                switch (snapshot.connectionState) {
-                                  case ConnectionState.done:
-                                    if(snapshot == null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
-                                      return CircleAvatar(
-                                        radius: 50.0,
-                                        backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
-                                        // backgroundColor: Theme.of(context).accentColor,
-                                        // child: Text(
-                                        //   // 'kjkjbd',
-                                        //   _errorWidget?'':
-                                        //     name == null || name == ''
-                                        //         ? id[0].toUpperCase()
-                                        //         : name[0].toUpperCase(),
-                                        //     style: TextStyle(
-                                        //         fontSize: 40.0,
-                                        //         color: Colors.white  
-                                        //       )),
-                                      );
-                                    }else{
-                                      return CircleAvatar(
-                                        radius: 50.0,
-                                        backgroundImage: snapshot.data,
-                                      );
-                                    }
+                Container(
+                  height: MediaQuery.of(context).size.width * 0.7,
+                  color: Theme.of(context).brightness == Brightness.dark ?Colors.black:Colors.white,
+                  child: Center(
+                    child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            InkWell(
+                              onTap: () {
+                                Navigator.of(context).pop();
+                                Navigator.of(context)
+                                    .push(MaterialPageRoute(builder: (BuildContext context) {
+                                  return Profile(_memorizer);
+                                }));
+                              },
+                              child: profilePic != null && profilePic.existsSync()?
+                                CircleAvatar(
+                                  radius: 50.0,
+                                  backgroundImage: MemoryImage(
+                                    profilePic.readAsBytesSync()
+                                  ),
+                                )
+                                : CircleAvatar(
+                                    radius: 50.0,
+                                    backgroundImage: AssetImage(defaultProfileUrl(searchModel.gender)),
+                                  ),
+                              /*FutureBuilder(
+                                future: file(picName?? "${searchModel.rollno}.jpg"),
+                                builder: (context,AsyncSnapshot<File> snapshot){
+                                  switch(snapshot.connectionState){
+                                    case ConnectionState.done:
+                                      if(snapshot == null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
+                                        return CircleAvatar(
+                                          radius: 50.0,
+                                          backgroundImage: AssetImage(defaultProfileUrl(searchModel.gender)),
+                                        );
+                                      }else{
+                                        if(snapshot.data.existsSync()){  
+                                          return CircleAvatar(
+                                            radius: 50.0,
+                                            backgroundImage: MemoryImage(
+                                              snapshot.data.readAsBytesSync()
+                                            ),
+                                          );
+                                        }else{
+                                          return CircleAvatar(
+                                            radius: 50.0,
+                                            backgroundImage: AssetImage(defaultProfileUrl(searchModel.gender)),
+                                          );
+                                        }
+                                      }
                                     break;
-                                  default: return CircleAvatar(
+                                    default: return CircleAvatar(
                                         radius: 50.0,
-                                        backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
-                                        // backgroundColor: Theme.of(context).accentColor,
-                                        // child: Text(
-                                        //   _errorWidget?'':
-                                        //     name == null || name == ''
-                                        //         ? id[0].toUpperCase()
-                                        //         : name[0].toUpperCase(),
-                                        //     style: TextStyle(
-                                        //         fontSize: 40.0,
-                                        //         color: Colors.white  
-                                        //       )),
+                                        backgroundImage: AssetImage(defaultProfileUrl(searchModel.gender)),
                                       );
-                                      break;
+                                    break;
+                                  }
                                 }
-                              }),
-                              SizedBox(height: 20.0),
-                              Text(
-                                // 'nmb',
-                                _errorWidget?'':
-                                name == null || name == '' ? id : name,
-                                style: TextStyle(
-                                    fontFamily: 'Comfortaa',
-                                    fontSize: 17.0),
-                              ),
-                            ],
-                          ),
-                        )),
+                              ),*/
+                            ),
+                            // FutureBuilder(
+                            //   future: this._loadUserPic(),
+                            //   builder: (context, snapshot){
+                            //   switch (snapshot.connectionState) {
+                            //     case ConnectionState.done:
+                            //       if(snapshot == null || snapshot.data == null || !snapshot.hasData || snapshot.hasError){
+                            //         return CircleAvatar(
+                            //           radius: 50.0,
+                            //           backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
+                            //           // backgroundColor: Theme.of(context).accentColor,
+                            //           // child: Text(
+                            //           //   // 'kjkjbd',
+                            //           //   _errorWidget?'':
+                            //           //     name == null || name == ''
+                            //           //         ? id[0].toUpperCase()
+                            //           //         : name[0].toUpperCase(),
+                            //           //     style: TextStyle(
+                            //           //         fontSize: 40.0,
+                            //           //         color: Colors.white  
+                            //           //       )),
+                            //         );
+                            //       }else{
+                            //         return CircleAvatar(
+                            //           radius: 50.0,
+                            //           backgroundImage: snapshot.data,
+                            //         );
+                            //       }
+                            //       break;
+                            //     default: return CircleAvatar(
+                            //           radius: 50.0,
+                            //           backgroundImage: AssetImage('assets/${searchModel.gender.toLowerCase()}profile.png'),
+                            //           // backgroundColor: Theme.of(context).accentColor,
+                            //           // child: Text(
+                            //           //   _errorWidget?'':
+                            //           //     name == null || name == ''
+                            //           //         ? id[0].toUpperCase()
+                            //           //         : name[0].toUpperCase(),
+                            //           //     style: TextStyle(
+                            //           //         fontSize: 40.0,
+                            //           //         color: Colors.white  
+                            //           //       )),
+                            //         );
+                            //         break;
+                            //   }
+                            // }),
+                            SizedBox(height: 20.0),
+                            Text(
+                              // 'nmb',
+                              _errorWidget?'':
+                              name == null || name == '' ? id : name,
+                              style: TextStyle(
+                                  fontFamily: 'Comfortaa',
+                                  fontSize: 17.0),
+                            ),
+                          ],
+                        ),
                   ),
-                ids.contains(id) ?
+                ),
+                /*ids.contains(id) ?
                 Container():
                 InkWell(
                         onTap: () async {
@@ -485,161 +549,146 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
                     )
+                  ),*/
+                  ids.contains(id) ?
+                  Container():
+                  DrawerTile(
+                    icon: Octicons.settings,
+                    routeWidget: Preferences(
+                      widget.auth,
+                      loadApp,
+                      userData.toMap()[0].uid,
+                      allCouncilData,
+                      userData
+                    ),
+                    title: 'Preferences',
                   ),
-                  (allCouncilData !=null&&( allCouncilData.level3.contains(id) || ids.contains(id)))
-                      ? InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return SafeArea(child: MakeCoordi(
+                  DrawerTile(
+                    icon: Entypo.notification,
+                    routeWidget: StreamBuilder(
+                      stream: userData.watch(key: 0), 
+                      builder: (context,AsyncSnapshot<BoxEvent> sn)=>
+                        AllPostGetData(
+                          (sn == null || sn.data == null || sn.data.value == null)? 
+                            userData.toMap()[0]:sn.data.value,
+                        )
+                    ),
+                    title: 'Posts',
+                  ),
+                  ((allCouncilData !=null&&( allCouncilData.level3.contains(id) || ids.contains(id)))
+                  || userData.toMap()[0].admin == true) ?
+                  ExpansionTile(
+                    leading: Icon(MaterialCommunityIcons.shield_account,
+                      color:CustomColors(context).iconColor
+                    ),
+                    title: Text('Admin Options',
+                    style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito'),
+                    ),
+                    backgroundColor: CustomColors(context).exapndedTileColor,
+                    children: [
+                      ((){
+                      if((allCouncilData !=null&&( allCouncilData.level3.contains(id) || ids.contains(id))))
+                        return DrawerTile(
+                          routeWidget: MakeCoordi(
                                   ids,
                                   allCouncilData,
                                   id,
                                   widget.auth,
                                   widget.logoutCallback,
                                   widget.userId,
-                                ));
-                              }));
-                          },
-                          child: Container(
-                            height: 55.0,
-                            padding: EdgeInsets.only(left:15.0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(MaterialCommunityIcons.account_card_details_outline),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 15.0, top: 15.0, bottom: 15.0),
-                                  child: Text(
-                                    'Make Coordinator',
-                                    style: TextStyle(
-                                      fontSize: 20.0, fontFamily: 'Nunito'),
-                                  ),
+                                  userData
                                 ),
-                              ],
+                          title: 'Make Coordinator',
+                          icon: MaterialCommunityIcons.account_card_details_outline,
+                        );
+                      }()),
+                      ((){
+                      if(userData.toMap()[0].admin == true)
+                        return Column(
+                          children: [
+                            DrawerTile(
+                              routeWidget: CreateEditPosts('Create', null, PostsSort(author: name,owner:id)),
+                              title: 'Create Posts',
+                              icon: Entypo.new_message
                             ),
-                          )
-                        )
-                      : Container(),
-                  (admin !=null && admin == true)
-                      ? InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                  // return CreatePosts(id, _subs,name);
-                                return SafeArea(child: CreateEditPosts('Create', null, PostsSort(author: name,owner:id)));
-                            }));
-                          },
-                          child: Container(
-                            height: 55.0,
-                            padding: EdgeInsets.only(left:15.0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Entypo.new_message),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 15.0, top: 15.0, bottom: 15.0),
-                                  child: Text(
-                                    'Create Posts',
-                                    style: TextStyle(
-                                      fontSize: 20.0, fontFamily: 'Nunito'),
-                                  ),
-                                ),
-                              ],
+                            DrawerTile(
+                              routeWidget: PostList('Update',id,_prefs),
+                              title: 'Update Posts',
+                              icon: MaterialCommunityIcons.update
                             ),
-                          )
-                        )
-                      : Container(),
-                  (admin !=null && admin == true)
-                      ? InkWell(
-                          onTap: () async{
-                            Navigator.of(context).pop();
-                            await Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return SafeArea(child: PostList('Update',id,_prefs));
-                            }));
-                          },
-                          child: Container(
-                            height: 55.0,
-                            padding: EdgeInsets.only(left:15.0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(MaterialCommunityIcons.update),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 15.0, top: 15.0, bottom: 15.0),
-                                  child: Text(
-                                    'Update Posts',
-                                    style: TextStyle(
-                                      fontSize: 20.0, fontFamily: 'Nunito'),
-                                  ),
-                                ),
-                              ],
+                            DrawerTile(
+                              routeWidget: PendingApproval(),
+                              title: 'Pending Approval',
+                              icon: MaterialCommunityIcons.stamper
                             ),
-                          )
-                        )
-                      : Container(),
-                      (admin == true)
-                      ? InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return SafeArea(child: President());
-                              }));
-                          },
-                          child: Container(
-                            height: 55.0,
-                            padding: EdgeInsets.only(left:15.0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(MaterialCommunityIcons.stamper),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 15.0, top: 15.0, bottom: 15.0),
-                                  child: Text(
-                                    'Pending Approval',
-                                    style: TextStyle(
-                                      fontSize: 20.0, fontFamily: 'Nunito'),
-                                  ),
-                                ),
-                              ],
+                            DrawerTile(
+                              routeWidget: PostList('Drafts',widget.userId,_prefs),
+                              title: 'Drafted Posts',
+                              icon: Ionicons.ios_save
                             ),
-                          )
+                          ],
+                        );
+                      }()),
+                    ],
+                  )
+                  : Container(),
+                  DrawerTile(
+                    icon: MaterialIcons.collections_bookmark,
+                    routeWidget: BookMarked(),
+                    title: 'Bookmarked Posts',
+                  ),
+                  DrawerTile(
+                    icon: Octicons.calendar, //TODO add calendar icon
+                    routeWidget: Calendar(),
+                    title: 'Events',
+                  ),
+                  DrawerTile(
+                    icon: MaterialCommunityIcons.account_search,
+                    routeWidget: StudentSearch(),
+                    title: 'Student Search',
+                  ),
+                  Container(
+                    height: 55.0,
+                    padding: EdgeInsets.only(left:15.0, top: 15.0, bottom: 15.0),
+                    child: Row(
+                      children: <Widget>[
+                        Icon(Ionicons.ios_color_palette),
+                        Container(
+                          padding: EdgeInsets.only(left:30.0),
+                          child: Text(
+                            'Dark Mode',
+                            style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito'),
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(left: 50.0),
+                          child: Switch(
+                            value: darkMode,
+                            onChanged: (value) {
+                              setState(() {
+                                darkMode = value;
+                              });
+                              DynamicTheme.of(context).setBrightness(
+                                Theme.of(context).brightness == Brightness.light
+                                  ? Brightness.dark
+                                  : Brightness.light);
+                          }),
                         )
-                      : Container(),
-                      (admin !=null && admin == true)
-                      ? InkWell(
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) {
-                                return SafeArea(child: PostList('Drafts',widget.userId,_prefs));
-                            }));
-                          },
-                          child: Container(
-                            height: 55.0,
-                            padding: EdgeInsets.only(left:15.0),
-                            child: Row(
-                              children: <Widget>[
-                                Icon(Ionicons.ios_save),
-                                Container(
-                                  padding: EdgeInsets.only(
-                                    left: 15.0, top: 15.0, bottom: 15.0),
-                                  child: Text(
-                                    'Drafted Posts',
-                                    style: TextStyle(
-                                      fontSize: 20.0, fontFamily: 'Nunito'),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        )
-                      : Container(),
-                   InkWell(
+                      ],
+                    ),
+                  ),
+                  DrawerTile(
+                    icon: Entypo.info_with_circle,
+                    routeWidget: AboutPage(),
+                    title: 'About Us',
+                  ),
+                  Divider(),
+                  DrawerTile(
+                    icon: AntDesign.logout,
+                    onTap: signOut,
+                    title: 'Logout',
+                  ),
+                  /* InkWell(
                           onTap: () {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
@@ -666,7 +715,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                           )
                         ),
-                  /*InkWell(
+                  InkWell(
                           onTap: () {
                             Navigator.of(context).pop();
                             Navigator.of(context).push(MaterialPageRoute(
@@ -692,7 +741,7 @@ class _HomePageState extends State<HomePage> {
                               ],
                             ),
                           )
-                        ),*/
+                        ),
                   InkWell(
                     onTap: () async {
                           Navigator.of(context).pop();
@@ -715,36 +764,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                   ),
-                  Container(
-                    height: 55.0,
-                    padding: EdgeInsets.only(left:15.0, top: 15.0, bottom: 15.0),
-                    child: Row(
-                      children: <Widget>[
-                        Icon(Ionicons.ios_color_palette),
-                        Container(
-                          padding: EdgeInsets.only(left:15.0),
-                          child: Text(
-                            'Dark Mode',
-                            style: TextStyle(fontSize: 20.0, fontFamily: 'Nunito'),
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.only(left: 50.0),
-                          child: Switch(
-                            value: darkMode,
-                            onChanged: (value) {
-                              setState(() {
-                                darkMode = value;
-                              });
-                              DynamicTheme.of(context).setBrightness(
-                                Theme.of(context).brightness == Brightness.light
-                                  ? Brightness.dark
-                                  : Brightness.light);
-                          }),
-                        )
-                      ],
-                    ),
-                  ),
+                  
                   InkWell(
                     onTap: () async{
                       Navigator.of(context).pop();
@@ -772,7 +792,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   ),
-                  Divider(),
+                  
                   InkWell(
                     onTap: () {
                       signOut();
@@ -794,6 +814,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     )
                   )
+                  */
               ],
             ),
           ),
@@ -830,7 +851,7 @@ class _HomePageState extends State<HomePage> {
         // ): Container(
         ):
         FutureBuilder(
-          future: DBProvider().getAllPosts(),
+          future: DBProvider().getAllPostsWithoutPermissions(),
           builder: (context, snapshot) {
             return StreamBuilder(
               stream: userData.watch(key: 0),
@@ -991,10 +1012,10 @@ class _HomePageState extends State<HomePage> {
                 if(id!="" || id!= null||id.isNotEmpty){
                   await showPermissionNotification(message);
                 }
-                return await  DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+                return await DBProvider().newPost(postsFromJson(json.encode(data)));
               }
               else{
-                showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
+                // showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
                 return 1;
               }
             });
@@ -1011,10 +1032,10 @@ class _HomePageState extends State<HomePage> {
             if(id!="" || id!= null||id.isNotEmpty){
                     await showPermissionNotification(message);
                   }
-              return await  DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+              return await DBProvider().newPost(postsFromJson(json.encode(data)));
             }
             else{
-              showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
+              // showInfoToast('A request has been published but we are not able to load it,please, load it manually under requested permissions');
               return 1;
             }
       }else{
@@ -1022,7 +1043,7 @@ class _HomePageState extends State<HomePage> {
       }
     } 
       else  if(data['type'] == 'delete'){
-        await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
+        // await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
          await DBProvider().deletePost(data['id']);
         }else{
           if(data['fetchFF'] == 'true'){
@@ -1035,9 +1056,9 @@ class _HomePageState extends State<HomePage> {
                 if(data.containsKey("endTime")){
                   data['endTime'] = (data['endTime'] is String)? double.parse(data['endTime']).round() :data['endTime'];
                 }
-                if(ids.contains(id)) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(
-                  postsSortFromJson(json.encode(data))
-                );
+                // if(ids.contains(id)) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(
+                //   postsSortFromJson(json.encode(data))
+                // );
                 await DBProvider().newPost(postsFromJson(json.encode(data)));
                 message.update('priority', (v)=>'max',ifAbsent: ()=>'max');
                 if(id!="" || id!= null||id.isNotEmpty){
@@ -1066,11 +1087,11 @@ class _HomePageState extends State<HomePage> {
               if(data.containsKey("endTime")){
                 data['endTime'] = (data['endTime'] is String)? double.parse(data['endTime']).round() :data['endTime'];
               }
-              if((ids.contains(id) && allCouncilData.coordOfCouncil.contains(data['council'])) || allCouncilData.level3.contains(id)){
-                DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
-              }else if(data['owner'] == id){
-                DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
-              }
+              // if((ids.contains(id) && allCouncilData.coordOfCouncil.contains(data['council'])) || allCouncilData.level3.contains(id)){
+              //   DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(data['id']);
+              // }else if(data['owner'] == id){
+              //   DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+              // }
               await DBProvider().newPost(postsFromJson(json.encode(data)));
               if(id!="" || id!= null||id.isNotEmpty){
                     await showNotification(message);
