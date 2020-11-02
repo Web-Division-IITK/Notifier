@@ -99,7 +99,7 @@
         "misc": ["Students Research Convention", "Career Fair", "Academics and Career Council"]
     },
     "cs": {
-        "level2": [],
+        "level2": ["councel"],
         "entity": [],
         "misc": [
             "Counselling Service"
