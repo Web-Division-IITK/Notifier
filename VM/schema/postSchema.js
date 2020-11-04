@@ -7,10 +7,10 @@ var post = new Schema({
     council: {type: String, required: true},
     sub: {type: [String], required: true},
     body: {type: String, required: true},
-    author: {type: String, required: false}, // check
+    author: {type: String},
     url: {type: String, default: ''},
     type: {type: String, default: 'permission'}, // pre-defined values
-    priority: {type: String, required: false}, // pre-defined values
+    priority: {type: Boolean, default: false},
     owner: {type: String, required: true}, // check
     message: {type: String, required: true},
     startTime: {type: String, default: ''},

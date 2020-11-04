@@ -5,6 +5,7 @@ const USER = require('./schema/userSchema.js');
 const POST = require('./schema/postSchema.js');
 const PEOPLE = require('./schema/peopleSchema.js');
 const SUSER = require('./schema/suserSchema.js');
+const PREF = require('./schema/prefsSchema.js');
 const fs=require('fs');
 let express = require('express');
 let bodyParser = require('body-parser');
@@ -36,6 +37,10 @@ var port = 8080;
 port = process.env.PORT;
 if (port == null || port == "") {port = 8080};
 
+/**
+ * Add user entry to 'USER' collection.
+ * @param {Object} userdata : All fields in USER Schema
+ */
 function createUsers(userdata) {
     let promise = new Promise((resolve, reject) => {
         userdata._id=new mongoose.Types.ObjectId()
@@ -51,6 +56,9 @@ function createUsers(userdata) {
     return promise
 }
 
+/**
+ * Returns all the documents from USER Collection
+ */
 function getAllStudData(){
     var promiseforcheck = new Promise(function (resolve, reject) {
         var userrecord = USER.find({}, function (err, docs) {
@@ -60,6 +68,10 @@ function getAllStudData(){
     return promiseforcheck;
 }
 
+/**
+ * Updates USER document of the supplied Roll Number
+ * @param {Object} data : Requires "roll" and the data to update
+ */
 function updateStudData(data){
     var conditions = {roll: data.roll}
     var update = {$set : data}
@@ -72,6 +84,32 @@ function updateStudData(data){
     return prom;    
 }
 
+/**
+ * Generates a generic notification targetting a particular user.
+ * @param {Object} data : Requires "id" of the user and the "fetchField" info you want to send.
+ */
+async function genericNotification(data){
+    let fetchDoc = new Promise(function (resolve, reject) {
+        PREF.find({id: data.id}, function (err, docs) {
+            if (err || typeof docs[0] === 'undefined') reject(); else resolve(docs[0]);
+        });
+    });
+    let data = await fetchDoc;
+    let payload = {
+        data: {
+            fetchField: data.fetchField,
+            notfID: Date.now().toString(), // id of notification in integer
+        }
+    }
+    payload["tokens"] = data.deviceid;
+    await fcm.sendMulticast(payload);
+}
+
+/**
+ * Checks if the user exists in the system
+ * @param {String} id  : CC-id
+ * @param {String} uid : Firebase UID
+ */
 async function approveDef(id, uid){
     let fetchDoc = new Promise(function (resolve, reject) {
         SUSER.find({id, uid}, function (err, docs) {
@@ -81,6 +119,10 @@ async function approveDef(id, uid){
     return fetchDoc;
 }
 
+/**
+ * Checks if the data in the post is valid.
+ * @param {Object} data : Requires "council", "sub"
+ */
 async function validatePost(data){
     if(!structure.councils.includes(data.council)) return false;
     let mentity = structure[data.council].entity.concat(structure[data.council].misc);
@@ -92,11 +134,17 @@ async function validatePost(data){
     return true;
 }
 
+/**
+ * Checks if the poster has sufficient permissions to create the post.
+ * @param {Object} data : Requires "auth", "owner", "council", "sub"
+ */
 async function postingVerification(data){
     let k = await approveDef(data.auth.id, data.auth.uid);
     if(!k) return false;
+    if(data.owner != data.auth.id) return false;
     if(structure.level3.includes(data.auth.id)) return true;
     if(structure[data.council].level2.includes(data.auth.id)) return true;
+    if(data.priority) return false;
     let fetchDoc = new Promise(function (resolve, reject) {
         PEOPLE.find({id: data.auth.id}, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') {k=false; resolve({});} else resolve(docs[0]);
@@ -109,6 +157,10 @@ async function postingVerification(data){
     return true;
 }
 
+/**
+ * Checks if the person has sufficient permissions to delete a post.
+ * @param {Object} data : Requires "auth", "council", "sub"
+ */
 async function deletionVerification(data){
     let k = await approveDef(data.auth.id, data.auth.uid);
     if(!k) return false;
@@ -125,6 +177,10 @@ async function deletionVerification(data){
     return true;
 }
 
+/**
+ * Verifies if the Firebase UID and user emails correspond.
+ * @param {*} data : Requires "uid", "email"
+ */
 async function authVerify(data){
     let userRec = await auth.getUser(data.uid);
     userRec = userRec.toJSON();
@@ -132,6 +188,10 @@ async function authVerify(data){
     return true;
 }
 
+/**
+ * Checks if the person giving posting rights has them hiself.
+ * @param {Object} data : Requires "auth", "council"
+ */
 async function elevationVerify(data){
     let k = await approveDef(data.auth.id, data.auth.uid);
     if(!k) return false;
@@ -140,6 +200,10 @@ async function elevationVerify(data){
     return false;
 }
 
+/**
+ * Verifies if the person approving has sufficient rights
+ * @param {Object} data : Requires "auth", "id", "council"
+ */
 async function verifyApproval(data){
     if(!(await approveDef(data.auth.id, data.auth.uid))) return false;
     if(structure.level3.includes(data.auth.id)) return true;
@@ -150,6 +214,18 @@ async function verifyApproval(data){
     });
     let postDoc = await fetchDoc;
     if(structure[postDoc.council].level2.includes(data.auth.id)) return true;
+    return false;
+}
+
+async function approveDraft(data){
+    if(!(await approveDef(data.auth.id, data.auth.uid))) return false;
+    let fetchDoc = new Promise(function (resolve, reject) {
+        POST.find({id: data.id}, function (err, docs) {
+            if (err || typeof docs[0] === 'undefined') reject(); else resolve(docs[0]);
+        });
+    });
+    let postDoc = await fetchDoc;
+    if(data.auth.id == postDoc.owner) return true;
     return false;
 }
 
@@ -222,7 +298,7 @@ async function getPeople(data){
     return fetchDoc;
 }
 
-async function makePost(data){
+async function makePost(data, ptype="permission"){
     let notfID = Date.now();
     let datax = {
         "title": data.title,
@@ -239,7 +315,7 @@ async function makePost(data){
         "endTime": data.endTime,
         "notfID": notfID,
         "timeStamp": notfID,
-        "type": "permission",
+        "type": ptype,
         "id": uuidv4()
     }
     var addToPost = new Promise((resolve, reject) => {
@@ -255,7 +331,7 @@ async function makePost(data){
     await addToPost;
     var addToPeople = new Promise((resolve, reject) => {
         let coun = "posts." + datax["council"].toString();
-        let update = {};
+        let update = {$push: {}};
         update["$push"][coun] = datax["id"];
         PEOPLE.update({id: datax.owner}, update, {multi : false}, function(err, numAffected){
             resolve();
@@ -263,6 +339,10 @@ async function makePost(data){
     })
     await addToPeople;
     await sendToTopicUpdate(datax.id);
+    await genericNotification({
+        id: data.owner,
+        fetchField: "people"
+    });
     return datax.id;
 }
 
@@ -299,7 +379,7 @@ async function deletePost(data){
     await deletePost;
     var addToPeople = new Promise((resolve, reject) => {
         let coun = "posts." + data["council"].toString();
-        let update = {};
+        let update = {$pull: {}};
         update["$pull"][coun] = data["id"];
         PEOPLE.update({id: data.owner}, update, {multi : false}, function(err, numAffected){
             resolve();
@@ -307,6 +387,10 @@ async function deletePost(data){
     })
     await addToPeople;
     await sendToTopicDelete(data.id, data.owner, data.sub);
+    await genericNotification({
+        id: data.owner,
+        fetchField: "people"
+    });
     return data.id;
 }
 
@@ -344,6 +428,14 @@ async function elevatePerson(data){
         })
     })
     await updatePeep;
+    await genericNotification({
+        id: data.id,
+        fetchField: "suser"
+    });
+    await genericNotification({
+        id: data.id,
+        fetchField: "people"
+    });
     return data.id;
 }
 
@@ -384,12 +476,39 @@ async function createAccount(data){
         })
     })
     await addToSuser;
+    datax = {uid: data.uid,id}
+    var addToPrefs = new Promise((resolve, reject) => {
+        let newpref = new PREF(datax);
+        newpref.save((err) => {
+            if (err) {
+                console.log(err)
+                reject()
+            }
+            resolve()
+        })
+    })
+    await addToPrefs;
     await linkAccount(datax);
 }
 
 async function approvePosts(data){
     let datax = {
         "type": "create",
+        "timeStamp": Date.now()
+    }
+    var addToPost = new Promise((resolve, reject) => {
+        POST.update({id: data.id}, datax, {multi : false}, function(err, numAffected){
+            resolve();
+        })
+    })
+    await addToPost;
+    await sendToTopicUpdate(data.id);
+    return data.id;
+}
+
+async function publishDraft(data){
+    let datax = {
+        "type": "permission",
         "timeStamp": Date.now()
     }
     var addToPost = new Promise((resolve, reject) => {
@@ -409,6 +528,10 @@ async function updatePrefs(data){
         })
     })
     await updateRef;
+    await genericNotification({
+        id: data.auth.id,
+        fetchField: "suser"
+    });
     return data.auth.id;
 }
 
@@ -445,6 +568,37 @@ async function fetchPostUsingTypeCouncil(data){
     return fetchDoc;
 }
 
+async function storeDevice(data){
+    let datax = {$addToSet: {deviceid: data.deviceid}}
+    var addToPref = new Promise((resolve, reject) => {
+        PREF.update({id: data.auth.id, uid: data.auth.uid}, datax, {multi : false}, function(err, numAffected){
+            resolve();
+        })
+    })
+    await addToPref;
+    return data.deviceid;
+}
+
+async function updateSData(data){
+    let datax = {reminder: data.reminder, bookmark: data.bookmark}
+    var addToPref = new Promise((resolve, reject) => {
+        PREF.update({id: data.auth.id, uid: data.auth.uid}, datax, {multi : false}, function(err, numAffected){
+            resolve();
+        })
+    })
+    await addToPref;
+    return data.deviceid;
+}
+
+async function fetchSData(data){
+    let fetchDoc = new Promise(function (resolve, reject) {
+        PREF.find({id: data.auth.id, uid:data.auth.uid}, function (err, docs) {
+            if (err || typeof docs[0] === 'undefined') resolve(false); resolve(docs[0]);
+        });
+    });
+    return fetchDoc;
+}
+
 app.post('/makePost', async (req, res)=>{
     let data = req.body;
     let v = await validatePost(data);
@@ -468,6 +622,22 @@ app.post('/deletePost', async (req, res)=>{
     let v = await deletionVerification(data);
     if(!v) res.send("Fuck Off Impostor!");
     res.send(await deletePost(data));
+})
+
+app.post('/makeDraft', async (req, res)=>{
+    let data = req.body;
+    let v = await validatePost(data);
+    if(!v) res.send("Fuck Off Impostor!");
+    v = await postingVerification(data);
+    if(!v) res.send("Fuck Off Impostor!");
+    res.send(await makePost(data, "draft"));
+})
+
+app.post('/publishDraft', async(req, res)=>{
+    let data = req.body;
+    let v = await approveDraft(data);
+    if(!v) res.send("Fuck Off Impostor!");
+    res.send(await publishDraft(data));
 })
 
 app.post('/elevatePerson', async (req, res)=>{
@@ -522,6 +692,28 @@ app.post('/getPostWithTypeCouncil', async (req, res)=>{
     res.end();
 })
 
+app.post('/storeDevice', async (req, res)=>{
+    let data = req.body;
+    let v = await approveDef(data.auth.id, data.auth.uid);
+    if(!v) res.send("Fuck Off Impostor!");
+    res.send(await storeDevice(data));
+})
+
+app.post('/updateSData', async (req, res)=>{
+    let data = req.body;
+    let v = await approveDef(data.auth.id, data.auth.uid);
+    if(!v) res.send("Fuck Off Impostor!");
+    res.send(await updateSData(data));
+})
+
+app.post('/fetchSData', async (req, res)=>{
+    let data = req.body;
+    let v = await approveDef(data.auth.id, data.auth.uid);
+    if(!v) res.send("Fuck Off Impostor!");
+    res.json(await fetchSData(data));
+    res.end();
+})
+
 app.get('/getAllStudents', async (req, res)=>{
     res.json(await getAllStudData());
     res.end();
@@ -539,8 +731,8 @@ app.post('/updatePrefs', async (req, res)=>{
     res.send(await updatePrefs(data));
 })
 
-app.get('/hehe', (req,res)=>{
-    res.send("Testing project.... Working!");
+app.get('/dev', (req, res)=>{
+    res.send("DEV end-points: ENABLED.");
 })
 
 mongoose.connect(url, options, async function (err) {
