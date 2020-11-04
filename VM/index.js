@@ -102,6 +102,7 @@ async function genericNotification(data){
         }
     }
     payload["tokens"] = data.deviceid;
+    if(payload["tokens"]!=[])
     await fcm.sendMulticast(payload);
 }
 
@@ -538,7 +539,7 @@ async function updatePrefs(data){
 async function fetchPostUsingID(data){
     let fetchDoc = new Promise(function (resolve, reject) {
         POST.find({id: data.id}, function (err, docs) {
-            if (err || typeof docs[0] === 'undefined') resolve(false); else resolve(docs[0]);
+            if (err || typeof docs[0] === 'undefined') resolve([]); else resolve(docs[0]);
         });
     });
     return fetchDoc;
@@ -547,7 +548,7 @@ async function fetchPostUsingID(data){
 async function fetchPostUsingTimestamp(data){
     let fetchDoc = new Promise(function (resolve, reject) {
         POST.find({timeStamp: {$gte: data.timeStamp}}, function (err, docs) {
-            if (err || typeof docs[0] === 'undefined') resolve(false); else {
+            if (err || typeof docs[0] === 'undefined') resolve([]); else {
                 docs.sort((a, b) => b.timeStamp - a.timeStamp);
                 resolve(docs);
             }
@@ -559,7 +560,7 @@ async function fetchPostUsingTimestamp(data){
 async function fetchPostUsingTypeCouncil(data){
     let fetchDoc = new Promise(function (resolve, reject) {
         POST.find({type: data.type, council: data.council}, function (err, docs) {
-            if (err || typeof docs[0] === 'undefined') resolve(false); else {
+            if (err || typeof docs[0] === 'undefined') resolve([]); else {
                 docs.sort((a, b) => b.timeStamp - a.timeStamp);
                 resolve(docs);
             }
@@ -593,7 +594,7 @@ async function updateSData(data){
 async function fetchSData(data){
     let fetchDoc = new Promise(function (resolve, reject) {
         PREF.find({id: data.auth.id, uid:data.auth.uid}, function (err, docs) {
-            if (err || typeof docs[0] === 'undefined') resolve(false); resolve(docs[0]);
+            if (err || typeof docs[0] === 'undefined') resolve([]); resolve(docs[0]);
         });
     });
     return fetchDoc;
