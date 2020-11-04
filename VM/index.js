@@ -94,14 +94,14 @@ async function genericNotification(data){
             if (err || typeof docs[0] === 'undefined') reject(); else resolve(docs[0]);
         });
     });
-    let data = await fetchDoc;
+    let data2 = await fetchDoc;
     let payload = {
         data: {
             fetchField: data.fetchField,
             notfID: Date.now().toString(), // id of notification in integer
         }
     }
-    payload["tokens"] = data.deviceid;
+    payload["tokens"] = data2.deviceid;
     if(payload["tokens"]!=[])
     await fcm.sendMulticast(payload);
 }
