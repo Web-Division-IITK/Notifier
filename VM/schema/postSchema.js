@@ -10,7 +10,7 @@ var post = new Schema({
     author: {type: String},
     url: {type: String, default: ''},
     type: {type: String, default: 'permission'}, // pre-defined values
-    priority: {type: Boolean, default: false},
+    isFeatured: {type: Boolean, default: false},
     owner: {type: String, required: true}, // check
     message: {type: String, required: true},
     startTime: {type: String, default: ''},

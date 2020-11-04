@@ -145,7 +145,7 @@ async function postingVerification(data){
     if(data.owner != data.auth.id) return false;
     if(structure.level3.includes(data.auth.id)) return true;
     if(structure[data.council].level2.includes(data.auth.id)) return true;
-    if(data.priority) return false;
+    if(data.isFeatured) return false;
     let fetchDoc = new Promise(function (resolve, reject) {
         PEOPLE.find({id: data.auth.id}, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') {k=false; resolve({});} else resolve(docs[0]);
@@ -250,7 +250,7 @@ async function sendToTopicUpdate(id){
             notfID: data.notfID.toString(), // id of notification in integer
             id: data.id,
             sub: data.sub[0],
-            priority: "",
+            isFeatured: "",
             tags: "",
             body: "",
             author: "",
@@ -309,7 +309,7 @@ async function makePost(data, ptype="permission"){
         "body": data.body,
         "author": data.author,
         "url": data.url,
-        "priority": data.priority,
+        "isFeatured": data.isFeatured,
         "owner": data.owner,
         "message": data.message,
         "startTime": data.startTime,
@@ -355,7 +355,7 @@ async function editPost(data){
         "sub": data.sub,
         "body": data.body,
         "url": data.url,
-        "priority": data.priority,
+        "isFeatured": data.isFeatured,
         "message": data.message,
         "startTime": data.startTime,
         "endTime": data.endTime,
