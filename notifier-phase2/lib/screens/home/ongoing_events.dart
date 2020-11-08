@@ -4,14 +4,14 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home/upcoming_events.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
 
 
-checkDateForONisBetween(DateTime startTime,DateTime endTime,PostsSort postsSort){
+checkDateForONisBetween(DateTime startTime,DateTime endTime,Posts posts){
   if(startTime.isBefore(DateTime.now()) && endTime.isAfter(DateTime.now())){
     return true;
   }else{
@@ -22,7 +22,7 @@ checkDateForONisBetween(DateTime startTime,DateTime endTime,PostsSort postsSort)
 
 class OnGoingEventPage extends StatefulWidget {
   // final Function load;
-  // // final List<PostsSort> array;
+  // // final List<posts> array;
   // final Stream stream;
   // OnGoingEventPage({@required this.stream,/*this.array*/});
   @override
@@ -31,8 +31,8 @@ class OnGoingEventPage extends StatefulWidget {
 
 class _OnGoingEventPageState extends State<OnGoingEventPage> with AutomaticKeepAliveClientMixin<OnGoingEventPage>{
 
-  final GlobalKey<AnimatedListState> _oneventKey = GlobalKey<AnimatedListState>();
-  List<PostsSort> array = [];
+  final GlobalKey<AnimatedListState> oneventKey = GlobalKey<AnimatedListState>();
+  List<Posts> array = [];
   // StreamController streamController = StreamController.broadcast();
   @override
   bool get wantKeepAlive => true;
@@ -46,74 +46,41 @@ class _OnGoingEventPageState extends State<OnGoingEventPage> with AutomaticKeepA
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title:Text('On Going Events'),
+        title:Text('Ongoing Events'),
         centerTitle: true,
       ),
       body: Container(
+        height: MediaQuery.of(context).size.height,
         child: FutureBuilder(
           future: _fetchData(),
-          builder: (context,AsyncSnapshot<List<PostsSort>> snapshot) {
-            // streamController.stream.listen((onData){});
+          builder: (context,AsyncSnapshot<List<Posts>> snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
-                if(snapshot == null || snapshot.data == null || snapshot.data.length ==0){
-                  // streamController.close();
-                  return Container(
-                    height: MediaQuery.of(context).size.height*0.8,
-                    // height: double.maxFinite,
-                    child: Center(child: Text('No ongoing events right now')),
+                if(!(snapshot == null || snapshot.data == null || snapshot.data.length ==0)){
+                  return RefreshIndicator(
+                    onRefresh: ()async{
+                      return callBack();
+                    },
+                    child: Container(
+                      height: MediaQuery.of(context).size.height - 88,
+                      child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        child: Center(child: Padding(
+                      padding: EdgeInsets.only(top: (MediaQuery.of(context).size.height - 88)*0.45),
+                          child: Text('No ongoing events right now'),
+                        ))),
+                    ),
                   );
                 }else{
-                  // if(streamController.isClosed){
-                  //   streamController.addStream(Stream.periodic(Duration(minutes: 1)));
-                  // }
-                  return LiquidPullToRefresh(
-                    showChildOpacityTransition: false,
+                  return RefreshIndicator(
                     onRefresh: ()async{
-                    callBack();
+                      return callBack();
                     },
-                    child: ListView(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      children: <Widget>[
-                        snapshot.data == null ||snapshot.data.length == 0?
-                        Container(
-                          height: MediaQuery.of(context).size.height*0.8,
-                          // height: double.maxFinite,
-                          child: Center(child: Text('No ongoing events right now')),
-                        ):
-                        AnimatedList(
-                          shrinkWrap: true,
-                          key: _oneventKey,
-                          physics: NeverScrollableScrollPhysics(),
-                          initialItemCount: snapshot.data.length,
-                          itemBuilder: (context,index,animation){
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              child: 
-                              (snapshot.data == null ||snapshot.data.length == 0)?
-                              Container(
-                                child: Center(child: Text('No ongoing events right now')),
-                              ):
-                              StreamBuilder(
-                                stream: Stream.periodic(Duration(minutes: 1)),
-                                builder: (context, snapsht) {
-                                  return ListItemOnGoing(
-                                    // streamController:streamController,
-                                    post: snapshot.data[index],
-                                    array: snapshot.data,
-                                    callBack: callBack,
-                                    eventKey: _oneventKey,
-                                    index: index, 
-                                  );
-                                }
-                              ), 
-                            );
-                          }
-                        ),
-                      ],
-                    ), 
-                    
+                    child: Container(
+                      height: MediaQuery.of(context).size.height - 88,
+                      child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        child: list(snapshot))),
                   );
                 }
                 break;
@@ -127,7 +94,40 @@ class _OnGoingEventPageState extends State<OnGoingEventPage> with AutomaticKeepA
       ),
     );
   }
-  Future<List<PostsSort>> _fetchData()async{
+  Widget list(snapshot){
+    return AnimatedList(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.only(top: 16),
+                            key: oneventKey,
+                            physics: NeverScrollableScrollPhysics(),
+                            initialItemCount: snapshot.data.length,
+                            itemBuilder: (context,index,animation){
+                              // index =0;
+                              return SizeTransition(
+                                sizeFactor: animation,
+                                child: 
+                                (snapshot.data == null ||snapshot.data.length == 0)?
+                                Container(
+                                  child: Center(child: Text('No ongoing events right now')),
+                                ):
+                                StreamBuilder(
+                                  stream: Stream.periodic(Duration(minutes: 1)),
+                                  builder: (context, snapsht) {
+                                    return ListItemOnGoing(
+                                      // streamController:streamController,
+                                      post: snapshot.data[index],
+                                      array: snapshot.data,
+                                      callBack: callBack,
+                                      eventKey: oneventKey,
+                                      index: index, 
+                                    );
+                                  }
+                                ), 
+                              );
+                            }
+                          );
+  }
+  Future<List<Posts>> _fetchData()async{
     return await DatabaseProvider().getAllPostsForOngoingEvent().then((list){
       if(list == null || list.length == 0){
         return [];
@@ -176,8 +176,8 @@ class _OnGoingEventPageState extends State<OnGoingEventPage> with AutomaticKeepA
 }
 
 class ListItemOnGoing extends StatefulWidget {
-  final PostsSort post;
-  final List<PostsSort> array;
+  final Posts post;
+  final List<Posts> array;
   final GlobalKey<AnimatedListState> eventKey;
   // final StreamController streamController;
   final int index;
@@ -213,7 +213,7 @@ Duration minutes;
   // }
   @override
   Widget build(BuildContext context) {
-    // List<PostsSort> arrayw = [];
+    // List<Posts> arrayw = [];
     // widget.array.forEach((f){
     //   arrayw.add(f.post);
     // });
@@ -228,9 +228,9 @@ Duration minutes;
         onTap: (){
           return Navigator.of(context).push(
             MaterialPageRoute(builder: (context){
-              return FeatureDiscovery(child: PostDescription(listOfPosts: widget.array, type: 'reminder'));
+              return FeatureDiscovery(child: PostDescription(listOfPosts: widget.array, type: PostDescType.REMINDER));
             })
-          );
+          ).then((value) => widget.callBack());
         },
         child: Container(
           width: double.maxFinite,
@@ -238,13 +238,13 @@ Duration minutes;
             borderRadius: BorderRadius.circular(16.0),
           ),
           constraints: BoxConstraints(
-            minHeight: 80.0,
+            minHeight: 100.0,
           ),
           padding: EdgeInsets.all(10.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                AutoSizeText(widget.post.sub,
+                AutoSizeText(widget.post.sub[0].toString(),
                   style: TextStyle(
                     color: Theme.of(context).brightness == Brightness.light
                               ? Colors.blueGrey
@@ -252,6 +252,7 @@ Duration minutes;
                     fontSize: 10.0,
                   ),
                 ),
+                SizedBox(height: 5),
                 Text(widget.post.title,
                   style: TextStyle(
                     fontSize: 18.0,

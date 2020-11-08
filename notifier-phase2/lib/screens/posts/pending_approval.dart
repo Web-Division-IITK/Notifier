@@ -2,18 +2,19 @@ import 'dart:convert';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:feature_discovery/feature_discovery.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:notifier/constants.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/posts/create_edit_posts.dart';
+import 'package:notifier/screens/posts/post_desc.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
 import 'package:notifier/widget/showtoast.dart';
@@ -51,14 +52,13 @@ class _PendingApprovalState extends State<PendingApproval>{
               GetPosts(
                 queryColumn: 'council', queryData: allCouncilData.coordOfCouncil[0]),
                islevel2, id),
-            builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
+            builder: (context,AsyncSnapshot<List<Posts>> snapshot){
               switch (snapshot.connectionState) {
                 case ConnectionState.done:
-                  if(snapshot == null || snapshot.data == null || snapshot.data.length == 0){
-                    return LiquidPullToRefresh(
-                      showChildOpacityTransition: false,
+                  if((snapshot == null || snapshot.data == null || snapshot.data.length == 0)){
+                    return RefreshIndicator(
                       onRefresh: ()async{
-                        if(islevel2 ){
+                        // if(islevel2 ){
                           if(time ==null){
                             await getDataNotfs();
                             setState(() {});
@@ -69,13 +69,14 @@ class _PendingApprovalState extends State<PendingApproval>{
                             Future.delayed(Duration(seconds:2),()=>true);
                           }
                           time = DateTime.now();
-                        }else{
-                          Future.delayed(Duration(seconds: 2),() => setState(() {}));
-                        }
+                        // }else{
+                        //   Future.delayed(Duration(seconds: 2),() => setState(() {}));
+                        // }
                       },
                       child: ListView(
                         children: <Widget>[
                           Container(
+                            // height: MediaQuery.of(context).size.height - 85,
                             padding:EdgeInsets.only(top:MediaQuery.of(context).size.height*0.4,),
                             child: Center(child: islevel2?Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -94,11 +95,11 @@ class _PendingApprovalState extends State<PendingApproval>{
                     print(snapshot.data);
                     
                     // snapshot.data.retainWhere((test)=> allCouncilData.subCouncil[allCouncilData.coordOfCouncil[0]].coordiOfInCouncil.contains(test.sub));
-                    return LiquidPullToRefresh(
+                    return RefreshIndicator(
                       // backgroundColor: Theme.of(context).accentColor,
                       // showChildOpacityTransition: false,
                       onRefresh: ()async{
-                        if(islevel2){
+                        // if(islevel2){
                           if(time ==null){
                             await getDataNotfs();
                             setState(() {});
@@ -109,18 +110,23 @@ class _PendingApprovalState extends State<PendingApproval>{
                             Future.delayed(Duration(seconds:2),()=>true);
                           }
                           time = DateTime.now();
-                        }else{
-                          Future.delayed(Duration(seconds: 2),() => setState(() {}));
-                        }
+                        // }else{
+                        //   Future.delayed(Duration(seconds: 2),() => setState(() {}));
+                        // }
                       },
-                      child: ListView(
-                        shrinkWrap: true,
-                        children: <Widget>[
-                          tiles(
-                            // List.generate(20, (index)=>snapshot.data[0]).toList()
-                            snapshot.data
+                      child: Container(
+                        height: MediaQuery.of(context).size.height - 88,
+                        child: SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                          child: Column(
+                            children: [
+                              tiles(
+                                // List.generate(20, (index)=>snapshot.data[0]).toList()
+                                snapshot.data
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     );
                     // );
@@ -137,14 +143,16 @@ class _PendingApprovalState extends State<PendingApproval>{
     );
     // });
   }
-  Widget tiles(List< PostsSort> postAccToCouncil) {
+  Widget tiles(List< Posts> postAccToCouncil) {
     final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
     return AnimatedList(
       physics: NeverScrollableScrollPhysics(),
+      // physics: AlwaysScrollableScrollPhysics(),
       shrinkWrap: true,
       key: _listKey,
-      initialItemCount: postAccToCouncil.length,
+      initialItemCount: postAccToCouncil.length ,
       itemBuilder: (BuildContext context, index,animation) {
+        // index = 0;
         var arrayOfPosts = postAccToCouncil.toList();
         return SizeTransition(
           sizeFactor: animation,
@@ -183,6 +191,7 @@ class _PendingApprovalState extends State<PendingApproval>{
             direction: DismissDirection.endToStart,
             key: Key(arrayOfPosts[index].id),
             confirmDismiss: (DismissDirection direction){
+              // TODO also remove post from arrayu of post
               return confirmDismissDialog(arrayOfPosts[index],_listKey,index);
             },
             child: Card(
@@ -194,8 +203,13 @@ class _PendingApprovalState extends State<PendingApproval>{
                 borderRadius: BorderRadius.circular(16.0),
                 onTap: () {
                    Navigator.of(context).push(MaterialPageRoute(builder: (context){
-                            return CreateEditPosts(/*islevel2?'permission':*/'Create', index, arrayOfPosts[index],title: 'perm',); 
-                          }));
+                    return arrayOfPosts[index].owner == id?
+                    CreateEditPosts(islevel2? PostDescType.APPROVAL :PostDescType.CREATE_POSTS, index, arrayOfPosts[index],title: 'perm',)
+                    : FeatureDiscovery(child: 
+                      PostDescription(
+                        listOfPosts: arrayOfPosts, 
+                        type: PostDescType.APPROVAL,index: index,)); 
+                  }));
                
                 },
                 child: Stack(
@@ -222,7 +236,7 @@ class _PendingApprovalState extends State<PendingApproval>{
                             Container(
                               padding: EdgeInsets.fromLTRB(16.0, 8.0, 40.0, 0.0),
                               child: AutoSizeText(
-                                   postAccToCouncil[index].sub,
+                                   postAccToCouncil[index].sub[0].toString(),
 //                                  'Science and Texhnology Council',
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
@@ -299,7 +313,7 @@ class _PendingApprovalState extends State<PendingApproval>{
       },
     );
   }
-  confirmDismissDialog(PostsSort postsSort,_listKey,int index) {
+  confirmDismissDialog(Posts posts,_listKey,int index) {
     return showDialog<bool>(
       barrierDismissible: false,
         context: context,
@@ -365,12 +379,15 @@ class _PendingApprovalState extends State<PendingApproval>{
                               );
                               // if(!islevel2){
                                 Response res = await deletePost(
-                                  postsSort
+                                  posts
                                 );
                                 if (res.statusCode == 200) {
-                                  if(postsSort.url!=null) clearSelection(postsSort.url);
-                                  DBProvider().deletePost(postsSort.id);
+                                  if(posts.url!=null) clearSelection(posts.url);
+                                  DBProvider().deletePost(posts.id);
                                   showSuccessToast('Deleted post successfully');
+                                  setState(() {
+                                    
+                                  });
                                   return true;
                                 } else {
                                   showErrorToast('An error occurred while deleteing this post');
@@ -378,7 +395,7 @@ class _PendingApprovalState extends State<PendingApproval>{
                                   return false;
                                 }
                               // }else{
-                              //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+                              //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
                               //   showSuccessToast('Deleted post successfully');
                               //   return true;
                               // }
@@ -396,8 +413,8 @@ class _PendingApprovalState extends State<PendingApproval>{
   }
   Future<bool> clearSelection(String url) async {
     try {
-      StorageReference storageReference =
-        await FirebaseStorage.instance.getReferenceFromUrl(url);
+      Reference storageReference =
+         FirebaseStorage.instance.refFromURL(url);
       return await storageReference.delete().then((_) {
         return true;
       }).catchError((onError){
@@ -457,7 +474,7 @@ Future getDataNotfs()async{
   // else{
     try {
       Response res = await post(FETCH_PENDINGAPPR_POST_WITH_COUNCIL_API, headers: HEADERS, 
-        body: json.encode({TYPE: NOTF_TYPE_PERMISSION, POST_COUNCIL: allCouncilData.coordOfCouncil[0]})
+        body: json.encode({TYPE: NOTF_TYPE_PERMISSION, COUNCIL: allCouncilData.coordOfCouncil[0]})
       );
       print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
       print(res.body);
@@ -468,8 +485,15 @@ Future getDataNotfs()async{
       }else{
         var data = json.decode(res.body);
         data.forEach((post){
-          data.update(SUB, (v)=>v[0]);
-          DBProvider().newPost(postsFromJson(json.encode(post)));
+          post[TIMESTAMP] = (post[TIMESTAMP] is String)? double.parse(post[TIMESTAMP]).round() :post[TIMESTAMP];
+              if(post.containsKey(STARTTIME)){
+                post[STARTTIME] = (post[STARTTIME] is String)? double.parse(post[STARTTIME]).round() :post[STARTTIME];
+              }
+              if(post.containsKey(ENDTIME)){
+                post[ENDTIME] = (post[ENDTIME] is String)? double.parse(post[ENDTIME]).round() :post[ENDTIME];
+              }
+          // data.update(SUB, (v)=>v[0]);
+          DBProvider().insertPost(postsFromJson(json.encode(post)));
         });
       }
     } catch (e) {
@@ -492,5 +516,8 @@ Future getDataNotfs()async{
     //   print(onError);
     //   return 1;
     // });
+  }
+  else{
+    return await p1('5',owner: id) == false;
   }
 }

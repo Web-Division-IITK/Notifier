@@ -1,8 +1,13 @@
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
+import 'package:notifier/main.dart';
+import 'package:notifier/services/database.dart';
+import 'package:intl/intl.dart';
+import 'package:notifier/colors.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/constants.dart';
@@ -13,11 +18,11 @@ import 'package:notifier/screens/posts/post_desc.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 final Map<DateTime, List> _holidays = {
-  DateTime(2020, 1, 1): ['New Year\'s Day'],
-  DateTime(2020, 1, 6): ['Epiphany'],
-  DateTime(2020, 10, 14): ['Valentine\'s Day'],
-  DateTime(2020, 10, 21): ['Easter Sunday'],
-  DateTime(2020, 10, 22): ['Easter Monday'],
+  DateTime(2020, 1, 1): [Posts(title: 'New Year\'s Day')],
+  DateTime(2020, 1, 6): [Posts(title: 'Epiphany')],
+  DateTime(2020, 10, 14): [Posts(title: 'Valentine\'s Day')],
+  DateTime(2020, 10, 21): [Posts(title: 'Easter Sunday')],
+  DateTime(2020, 10, 22): [Posts(title: 'Easter Monday')],
 };
 
 class Calendar extends StatefulWidget {
@@ -26,18 +31,19 @@ class Calendar extends StatefulWidget {
 }
 
 class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
-  Map<DateTime, List<PostsSort>> _events;
-  List<PostsSort> _selectedEvents;
-  List<PostsSort> _personalEvents;
+  Map<DateTime, List<Posts>> _events;
+  List<Posts> _selectedEvents;
+  List<Posts> _selectedDayHolidays;
   AnimationController _animationController;
   CalendarController _calendarController;
-    final _selectedDay = DateTime.now();
+  DateTime _selectedDay = DateTime.now();
+  final DateTime _today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
     @override
   void initState() {
     super.initState();
     _events = {};
     _calendarController = CalendarController();
-
+    _selectedDay = DateTime(_selectedDay.year,_selectedDay.month,_selectedDay.day);
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -56,9 +62,11 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
   void _onDaySelected(DateTime day, List events, List holidays) {
     print('CALLBACK: _onDaySelected');
     // print(events);
+    _selectedDay = DateTime(day.year,day.month,day.day);
     print(holidays);
     print(_events);
     setState(() {
+      _selectedDayHolidays = _holidays[_selectedDay]?.cast<Posts>();
       _selectedEvents = _events[DateTime(day.year,day.month,day.day)]??[];
     });
   }
@@ -77,6 +85,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
     print(_events);
     setState(() {
       print('setting state .... ');
+        _selectedDayHolidays = _holidays[_selectedDay]?.cast<Posts>();
         _selectedEvents = _events[DateTime(_selectedDay.year,_selectedDay.month,_selectedDay.day)]??[];
       } );
     
@@ -88,7 +97,8 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        actions: [
+        title: Text("Schedule"),
+        /*actions: [
           Switch(value: Theme.of(context).brightness == Brightness.dark,
            onChanged: (value){
              DynamicTheme.of(context).setBrightness(
@@ -96,43 +106,38 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
                                   ? Brightness.dark
                                   : Brightness.light);
            })
-        ],
+        ],*/
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: (){
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) => CreateEditEvent(
-              'create', 0, PostsSort(owner: id,)))).then((value) => setState((){}));
-        },
-        child: Icon(Icons.add),
-        tooltip: "Add event",
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: (){
+      //     Navigator.push(context, MaterialPageRoute(
+      //       builder: (context) => CreateEditEvent(
+      //         'create', 0, Posts(owner: id,)))).then((value) => setState((){}));
+      //   },
+      //   child: Icon(Icons.add),
+      //   tooltip: "Create event",
+      // ),
       body: Column(
         mainAxisSize: MainAxisSize.max,
         children: <Widget>[
-        // Switch out 2 lines below to play with TableCalendar's settings
-          //-----------------------
           Container(
             // height: MediaQuery.of(context).size.height * 0.45,
             child: _buildTableCalendar(),
           ),
-           // _buildTableCalendarWithBuilders(),
-          // const SizedBox(height: 8.0),
-          // _buildButtons(),
-          const SizedBox(height: 8.0),
-          Align(
-            alignment: Alignment.topRight,
-            child: FlatButton(
-              onPressed: (){}, 
-              child: Text(
-                'Check TimeTable',
-                style: TextStyle(
-                  color: Colors.blue,
-                ),
-              )
-            ),
-          ),
-          Expanded(child: _buildEventList()),
+          Divider(),
+          // Align(
+          //   alignment: Alignment.topRight,
+          //   child: FlatButton(
+          //     onPressed: (){}, 
+          //     child: Text(
+          //       'Check TimeTable',
+          //       style: TextStyle(
+          //         color: Colors.blue,
+          //       ),
+          //     )
+          //   ),
+          // ),
+          Expanded(child: _buildEvents()),
         ],
       )
     );
@@ -146,11 +151,9 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
       holidays: _holidays,
       startingDayOfWeek: StartingDayOfWeek.monday,
       calendarStyle: CalendarStyle(
-        selectedColor: Theme.of(context).accentColor,
-        todayColor: Theme.of(context).primaryColor,
-        markersColor: Theme.of(context).brightness == Brightness.dark?
-            Colors.amberAccent
-            : Colors.blueGrey[900],
+        selectedColor: CustomColors(context).accentColor,
+        todayColor: CustomColors(context).primaryColor,
+        markersColor: CustomColors(context).markerColor,
         outsideDaysVisible: false,
         holidayStyle: TextStyle().copyWith(color: Colors.red,fontWeight: FontWeight.w900),
         weekendStyle: TextStyle(color: Theme.of(context).brightness == Brightness.dark?
@@ -164,9 +167,9 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
           currentTime: date,
           theme: DatePickerTheme(
             itemHeight: 55,
-            backgroundColor: Theme.of(context).backgroundColor,
+            backgroundColor: CustomColors(context).bgColor,
             cancelStyle: TextStyle(
-              color: Theme.of(context).highlightColor,
+              color: CustomColors(context).textColor,
               fontSize: 20,
               fontFamily: 'Raleway'
             ),
@@ -176,7 +179,7 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
               fontFamily: 'Raleway'
             ),
             itemStyle: TextStyle(
-              color: Theme.of(context).highlightColor,
+              color: CustomColors(context).textColor,
               fontSize: 22,
               fontFamily: 'Raleway'
             ),
@@ -201,18 +204,44 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
         formatButtonTextStyle:
             TextStyle().copyWith(color: Colors.white, fontSize: 15.0),
         formatButtonDecoration: BoxDecoration(
-          color: Theme.of(context).primaryColor,
+          color: CustomColors(context).textColor,
           borderRadius: BorderRadius.circular(16.0),
         ),
         formatButtonVisible: false,
         centerHeaderTitle: true,
-        leftChevronIcon: Icon(Icons.chevron_left, color: Theme.of(context).highlightColor),
-        rightChevronIcon: Icon(Icons.chevron_right, color: Theme.of(context).highlightColor),
-        
+        leftChevronIcon: Icon(Icons.chevron_left, color: CustomColors(context).iconColor),
+        rightChevronIcon: Icon(Icons.chevron_right, color: CustomColors(context).iconColor),
+      ),
+      builders: CalendarBuilders(
+        holidayDayBuilder: (context, date, events) {
+          date = DateTime(date.year,date.month,date.day);
+          return Tooltip(
+            message: _holidays[date].length == 1 ?'${_holidays[date][0].title}' : '${_holidays[date][0].title}, ....' ,
+            child: Container(
+              margin: const EdgeInsets.all(4.0),
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                color: _selectedDay == date ?
+                    CustomColors(context).accentColor :
+                    (date == _today?
+                    CustomColors(context).primaryColor :
+                    Colors.transparent) ,
+              ),
+              child: Center(
+                child: Text(
+                  '${date.day}',
+                  style: TextStyle().copyWith(color: _selectedDay != date ?Colors.red:Colors.white,fontWeight: FontWeight.w900),
+                ),
+              ),
+            ),
+          );
+        },
       ),
       weekendDays: [DateTime.sunday],
       daysOfWeekStyle: DaysOfWeekStyle(
-        weekdayStyle: TextStyle(color: Theme.of(context).highlightColor),
+        weekdayStyle: TextStyle(color: CustomColors(context).textColor),
         weekendStyle: TextStyle(
           color: Theme.of(context).brightness == Brightness.dark?
             Colors.white70
@@ -233,12 +262,6 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
       holidays: _holidays,
       initialCalendarFormat: CalendarFormat.month,
       formatAnimation: FormatAnimation.slide,
-      startingDayOfWeek: StartingDayOfWeek.sunday,
-      availableGestures: AvailableGestures.all,
-      availableCalendarFormats: const {
-        CalendarFormat.month: '',
-        CalendarFormat.week: '',
-      },
       calendarStyle: CalendarStyle(
         outsideDaysVisible: false,
         weekendStyle: TextStyle().copyWith(color: Colors.blue[800]),
@@ -399,59 +422,223 @@ class _CalendarState extends State<Calendar> with TickerProviderStateMixin{
       ],
     );
   }
-
-  Widget _buildEventList() {
+  Widget _buildEvents() {
     return ListView(
       shrinkWrap: true,
       children: [
-        _selectedEvents == null || _selectedEvents.isEmpty ?
-          Container(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: ListTile(
-                  title: Text('No events for this date'),
-                  // onTap: () => Navigator.of(context).push(
-                  //   MaterialPageRoute(
-                  //     builder: (context){
-                  //       if()
-                  //     }
-                  //   )
-                  // ),
-                  onLongPress: (){
-                    //TODO open dialog to delete
-                  },
-                ),
+        Padding(
+          padding: const EdgeInsets.only(top:8.0, bottom: 10,left: 10),
+          child: Text('Saved Events',style:TextStyle(fontSize: 20),
+            // textAlign: TextAlign.center,
           )
+        ),
+        FutureBuilder(
+          future: DatabaseProvider().getAllEventsWithCouncil(
+            _selectedDay.millisecondsSinceEpoch, _selectedDay.add(Duration(hours: 23,minutes: 59)).millisecondsSinceEpoch,
+            NOTF_TYPE_CREATE
+          ),
+          builder: (context, AsyncSnapshot<List<Posts>> snapshot){
+            if(snapshot != null && 
+              snapshot.connectionState == ConnectionState.done){
+              if(snapshot.hasData){
+                return _buildEventList(snapshot.data?? [],false);
+              }else{
+                //TODO: implement for this and others
+                return _buildEventList([],false);
+              }
+            }
+            return Center(child: CircularProgressIndicator());
+          },
+        ),
+        _selectedDayHolidays != null && _selectedDayHolidays.isNotEmpty?
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top:8.0, bottom: 10,left: 10),
+              child: Text('Holidays',style:TextStyle(fontSize: 20),
+                // textAlign: TextAlign.center,
+              )
+            ),
+            _buildEventList(_selectedDayHolidays, true)
+          ],
+        ): Container(),
+        // Padding(
+        //   padding: const EdgeInsets.only(top:8.0, bottom: 10,left: 10),
+        //   child: Text('My Events',style:TextStyle(fontSize: 20),
+        //     // textAlign: TextAlign.center,
+        //   )
+        // ),
+        // FutureBuilder(
+        //   future: DatabaseProvider().getAllEventsWithCouncil(
+        //     _selectedDay.millisecondsSinceEpoch, _selectedDay.add(Duration(hours: 23,minutes: 59)).millisecondsSinceEpoch,
+        //     EVENT_TYPE
+        //   ),
+        //   builder: (context, AsyncSnapshot<List<Posts>> snapshot){
+        //     if(snapshot != null && 
+        //       snapshot.connectionState == ConnectionState.done){
+        //       if(snapshot.hasData){
+        //         return _buildEventList(snapshot.data?? [],true);
+        //       }else{
+        //         //TODO: implement for this and others
+        //         return _buildEventList([],true);
+        //       }
+        //     }
+        //     return Center(child: CircularProgressIndicator());
+        //   },
+        // ),
+      ],
+    );
+  }
+  Widget _buildEventList(List<Posts> _eventList,bool isCreated) {
+    void handleClick(String value,String _postId,DateTime date,int index) {
+        // print(date);
+        date = DateTime(date.year,date.month,date.day);
+        // print(date);
+        switch (value) {
+          case 'Delete': print("Delted");
+            // DatabaseProvider().deletePost(_postId);
+            if(_events[date] != null){
+              ReminderNotification('Event has been cancelled',id: _events[date][index].timeStamp.toSigned(31)).cancel;
+            // print(_calendarController.visibleEvents[date]);
+              if(_events[date].length != 1){
+                _events[date].removeAt(index);
+              }
+              // else _calendarController.visibleEvents.remove(date);
+              else setState(()=>_events.remove(date));
+              DatabaseProvider().deletePost(_postId);
+              DBProvider().updateQuery(GetPosts(queryColumn: REMINDER,queryData: 0,id: _postId));
+              // else setState(()=>_calendarController.visibleEvents.remove(date));
+              print(_calendarController.visibleEvents);
+            }
+            break;
+          case 'Settings':
+            break;
+        }
+    }
+    return Column(
+      children: [
+        _eventList == null || _eventList.isEmpty ?
+        Container(
+          margin:
+            const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: ListTile(
+            title: Text(
+            isCreated == true?
+            'You have\'t created any events for this date. Tap \'+\' button to create one!!!' :
+            'You don\'t have any saved event for this date',
+              textAlign: TextAlign.center,
+              style:TextStyle(
+                color: CustomColors(context).textColor
+              )
+            ),
+            enabled: false,
+          ),
+        )
         : Column(
-          children: _selectedEvents
-          .map((event) => Container(
-                decoration: BoxDecoration(
-                  border: Border.all(width: 0.8),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
+          children: List.generate(_eventList.length, 
+            (index) =>
+          /*)
+          _eventList
+          .map((event) =>*/ Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: CustomColors(context).textColor
+                )
+                // color: CustomColors(context).exapndedTileColor,
+              ),
+              width: MediaQuery.of(context).size.width,
                 margin:
-                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                    const EdgeInsets.symmetric(horizontal: 10.0, vertical: 4.0),
                 child: ListTile(
-                  title: Text(event.title),
+                  trailing: isCreated? null :
+                    PopupMenuButton<String>(
+                      onSelected: (value)=>handleClick(
+                        value,
+                        _eventList[index].id,
+                        DateTime.fromMillisecondsSinceEpoch(_eventList[index].startTime),
+                        index
+                      ),
+                      itemBuilder: (BuildContext context) {
+                        return {'Delete',}.map((String choice) {
+                          return PopupMenuItem<String>(
+                            value: choice,
+                            child: Text(choice),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  // },
+                  focusColor: CustomColors(context).accentColor,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: AutoSizeText(
+                    _eventList[index].title,
+                    // "bvv m nmmbjb nmbjk jb vhjv gb bj vgchb bnvjhbjfyhj  ghgjbvfjhfuihjb dtytuge5tfdsaweerdvb ghhkjnmnjiokljn ",
+                    maxLines: 1,
+                    maxFontSize: 17,
+                    minFontSize: 16,
+                    overflow: TextOverflow.ellipsis,
+                     style:TextStyle(
+                      color: CustomColors(context).textColor
+                    )
+                  ),
+                  subtitle: isCreated? 
+                  null
+                  : Row(
+                    children: [
+                      Flexible(
+                        // flex: 6,
+                        child: AutoSizeText(
+                          DateFormat("d/M/y hh:mm a").format(
+                            DateTime.fromMillisecondsSinceEpoch(_eventList[index].startTime)
+                          ).toUpperCase(),
+                          maxLines: 1,
+                        ),
+                      ),
+                      Text(" - "),
+                      Flexible(
+                        // flex: 5,
+                        child: AutoSizeText(
+                          DateFormat("d/M/y hh:mm a").format(
+                            DateTime.fromMillisecondsSinceEpoch(_eventList[index].endTime)
+                          ).toUpperCase(),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  enabled: !isCreated,
                   onTap: () =>Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context){
-                        if(event.type == NOTF_TYPE_CREATE){
+                        // if(_eventList[index].type == NOTF_TYPE_CREATE){
                           return FeatureDiscovery(
                             child: PostDescription(
-                              listOfPosts: [event], 
-                              type: 'display',
-                              index: 0,
+                              listOfPosts: _eventList, 
+                              type: PostDescType.DISPLAY,
+                              index:index,
                           ));
-                        }else{
-                          return EventDescription(
-                            listOfPosts: [event],
-                            type: 'display',
-                            index: 0,
-                          );
-                        }
+                        // }else{
+                        //   return EventDescription(
+                        //     listOfPosts: _eventList,
+                        //     type: 'display',
+                        //     index: index,
+                        //   );
+                        // }
                       }
                     )
+                  ).then((value)async{
+                    List<Posts> post = await DatabaseProvider().getAllEventsWithCouncil(
+                      _selectedDay.millisecondsSinceEpoch, _selectedDay.add(Duration(hours: 23,minutes: 59)).millisecondsSinceEpoch,
+                      NOTF_TYPE_CREATE
+                    );
+                    if(post == null || post.isEmpty)
+                      _calendarController.visibleEvents.remove(_selectedDay);
+                    else _calendarController.visibleEvents.update(_selectedDay, 
+                      (value) => value..addAll(post?.cast<dynamic>()), ifAbsent: () => post?.cast<dynamic>(),);
+                    setState(() {});
+                  }
                   ),
                 ),
               ))

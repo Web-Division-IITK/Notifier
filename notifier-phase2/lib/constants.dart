@@ -49,8 +49,8 @@ const String FETCH_POST_WITH_UID_API = URL_INITIALS + "getPostWithID";
 /// type = permission, council
 const String FETCH_PENDINGAPPR_POST_WITH_COUNCIL_API = URL_INITIALS + "getPostWithTypeCouncil";
 /// api to send device id token
-/// auth token
-const String SEND_DEVICE_TOKEN = URL_INITIALS + ""; // TODO at url
+/// auth, deviceid
+const String SEND_DEVICE_TOKEN = URL_INITIALS + "storeDevice"; // TODO at url
 // /// api to fetch post with persmission and counci with sub field being an array sent from me
 // const String FETCH_PENDINGAPPR_POST_WITH_COUNCIL_SUB_API = "";
 /// api to get student search data
@@ -108,6 +108,9 @@ const String NOTF_TYPE_PERMISSION = "permission";
 const String NOTF_TYPE_CREATE = "create";
 /// representation name of notification type = "delete"
 const String NOTF_TYPE_DELETE = "delete";
+const String NOT_FETCHFIELD = "fetchField";
+const String NOT_FETCHFIELD_PEOPLE = "people";
+const String NOT_FETCHFIELD_SUSER = "suser";
 /// representation name of type for notification
 const String TYPE = "type";
 /// representation name of notfID for notification
@@ -118,6 +121,10 @@ const String ID = "id";
 const String TITLE = "title";
 /// representation name of message for notification
 const String MESSAGE = "message";
+/// representation name of body for notification
+const String BODY = "body";
+/// representation name of body for notification
+const String URL = "url";
 /// representation name of priority for notification
 const String PRIORITY = "priority";
 /// representation name of isFeatured for notification
@@ -131,13 +138,21 @@ const String STARTTIME = "startTime";
 /// representation name of endTime field
 const String ENDTIME = "endTime";
 /// representation name for council field in post
-const String POST_COUNCIL = "council";
+const String COUNCIL = "council";
 /// representation name for sub field of post. [NOTE] This is an array
 const String SUB = "sub";
 /// representation name for owner field in post
 const String OWNER = "owner";
 /// representation name for author field in post
 const String AUTHOR = "author";
+/// representation name for author field in post
+const String TAGS = "tags";
+/// representation name for author field in post
+const String BOOKMARK = "bookmark";
+/// representation name for author field in post
+const String REMINDER = "reminder";
+const String IS_FETCHED = "isFetched";
+// {notification: {title: null, body: null}, data: {notfID: 1604501939375, fetchField: people, timeStamp: null}}
 
 
 /* SUPER USER FIELDS*/
@@ -151,6 +166,26 @@ const String NOT_VERIFIED = "notverified";
 const String EVENT_SUB = "personal_event";
 const String EVENT_COUNCIL = "calendar";
 const String EVENT_TYPE = "calendar";
+
+
+/* PostsDescription page types*/
+enum PostDescType{
+  NOTICE, // index = 0
+  DISPLAY, // index = 1
+  BOOKMARK, // index = 2
+  EVENT, // index = 3
+  NOTIFICATION, // index = 4
+  REMINDER, // index = 5
+  CREATE_POSTS, // index = 6
+  /// this is same as update
+  EDIT_POSTS, // index = 7
+  ALLPOSTS, // index 8
+  DRAFT_POSTS, // index = 9
+  POSTS, // index = 10
+  APPROVAL, // index = 11
+}
+const String UPDATE = "Update";
+const String DRAFTS = "Drafted";
 
 
 /* SQL DATABASE AND THEIR TABLE NAMES*/

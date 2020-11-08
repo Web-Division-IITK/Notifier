@@ -4,6 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
@@ -12,8 +13,8 @@ import 'package:notifier/services/functions.dart';
 import 'package:notifier/widget/showtoast.dart';
 
 class SearchPost extends StatefulWidget {
-  final List<PostsSort> list;
-  final String type;
+  final List<Posts> list;
+  final PostDescType type;
   SearchPost(this.list,this.type);
   @override
   _SearchPostState createState() => _SearchPostState();
@@ -21,8 +22,8 @@ class SearchPost extends StatefulWidget {
 
 class _SearchPostState extends State<SearchPost> {
   final _controller = TextEditingController();
-  List<PostsSort> array = [];
-  StreamController<List<PostsSort>> streamController = new StreamController();
+  List<Posts> array = [];
+  StreamController<List<Posts>> streamController = new StreamController();
   StreamController<String> streamControllerText = new StreamController();
   @override
   void initState() { 
@@ -218,7 +219,7 @@ class _SearchPostState extends State<SearchPost> {
       return;
     }else{
       widget.list.forEach((element){
-        if(element.sub.toLowerCase().contains(query) 
+        if(element.sub[0].toString().toLowerCase().contains(query) 
           || element.title.toLowerCase().contains(query)  
           || element.council.toLowerCase().contains(query)
           || element.tags.toLowerCase().contains(query)
@@ -243,16 +244,16 @@ class _SearchPostState extends State<SearchPost> {
 }
 
 class PostTile extends StatefulWidget {
-  final List<PostsSort> postArray;
+  final List<Posts> postArray;
   final int index;
-  final String type;
+  final PostDescType type;
   PostTile(this.index,this.postArray,this.type);
   @override
   _PostTileState createState() => _PostTileState(this.index,this.postArray);
 }
 
 class _PostTileState extends State<PostTile> {
-  final List<PostsSort> postArray;
+  final List<Posts> postArray;
   final int index;
   _PostTileState(this.index,this.postArray);
   Timer timer;
@@ -328,7 +329,7 @@ class _PostTileState extends State<PostTile> {
         // );
           return Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
-            return PostDescription(listOfPosts: postArray, type: 'display' + ' ${widget.type}',index: index,);
+            return PostDescription(listOfPosts: postArray, type: PostDescType.DISPLAY,index: index,);
           }));
         },
         child: Stack(
@@ -365,7 +366,7 @@ class _PostTileState extends State<PostTile> {
                   padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
                   child: AutoSizeText(
                     // timenot['club'],
-                      postArray[index].sub,
+                      postArray[index].sub[0].toString(),
                       // 'Science and Texhnology Council',
                       textAlign: TextAlign.start,
                       style: TextStyle(

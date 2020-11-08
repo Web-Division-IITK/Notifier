@@ -44,23 +44,38 @@ class Auth implements BaseAuth {
   Future<String> signIn(String email, String password) async {
     try {
       SharedPreferences userId = await SharedPreferences.getInstance();
-      AuthResult result = await _firebaseAuth.signInWithEmailAndPassword(
+      // AuthResult 
+      UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(
         email: email, password: password).timeout((Duration(seconds: 20)));
-        FirebaseUser user = result.user;
-      // if (user.isEmailVerified) {
-        _fcm.getToken().then((value) => print('DEVICE TOKEN IS: $value'));
+        User user = result.user;
+      if (user.emailVerified) {
+        _fcm.getToken().then((value)async{
+          print('DEVICE TOKEN IS: $value');
+          try{
+            Response res = await post(SEND_DEVICE_TOKEN,headers:HEADERS, body: json.encode({
+              "auth": {"id": user.email.replaceAll("@iitk.ac.in", ""),
+               "uid": user.uid},
+              "deviceid": value,
+            }));
+            print("....RESPONSE STATUSCODE FOR DEVICE TOKEN..... ${res.statusCode}");
+            print("...RESPONSE BODY.... ${res.body}");
+
+          }catch(e){
+            print(e);
+          }
+        });
         return await councilData().then((var v)async{
           
           await userId.setString(USERID, user.uid);
           return user.uid;
         });
         
-      // }else{
-      //   showInfoToast('Please verify your account in the link sent to email to begin');
-      //   await userId.setString(USERID, NOT_VERIFIED);
-      //   return NOT_VERIFIED;
-      // }
-    } catch (e) {
+      }else{
+        showInfoToast('Please verify your account in the link sent to email to begin');
+        await userId.setString(USERID, NOT_VERIFIED);
+        return NOT_VERIFIED;
+      }
+    }on FirebaseException catch (e) {
       print(e);
       switch(e?.code.toString()){
         case 'ERROR_WRONG_PASSWORD': showErrorToast("Wrong credentials ");
@@ -77,16 +92,20 @@ class Auth implements BaseAuth {
         return null;
       }
       // return null;
+    } catch(e){
+      print(e);
+      showErrorToast("Something went wrong !!! Please try again !!!");
+      return null;
     }
   }
 
   Future<String> signUp(String email, String password) async {
     final url = CREATE_USERDATA_API;
     try {
-      AuthResult result = await _firebaseAuth.createUserWithEmailAndPassword(
+      UserCredential result = await _firebaseAuth.createUserWithEmailAndPassword(
         email: email, password: password).timeout(Duration(seconds: 30));
-      FirebaseUser user = result.user;
-      // await user.sendEmailVerification();
+      User user = result.user;
+      await user.sendEmailVerification();
       final values = json.encode({"uid": user.uid,"email": email});
       try{
         Response res = await post(url,headers: HEADERS,body: values);
@@ -101,9 +120,9 @@ class Auth implements BaseAuth {
       }
         showInfoToast('Please verify your account in the link sent to email to begin');
         return null; 
-    } catch (e) {
-      print(e);
-      switch(e.code.toString()){
+    }on FirebaseException catch (e) {
+      print(e.toString() + 'catch2');
+      switch(e.code){
         case 'ERROR_WEAK_PASSWORD': showErrorToast("Please provide a more strong password with upto 6 charachters");
         return null;
         case 'ERROR_INVALID_EMAIL': showErrorToast("Provided email doesn't looks like an email");
@@ -113,6 +132,10 @@ class Auth implements BaseAuth {
         default: showErrorToast("Something went wrong !!! Please try again !!!");
         return null;
       }
+    }catch(e){
+      print(e);
+      showErrorToast("Something went wrong !!! Please try again !!!");
+      return null;
     }
   }
 
@@ -154,13 +177,13 @@ class Auth implements BaseAuth {
     }
   }
 
-  Future<void> sendEmailVerification() async {
-    FirebaseUser user = await _firebaseAuth.currentUser();
-    user.sendEmailVerification();
+  Future<void> sendEmailVerification() {
+    User user = _firebaseAuth.currentUser;
+    return user.sendEmailVerification();
   }
 
   Future<bool> isEmailVerified() async {
-    FirebaseUser user = await _firebaseAuth.currentUser();
-    return user.isEmailVerified;
+    User user = _firebaseAuth.currentUser;
+    return user.emailVerified;
   }
 }

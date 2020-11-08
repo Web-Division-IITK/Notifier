@@ -33,6 +33,7 @@ class _PreferencesState extends State<Preferences> {
   List<Widget> tabBarItem = [];
   List<Tab> prefsTabs = [];
   // var _councilsData;
+  int noOfTabs = 0;
   var _prefs;
   Box peopleBox ;
   // Box widget.usersBox ;
@@ -48,6 +49,10 @@ class _PreferencesState extends State<Preferences> {
   }
   @override
   void initState() {
+    widget.allCouncilData.subCouncil.values.toList().forEach((element) {
+      if(element.entity.length != 0)
+        noOfTabs++;
+    });
     _loading = false;
     _loadingWid = true;
     initPeopleBox();
@@ -56,15 +61,17 @@ class _PreferencesState extends State<Preferences> {
   }
   buildTabs() {
     for (var i in widget.allCouncilData.subCouncil.values.toList()) {
-      prefsTabs.add(
-        Tab(
-          child: Container(
-            width: MediaQuery.of(context).size.width*0.3,
-            child: Center(child: Text(convertToCouncilName(i.council.toString()),)),
-          )
-          
-        ),
-      );
+      if(i.entity.length != 0){
+        prefsTabs.add(
+          Tab(
+            child: Container(
+              width: MediaQuery.of(context).size.width*0.3,
+              child: Center(child: Text(convertToCouncilName(i.council.toString()),)),
+            )
+            
+          ),
+        );
+      }
       print(i.council);
       print(i.entity);
       for (var index = 0; index < i.entity.length; index++) {
@@ -87,7 +94,7 @@ class _PreferencesState extends State<Preferences> {
         ? AbsorbPointer(
           absorbing: _loading,
           child: DefaultTabController(
-              length: allCouncilData.subCouncil.length,
+              length: noOfTabs,
               child: Scaffold(
                   appBar: new AppBar(
                       title: new Text('Preferences'),
@@ -111,7 +118,8 @@ class _PreferencesState extends State<Preferences> {
                                 children: <Widget>[
                                   // ...tabBarItem.toList(),
                                   for (var i in widget.allCouncilData.subCouncil.values.toList())
-                                    listItem(i),
+                                    if(i.entity.length != 0)
+                                      listItem(i),
                                 ],
                               ),
                             ),

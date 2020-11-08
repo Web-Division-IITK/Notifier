@@ -232,7 +232,7 @@ launchMail(String mailId) async{
   print(mailId);
   // final String subject = "Subject:";
   //   final String stringText = "Same Message:";
-    String uri = 'mailto:administrator@gmail.com?subject=&body=';
+    String uri = 'mailto:$mailId?subject=&body=';
     if (await canLaunch(uri)) {
       await launch(uri);
     } else {

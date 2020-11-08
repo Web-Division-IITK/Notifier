@@ -5,8 +5,12 @@ import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/main.dart';
 import 'package:notifier/model/posts.dart';
@@ -18,10 +22,10 @@ import 'package:notifier/widget/showtoast.dart';
 
 class PostDescription extends StatefulWidget {
   /// list of posts which contains all posts for one post just pass the PostsSort parameter inside []
-  final List<PostsSort> listOfPosts;
+  final List<Posts> listOfPosts;
   /// index of the page that is to be displayed default is zero
   final int index;
-  final String type;
+  final PostDescType type;
   PostDescription({@required this.listOfPosts,@required this.type,this.index = 0});
   @override
   _PostDescriptionState createState() => _PostDescriptionState();
@@ -60,18 +64,17 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
         requestPermission = false;
       });
     }
-    if(!widget.type.toLowerCase().contains('display') && widget.type.toLowerCase() != 'bookmarks' &&widget.type.toLowerCase() !='reminder' 
-                      && (ids.contains(id)|| allCouncilData.level3.contains(id))){
-                         WidgetsBinding.instance.addPostFrameCallback((_){
-      FeatureDiscovery.discoverFeatures(context,
-        const <String>{'AddPriority'
-        },
+    // display, bookmar, reminder
+    if( ![1,2,5].contains(widget.type.index)
+        && (ids.contains(id)|| allCouncilData.level3.contains(id))){
+      WidgetsBinding.instance.addPostFrameCallback((_){
+        FeatureDiscovery.discoverFeatures(context,
+          const <String>{'AddPriority'},
       );
     });
                       }
-     if(widget.type.contains('all')||
-                      (widget.type.toLowerCase().contains('display') ||
-                      widget.type.toLowerCase() =='notification'||widget.type.toLowerCase() =='reminder' )){
+    // all,display,notification,reminder
+     if([8,1,4,5].contains(widget.type.index)){
                         WidgetsBinding.instance.addPostFrameCallback((_){
       FeatureDiscovery.discoverFeatures(context,
         const <String>{
@@ -109,9 +112,6 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
   }
   @override
   Widget build(BuildContext context) {
-    
-      // print((!widget.type.toLowerCase().contains('display') && widget.type.toLowerCase() != 'bookmarks' &&widget.type.toLowerCase() !='reminder' 
-      //                 &&( ids.contains(id)|| allCouncilData.level3.contains(id))));
     return SafeArea(
       child: AbsorbPointer(
           absorbing: _load,
@@ -128,12 +128,43 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                          Navigator.pop(context,result);
                        }),
                     actions: <Widget>[
-                      (!widget.type.toLowerCase().contains('display') && widget.type.toLowerCase() != 'bookmarks' &&widget.type.toLowerCase() !='reminder' 
+                      // display,bookmar,reminder
+                      (![1,2,5].contains(widget.type.index)
                         && (ids.contains(id)|| allCouncilData.level3.contains(id)))?
                       DescribedFeatureOverlay(
                         featureId: 'AddPriority', 
-                        description: Text('You can set priority of post as Max or remain as default ;by default it is set to default notification priority set by user'),
-                        title: Text('Set Priority'),
+                        description: Column(
+                          children: [
+                            Text('You can choose whether this post is a featured one or not.'),
+                            SizedBox(height: 10),
+                            RichText(
+                              text: TextSpan(
+                                text: '',
+                                style: TextStyle(fontFamily: PRIMARY_FONTFAMILY,
+                                  fontWeight: FontWeight.w100
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: '**NOTE: ',
+                                    style: TextStyle(fontWeight: FontWeight.w500),
+                                  ),
+                                  TextSpan(
+                                    text: 'All featured posts are shown in the ',
+                                  ),
+                                  TextSpan(
+                                    text: 'Featured Section',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  TextSpan(
+                                    text: ' of the app and needs to be very important for user !!!'
+                                  )
+                                ]
+                              ),
+                            ),
+                            // Text('*NOTE: All featured posts are shown in the \"Featured Section\" and needs to be very important for user !!!')
+                          ],
+                        ),
+                        title: Text('Featured'),
                         backgroundColor: Theme.of(context).brightness == Brightness.dark? Colors.accents[3] : Colors.accents[6],
                         // textColor: Colors.white,  
                         targetColor: Theme.of(context).appBarTheme.color,
@@ -152,10 +183,10 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                             // Text('Set priority'),
                             AbsorbPointer(
                               absorbing: true,
-                              child: Switch(value: priority, 
+                              child: Switch(value: widget.listOfPosts[indexOfPage].isFeatured, 
                                 onChanged: (value){
                                   setState(() {
-                                    priority = value;
+                                    widget.listOfPosts[indexOfPage].isFeatured = value;
                                   });
                                 }
                               ),
@@ -165,17 +196,17 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                         child:  Row(
                           // spacing: 5.0,
                           children: <Widget>[
-                            Text('Set priority',
+                            Text('Featured',
                               style: TextStyle(
                                 color: Theme.of(context).appBarTheme.textTheme.headline1.color
                               ),
                             ),
                             Switch(
                               activeColor: Theme.of(context).brightness == Brightness.dark? Colors.accents[3] : Colors.accents[6],
-                              value: priority, 
+                              value: widget.listOfPosts[indexOfPage].isFeatured, 
                               onChanged: (value){
                                 setState(() {
-                                  priority = value;
+                                  widget.listOfPosts[indexOfPage].isFeatured = value;
                                 });
                               }
                             ),
@@ -183,15 +214,17 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                         ), 
                       )
                       : Container(),
-                      ((((widget.type.toLowerCase().contains('display') || widget.type.contains('all')) || widget.type.toLowerCase() == 'reminder')
+
+                      // display,all,reminder
+                      ([1,8,5].contains(widget.type.index)
                         && widget.listOfPosts[indexOfPage].endTime > DateTime.now().millisecondsSinceEpoch
                         && widget.listOfPosts[indexOfPage].startTime != 0 && widget.listOfPosts[indexOfPage].startTime!=null 
-                        && widget.listOfPosts[indexOfPage].endTime != 0 && widget.listOfPosts[indexOfPage].endTime!=null)) ?
+                        && widget.listOfPosts[indexOfPage].endTime != 0 && widget.listOfPosts[indexOfPage].endTime!=null) ?
                       DescribedFeatureOverlay(
                         featureId: feature1,
                         tapTarget: Icon(Ionicons.ios_notifications_outline,
                             size: 26.0,),
-                        title: Text('Add Post to Reminder'),
+                        title: Text('Add Post for Reminder'),
                         targetColor: Theme.of(context).appBarTheme.color,
                         description: Text('You can add a post (if the post contains both a start time and a end Time) to set reminder''This reminder would be displayed 10 minutes before the begining of ''an event.'
                         
@@ -237,19 +270,19 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                 if(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)
                                   .difference(DateTime.now()).inMinutes >=10){
                                   await ReminderNotification('An event you have saved is starting in 10 minutes',reminder: widget.listOfPosts[indexOfPage],
-                                    time: DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime).subtract(Duration(minutes: 10))).initiate;
+                                    time: tz.TZDateTime.fromMillisecondsSinceEpoch(tz.local,widget.listOfPosts[indexOfPage].startTime).subtract(Duration(minutes: 10))).initiate;
                                 }else if(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)
                                   .difference(DateTime.now()).inMinutes > 0){
                                     var min = DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)
                                   .difference(DateTime.now()).inMinutes ;
                                     await ReminderNotification('An event you have saved is starting in $min minutes',reminder: widget.listOfPosts[indexOfPage],
-                                      time: DateTime.now()).initiate;
+                                      time: tz.TZDateTime.now(tz.local).add(Duration(seconds: 1))).initiate;
                                 }else if(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].endTime,)
                                   .difference(DateTime.now()).inMinutes <=0){
                                     await ReminderNotification('Event has ended',id: widget.listOfPosts[indexOfPage].timeStamp.toSigned(31)).cancel;
                                 }else{
                                   await ReminderNotification('An event you have saved is going on',reminder: widget.listOfPosts[indexOfPage],
-                                   time: DateTime.now()).initiate;
+                                   time: tz.TZDateTime.now(tz.local).add(Duration(seconds: 1))).initiate;
                                 }
                                 await DatabaseProvider().insertPost(widget.listOfPosts[indexOfPage]);
                                 showSuccessToast('Added as a Reminder');
@@ -265,14 +298,15 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
 
                         ),
                       )
-                      : ((((widget.type.toLowerCase().contains('display') || widget.type.contains('all')) || widget.type.toLowerCase() == 'reminder')
+                      // display,all,reminder
+                      : ([1,8,5].contains(widget.type.index)
                         && (widget.listOfPosts[indexOfPage].startTime != 0 || widget.listOfPosts[indexOfPage].startTime!=null 
-                        || widget.listOfPosts[indexOfPage].endTime != 0 || widget.listOfPosts[indexOfPage].endTime!=null))) ?
+                        || widget.listOfPosts[indexOfPage].endTime != 0 || widget.listOfPosts[indexOfPage].endTime!=null)) ?
                       DescribedFeatureOverlay(
                         featureId: feature1,
                         tapTarget: Icon(Ionicons.ios_notifications_off,
                         ),
-                        title: Text('Add Post to Reminder'),
+                        title: Text('Add Post for Reminder'),
                         description: Text('You can tap on this bell icon to set a post whose start and end time is mentioned as a reminder. ''This reminder would dispatch a notification 10 minutes before the begining of ''an event'
                         
                           ),
@@ -310,13 +344,12 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                           onPressed: null,
                         ),
                       ):Container(),
-                      (widget.type.contains('all')||
-                        (widget.type.toLowerCase().contains('display') ||
-                        widget.type.toLowerCase() =='notification'||widget.type.toLowerCase() =='reminder' ))?
+                      // all,display,notification,reminder
+                      ([8,1,4,5].contains(widget.type.index))?
                       DescribedFeatureOverlay(
                         featureId: feature2,
                         tapTarget: Icon(MaterialIcons.bookmark_border, size: 26.0, ),
-                        title: Text('Add Post to bookmark'),
+                        title: Text('Add Post as a bookmark'),
                         targetColor: Theme.of(context).appBarTheme.color,
                         description: Text('You can clasify any post as your bookmark and the selected post would also be visible in the bookmarks section'),
                         contentLocation: ContentLocation.below,
@@ -339,7 +372,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                         // targetColor: Theme.of(context).brightness == Brightness.dark?
                           // Colors.accents[3]:Colors.accents[13], 
                         child: IconButton(
-                          tooltip: 'Save Post',
+                          tooltip: 'Bookmark Post',
                           icon: widget.listOfPosts[indexOfPage].bookmark?
                             Icon(
                               MaterialIcons.bookmark
@@ -374,7 +407,8 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                           // RaisedButton(onPressed: (){
                           //   FeatureDiscovery.clearPreferences(context, const<String>{
                           //     feature1,
-                          //     feature2
+                          //     feature2,
+                          //     'AddPriority'
                           //   });
                           // }),
                           widget.listOfPosts[indexOfPage].url !=  null && widget.listOfPosts[indexOfPage].url !=  'null' && widget.listOfPosts[indexOfPage].url.trim() !=  ''
@@ -420,7 +454,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                           ),
                                         ),
             /*                      Center(
-                                                child:*/ Text(widget.listOfPosts[indexOfPage].sub,
+                                                child:*/ Text(widget.listOfPosts[indexOfPage].sub[0].toString(),
                                                     // 'Science and Technology Council',
                                                     style: TextStyle(fontSize: 17.0)),
                                               // ),
@@ -444,9 +478,11 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                                         size: 30.0,
                                                       ),
                                                     ),
-                                                    
-                                                    Text(
-                                                      DateFormat("hh:mm a, dd MMMM yyyy").format(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)),
+                                                    Tooltip(
+                                                      message: DateFormat("EEEE").format(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)),
+                                                      child: Text(
+                                                        DateFormat("hh:mm a, dd MMMM yyyy").format(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].startTime)),
+                                                      ),
                                                     )
                                                   ],
                                                 ),
@@ -464,8 +500,11 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                                       ),
                                                     ),
                                                     // widget.listOfPosts[indexOfPage].endTime != '' && widget.listOfPosts[indexOfPage].Time!=null ?
-                                                    Text(
-                                                      DateFormat("hh:mm a, dd MMMM yyyy").format(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].endTime)),
+                                                    Tooltip(
+                                                      message: DateFormat("EEEE").format(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].endTime)),
+                                                      child: Text(
+                                                        DateFormat("hh:mm a, dd MMMM yyyy").format(DateTime.fromMillisecondsSinceEpoch(widget.listOfPosts[indexOfPage].endTime)),
+                                                      ),
                                                     ),
                                                   ],
                                                 ),
@@ -496,7 +535,11 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                               ],
                             ),
                           ),
-                          !widget.type.toLowerCase().contains('display') && widget.type.toLowerCase() != 'bookmarks' &&widget.type.toLowerCase() !='reminder' ?Container(
+                          //create post,edit post
+                          [6,7,9,11].contains(widget.type.index)
+                          // !widget.type.toLowerCase().contains('display') && widget.type.toLowerCase() != 'bookmarks' &&widget.type.toLowerCase() !='reminder'
+                          // && !widget.type.toLowerCase().contains('notice')
+                           ?Container(
                             margin: EdgeInsets.only(bottom:20.0),
                             child: Wrap(
                               alignment: WrapAlignment.center,
@@ -536,7 +579,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                       onPressed: ()async{
                                         var id;
                                         
-                                        if(widget.type.toLowerCase() == 'create'){
+                                        if(widget.type == PostDescType.CREATE_POSTS){
                                           id = '${DateTime.now().microsecondsSinceEpoch}';
                                           widget.listOfPosts[indexOfPage].id = '';
                                           print(id);
@@ -583,25 +626,25 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                       elevation: 10.0,
                                       highlightElevation: 5.0,
                                       onPressed: ()async{
-                                        requestPermission? 
+                                        requestPermission || [6,9].contains(widget.type.index)? 
                                         showInfoToast('Sending Request'):
                                         showInfoToast('Publishing Post');
                                         setState(() {
                                           _load = true;
                                           // time = DateTime.now();
                                         });
-                                        if(widget.type.toLowerCase().contains('drafted post')){
+                                        if(widget.type == PostDescType.DRAFT_POSTS)
                                           widget.listOfPosts[indexOfPage].id = '';
-                                        }
                                         Future.delayed(Duration(seconds: 10),(){
                                           if(mounted){setState(()=>time = true);}
                                         });
                                         print('${widget.listOfPosts[indexOfPage]?.id}' + 'id to string');
-                                        Response res = requestPermission ? 
+                                        Response res = requestPermission || [6,9].contains(widget.type.index)? 
                                           await createEditPosts(widget.listOfPosts[indexOfPage],priority,isCreate: true)
                                           : await approvePost(widget.listOfPosts[indexOfPage]); 
                                         // .then((res){
                                           if(res.statusCode == 200){
+                                            time = false;
                                             if(mounted){
                                               setState(() {
                                               _load = false;
@@ -609,15 +652,16 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                               Navigator.pop(context);
                                               Navigator.pop(context);
                                             }
-                                            requestPermission? 
+                                            requestPermission || [6,9].contains(widget.type.index)? 
                                             showSuccessToast('Your request has been send')
                                             : showSuccessToast('Your Posts has been published Successfully');
                                           }
                                           else{
+                                            time = false;
                                             setState(() {
                                               _load = false;
                                             });
-                                            requestPermission ?
+                                            requestPermission || [6,9].contains(widget.type.index)?
                                             showErrorToast('Error while sending requset')
                                             :showErrorToast('Error while publishing posts '+'!!!');
                                           }
@@ -625,7 +669,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                       }, 
                                       icon: Icon(Entypo.publish), 
                                       label: Text(
-                                        requestPermission ? 
+                                        requestPermission || [6,9].contains(widget.type.index)? 
                                         'Request Approval'
                                         :'Publish'
                                       )
@@ -648,7 +692,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                         setState(() {
                                           _load = true;
                                         });
-                                        if(widget.type.toLowerCase().contains('drafted post')){
+                                        if(widget.type == PostDescType.DRAFT_POSTS){
                                           widget.listOfPosts[indexOfPage].id = '';
                                         }
                                         Future.delayed(Duration(seconds: 10),(){
@@ -660,6 +704,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                            await approvePost(widget.listOfPosts[indexOfPage]); 
                                           // then((res){
                                           if(res.statusCode == 200){
+                                            time = false;
                                             if(mounted){
                                               setState(() {
                                               _load = false;
@@ -670,6 +715,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                              showSuccessToast('Your Posts has been published Successfully');
                                           }
                                           else{
+                                            time = false;
                                             setState(() {
                                               _load = false;
                                             });
@@ -705,7 +751,7 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
                                 padding: const EdgeInsets.symmetric(horizontal: 25.0),
                                 child: Text(
                                   !time ?
-                                  (requestPermission ? 'Sending request Approval'
+                                  (requestPermission || [6,9].contains(widget.type.index)? 'Sending request Approval'
                                   : 'Publishing Post')
                                   : 'Taking too much time,maybe your connectivity is slow',
                                   textAlign: TextAlign.center,
@@ -729,12 +775,12 @@ class _PostDescriptionState extends State<PostDescription> with SingleTickerProv
       ),
     );
   }
-  Future<bool> saveAsDrafts(String id,PostsSort postsSort,String council)async{
-    var post = postsSort.toMapSave();
+  Future<bool> saveAsDrafts(String id,Posts posts,String council)async{
+    var post = posts.toDraftsMap();
     post['id'] =id;
     print(post);
-    printPosts(postsSortFromJson(json.encode(post)));
-    return await DatabaseProvider(databaseName: 'drafts',tableName: 'Drafts').insertPost(postsSortFromJson(json.encode(post))).then((var v){
+    printPosts(postsFromJson(json.encode(post)));
+    return await DatabaseProvider(databaseName: 'drafts',tableName: 'Drafts').insertPost(postsFromJson(json.encode(post))).then((var v){
       if(v!=null){
         return true;
       }else{

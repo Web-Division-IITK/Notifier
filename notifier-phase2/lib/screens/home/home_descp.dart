@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/posts.dart';
@@ -23,10 +24,9 @@ class DoubleHolder {
 }
 
 class HomeDescription extends StatefulWidget {
-  final DoubleHolder offset = new DoubleHolder();
 
   /// list of all posts inherited from home.dart
-  final List<PostsSort> postArray;
+  final List<Posts> postArray;
   /// document id of firebase current user
   final String userID;
   ///hive database based userModel
@@ -34,20 +34,13 @@ class HomeDescription extends StatefulWidget {
   /// [depreciated] may want to remove in future
   final bool load;
   HomeDescription({Key key,this.postArray,this.load,this.userModel,this.userID}) : super(key: key);
-double getOffsetMethod() {
-    return offset.value;
-  }
-
-  void setOffsetMethod(double val) {
-    offset.value = val;
-  }
   @override
   _HomeDescriptionState createState() => _HomeDescriptionState();
 }
 
+// Widget homeDescription({List<Posts> postArray, String userID, UserModel userModel}){}
 class _HomeDescriptionState extends State<HomeDescription> {
   bool loadingPost = true;
-  ScrollController scrollController;
   // final AsyncMemoizer memoizer = AsyncMemoizer();
   final _upcomingEventKey = GlobalKey<AnimatedListState>();
   final onGoingingEventKey = GlobalKey<AnimatedListState>();
@@ -63,489 +56,488 @@ class _HomeDescriptionState extends State<HomeDescription> {
     // streamController.add(Stream.periodic(Duration(minutes: 1)));
     // streamController.hasListener
     // streamSubscription = streamController.stream.listen((onData){});
-    scrollController = new ScrollController(
-        initialScrollOffset: widget.getOffsetMethod()
-    );
-  }
-  @override
-  void dispose() { 
-    // streamSubscription.cancel();
-      // streamController.close();
-    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
     // var data  = DataHolderAndProvider.of(context).data;
-    return NotificationListener(
-       onNotification: (notification) {
-        if (notification is ScrollNotification) {
-          widget.setOffsetMethod(notification.metrics.pixels);
-        }
-       },
-      child: ListView(
-        controller: scrollController,
-        padding: EdgeInsets.all(16.0),
-        shrinkWrap: true,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(top:16.0),
-            child: Text(
-              "Ongoing Events",
-              style: TextStyle(
-                fontSize: 20.0
+    return ListView(
+      padding: EdgeInsets.all(16.0),
+      shrinkWrap: true,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(top:16.0),
+          child: Text(
+            "Ongoing Events",
+            style: TextStyle(
+              fontSize: 20.0
+            ),
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.only(top:16.0,bottom:16.0),
+          //   constraints: BoxConstraints(
+          //   minHeight: 100.0
+          // ),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0)
+            ),
+            child: Container(
+              // padding: EdgeInsets.fromLTRB(16.0,0,16,0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  FutureBuilder(
+                    future: DatabaseProvider().getAllPostsForOngoingEvent(),
+                    builder: (context,AsyncSnapshot<List<Posts>> snapshot){
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                        // print(snapshot.data);
+                        var array = snapshot.data;
+                        // array.retainWhere((i){
+                        //   var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
+                        //   DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
+                          
+                        // print('array  + $date');
+                        //   return date.isBefore(DateTime.now())&& endTime.isAfter(DateTime.now());
+                        // });
+                        // loadONGoingEvent(snapshot.data);
+                          return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
+                          Container(
+                            padding: EdgeInsets.symmetric(vertical: 5.0),
+                            height: 80.0,
+                            child: Center(
+                              child: Text(
+                                'You have no Ongoing Events right now'
+                              ),
+                            ),
+                          ):
+                          // FutureBuilder(
+                          //   future: Future.delayed(Duration(milliseconds: 80),(){
+                          //     // print('array + $array ');
+                          //   return array;
+                          // }),
+                          //   builder: (context,snapshot){
+                          //     switch (snapshot.connectionState) {
+                          //       case ConnectionState.done:
+                                  // var array = snapshot.data;
+                                  // if(snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0){
+                                    // streamSubscription.pause();
+                                    // return Container(
+                                    //   padding: EdgeInsets.symmetric(vertical: 5.0),
+                                    //   constraints: BoxConstraints(
+                                    //     maxHeight: 80
+                                    //   ),
+                                    //   child: Center(
+                                    //     child: Text(
+                                    //       'You have no Ongoing Events right now'
+                                    //     ),
+                                    //   ),
+                                    // );
+                                  // }
+                                   Column(
+                                    children: <Widget>[
+                                      AnimatedList(
+                                        physics: NeverScrollableScrollPhysics(),
+                                        padding: EdgeInsets.symmetric(vertical: 5.0),
+                                        key: onGoingingEventKey,
+                                        shrinkWrap: true,
+                                        initialItemCount: array.length <3? array.length : 3,
+                                        itemBuilder: (context,index,animation){
+                                          // loadONGoingEvent(array);
+                                          return SizeTransition(
+                                            sizeFactor: animation,
+                                            child: StreamBuilder(
+                                              stream: Stream.periodic(Duration(minutes: 1),),
+                                              builder: (context, snapshot) {
+                                                return ListItemOnGoing(
+                                                  key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                                  // streamController: streamController,
+                                                  post: array[index],
+                                                  array: array,
+                                                  index: index,
+                                                  eventKey: onGoingingEventKey,
+                                                  callBack: (){
+                                                    setState(() {
+                                                    });
+                                                  },
+                                                  // key: _upcomingEventKey,
+                                                );
+                                              }
+                                            ),
+                                          );
+                                        }
+                                      ),
+                                Container(
+                                  padding: EdgeInsets.only(right: 16.0),
+                                alignment: Alignment.bottomRight,
+                                child: CupertinoButton(
+                                  padding: EdgeInsets.all(0),
+                                  onPressed: (){
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (BuildContext context) {
+                                        return OnGoingEventPage();
+                                      }));
+                                  },
+                                  child: Text('See All ...',
+                                    style: TextStyle(
+                                      fontSize: 12.0
+                                    )
+                                  )
+                                ),
+                              ),
+                                    ],
+                                  );
+                                  // break;
+                          //       default: return Container(
+                          //         height: 80.0,
+                          //         child: Center(
+                          //           child: CircularProgressIndicator(),
+                          //         ),
+                          //       );
+                          //     }
+                          //   }
+                          // );
+                          
+                          
+                          break;
+                        default: return Container(
+                          padding: EdgeInsets.symmetric(vertical: 5.0),
+                          height: 80.0,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
+                      }
+                      // );
+                    }
+                  ),
+
+                ],
               ),
             ),
           ),
-          Container(
-            padding: EdgeInsets.only(top:16.0,bottom:16.0),
-            //   constraints: BoxConstraints(
-            //   minHeight: 100.0
-            // ),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0)
-              ),
-              child: Container(
-                // padding: EdgeInsets.fromLTRB(16.0,0,16,0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    FutureBuilder(
-                      future: DatabaseProvider().getAllPostsForOngoingEvent(),
-                      builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.done:
-                          // print(snapshot.data);
-                          var array = snapshot.data;
-                          // array.retainWhere((i){
-                          //   var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
-                          //   DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
-                            
-                          // print('array  + $date');
-                          //   return date.isBefore(DateTime.now())&& endTime.isAfter(DateTime.now());
-                          // });
-                          // loadONGoingEvent(snapshot.data);
-                            return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 5.0),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top:16.0),
+          child: Text(
+            "Latest Posts",
+            style: TextStyle(
+              fontSize: 20.0
+            ),
+          ),
+        ),
+        Container(
+          padding: EdgeInsets.only(top:16.0,bottom:16.0),
+            constraints: BoxConstraints(
+            minHeight: 80.0
+          ),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0)
+            ),
+            child: Container(
+              padding: EdgeInsets.fromLTRB(16.0,0,16,0),
+              // margin: EdgeInsets.only(bottom:16.0),
+              child:FutureBuilder(
+                    future: DBProvider().getAllPostsWithoutPermissions().then((postArray){
+                      postArray.retainWhere((test){
+                        // print(test.sub[0]);
+                        return widget.userModel.prefs.contains(test.sub[0]);
+                      });
+                      return postArray ?? [];
+                    }),
+                    // Future.sync(() {
+                    //   widget.postArray.retainWhere((test){
+                    //     // print(test.sub[0]);
+                    //     return widget.userModel.prefs.contains(test.sub[0]);
+                    //   });
+                    //   return widget.postArray;
+                    // }), 
+                    builder: (context, snapshot){
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                          List<Posts> array = (snapshot == null || snapshot.data == null)?[]: snapshot.data.cast<Posts>();
+                          
+                          if(array.length == 0){
+                            return Container(
                               height: 80.0,
                               child: Center(
                                 child: Text(
-                                  'You have no Ongoing Events right now'
+                                  'No post available right now'
                                 ),
                               ),
-                            ):
-                            // FutureBuilder(
-                            //   future: Future.delayed(Duration(milliseconds: 80),(){
-                            //     // print('array + $array ');
-                            //   return array;
-                            // }),
-                            //   builder: (context,snapshot){
-                            //     switch (snapshot.connectionState) {
-                            //       case ConnectionState.done:
-                                    // var array = snapshot.data;
-                                    // if(snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0){
-                                      // streamSubscription.pause();
-                                      // return Container(
-                                      //   padding: EdgeInsets.symmetric(vertical: 5.0),
-                                      //   constraints: BoxConstraints(
-                                      //     maxHeight: 80
-                                      //   ),
-                                      //   child: Center(
-                                      //     child: Text(
-                                      //       'You have no Ongoing Events right now'
-                                      //     ),
-                                      //   ),
-                                      // );
-                                    // }
-                                     Column(
-                                      children: <Widget>[
-                                        AnimatedList(
-                                          physics: NeverScrollableScrollPhysics(),
-                                          padding: EdgeInsets.symmetric(vertical: 5.0),
-                                          key: onGoingingEventKey,
-                                          shrinkWrap: true,
-                                          initialItemCount: array.length <3? array.length : 3,
-                                          itemBuilder: (context,index,animation){
-                                            // loadONGoingEvent(array);
-                                            return SizeTransition(
-                                              sizeFactor: animation,
-                                              child: StreamBuilder(
-                                                stream: Stream.periodic(Duration(minutes: 1),),
-                                                builder: (context, snapshot) {
-                                                  return ListItemOnGoing(
-                                                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                                    // streamController: streamController,
-                                                    post: array[index],
-                                                    array: array,
-                                                    index: index,
-                                                    eventKey: onGoingingEventKey,
-                                                    callBack: (){
-                                                      setState(() {
-                                                      });
-                                                    },
-                                                    // key: _upcomingEventKey,
-                                                  );
-                                                }
-                                              ),
-                                            );
-                                          }
-                                        ),
-                                  Container(
-                                    padding: EdgeInsets.only(right: 16.0),
-                                  alignment: Alignment.bottomRight,
-                                  child: CupertinoButton(
-                                    padding: EdgeInsets.all(0),
-                                    onPressed: (){
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (BuildContext context) {
-                                          return OnGoingEventPage();
-                                        }));
-                                    },
-                                    child: Text('See All ...',
-                                      style: TextStyle(
-                                        fontSize: 12.0
-                                      )
-                                    )
-                                  ),
-                                ),
-                                      ],
-                                    );
-                                    // break;
-                            //       default: return Container(
-                            //         height: 80.0,
-                            //         child: Center(
-                            //           child: CircularProgressIndicator(),
-                            //         ),
-                            //       );
-                            //     }
-                            //   }
-                            // );
-                            
-                            
-                            break;
-                          default: return Container(
-                            padding: EdgeInsets.symmetric(vertical: 5.0),
-                            height: 80.0,
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        }
-                        // );
-                      }
-                    ),
-
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top:16.0),
-            child: Text(
-              "Latest Posts",
-              style: TextStyle(
-                fontSize: 20.0
-              ),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.only(top:16.0,bottom:16.0),
-              constraints: BoxConstraints(
-              minHeight: 80.0
-            ),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0)
-              ),
-              child: Container(
-                padding: EdgeInsets.fromLTRB(16.0,0,16,0),
-                // margin: EdgeInsets.only(bottom:16.0),
-                child:FutureBuilder(
-                      future: Future.sync(() {
-                        widget.postArray.retainWhere((test)=>widget.userModel.prefs.contains(test.sub));
-                        return widget.postArray;
-                      }), 
-                      builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.done:
-                            List<PostsSort> array = (snapshot == null || snapshot.data == null)?[]: snapshot.data;
-                            
-                            if(array.length == 0){
-                              return Container(
-                                height: 80.0,
-                                child: Center(
-                                  child: Text(
-                                    'No post available right now'
-                                  ),
-                                ),
-                              );
-                            }
-                            return Column(
-                              children: <Widget>[
-                                ListView.builder(
-                                  padding: EdgeInsets.only(top:16),
-                                  physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: array.length < 3? array.length:3,
-                                  itemBuilder: (context,index){
-                                    var i = array[index];
-                                    i.dateAsString = convertDateToString(DateTime.fromMillisecondsSinceEpoch(i.timeStamp));
-                                    if(i.dateAsString == 'Today'){
-                                      if(array.firstWhere((test)=>
-                                      convertDateToString(DateTime.fromMillisecondsSinceEpoch(test.timeStamp)) 
-                                        == i.dateAsString) == i){
-                                        return Column(
-                                          // key: ValueKey(i.timeStamp),
-                                          children: <Widget>[
-                                            Container(
-                                              child: Center(
-                                                child: Text(i.dateAsString),
-                                              ),                                            
+                            );
+                          }
+                          return Column(
+                            children: <Widget>[
+                              ListView.builder(
+                                padding: EdgeInsets.only(top:16),
+                                physics: NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: array.length < 3? array.length:3,
+                                itemBuilder: (context,index){
+                                  var i = array[index];
+                                  i.dateAsString = convertDateToString(DateTime.fromMillisecondsSinceEpoch(i.timeStamp));
+                                  if(i.dateAsString == 'Today'){
+                                    if(array.firstWhere((test)=>
+                                    convertDateToString(DateTime.fromMillisecondsSinceEpoch(test.timeStamp)) 
+                                      == i.dateAsString) == i){
+                                      return Column(
+                                        // key: ValueKey(i.timeStamp),
+                                        children: <Widget>[
+                                          Container(
+                                            child: Center(
+                                              child: Text(i.dateAsString),
+                                            ),                                            
+                                          ),
+                                          Container(
+                                            child: StreamBuilder(
+                                              stream: Stream.periodic(Duration(minutes: 1)),
+                                              builder: (context, snapshot) {
+                                                return Tile(
+                                                  key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                                  index: index,
+                                                  arrayWithPrefs: array,
+                                                  callback:()=>setState((){})
+                                                );
+                                              }
                                             ),
-                                            Container(
-                                              child: StreamBuilder(
-                                                stream: Stream.periodic(Duration(minutes: 1)),
-                                                builder: (context, snapshot) {
-                                                  return Tile(
-                                                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                                    index: index,
-                                                    arrayWithPrefs: array,);
-                                                }
-                                              ),
-                                            )
-                                          ],
-                                        );
-                                      }else{
-                                        return Container(
-                                          // key: ValueKey(i.timeStamp),
-                                          child: StreamBuilder(
-                                            stream: Stream.periodic(Duration(minutes: 1)),
-                                            builder: (context, snapshot) {
-                                              return Tile(
-                                                key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                                index: index,
-                                                    arrayWithPrefs: array,);
-                                            }
                                           )
-                                        );
-                                      }
-                                    }
-                                    else{
-                                      if(array.firstWhere((test)=>
-                                      convertDateToString(DateTime.fromMillisecondsSinceEpoch(test.timeStamp)) 
-                                        == i.dateAsString) == i){
-                                        return Column(
-                                          // key: ValueKey(i.timeStamp),
-                                          children: <Widget>[
-                                            Container(
-                                              child: Center(
-                                                child: Text(i.dateAsString),
-                                              ),                                            
-                                            ),
-                                            Container(
-                                              child: Tile(
-                                                key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                                index: index,
-                                                arrayWithPrefs: array,)
-                                            )
-                                          ],
-                                        );
-                                      }else{
-                                        return Container(
-                                          // key: ValueKey(i.timeStamp),
-                                          child: Tile(
-                                            key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                            index: index,
-                                            arrayWithPrefs: array,)
-                                        );
-                                      }
+                                        ],
+                                      );
+                                    }else{
+                                      return Container(
+                                        // key: ValueKey(i.timeStamp),
+                                        child: StreamBuilder(
+                                          stream: Stream.periodic(Duration(minutes: 1)),
+                                          builder: (context, snapshot) {
+                                            return Tile(
+                                              key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                              index: index,
+                                                  arrayWithPrefs: array,
+                                              callback:()=>setState((){}));
+                                          }
+                                        )
+                                      );
                                     }
                                   }
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: CupertinoButton(
-                                    padding: EdgeInsets.all(0),
-                                    onPressed: (){
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (BuildContext context) {
-                                          return AllPostGetData(widget.userModel);}));
-                                    },
-                                    child: Text('See All ...',
-                                      style: TextStyle(
-                                        fontSize: 12.0
-                                      )
+                                  else{
+                                    if(array.firstWhere((test)=>
+                                    convertDateToString(DateTime.fromMillisecondsSinceEpoch(test.timeStamp)) 
+                                      == i.dateAsString) == i){
+                                      return Column(
+                                        // key: ValueKey(i.timeStamp),
+                                        children: <Widget>[
+                                          Container(
+                                            child: Center(
+                                              child: Text(i.dateAsString),
+                                            ),                                            
+                                          ),
+                                          Container(
+                                            child: Tile(
+                                              key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                              index: index,
+                                              arrayWithPrefs: array,
+                                              callback:()=>setState((){}))
+                                          )
+                                        ],
+                                      );
+                                    }else{
+                                      return Container(
+                                        // key: ValueKey(i.timeStamp),
+                                        child: Tile(
+                                          key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                          index: index,
+                                          arrayWithPrefs: array,
+                                          callback:()=>setState((){})
+                                        )
+                                      );
+                                    }
+                                  }
+                                }
+                              ),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: CupertinoButton(
+                                  padding: EdgeInsets.all(0),
+                                  onPressed: (){
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (BuildContext context) {
+                                        return AllPostGetData(widget.userModel);}));
+                                  },
+                                  child: Text('See All ...',
+                                    style: TextStyle(
+                                      fontSize: 12.0
                                     )
-                                  ),
+                                  )
                                 ),
-                              ]
-                            );
-                            break;
-                          default: return Container(
-                            height: 80.0,
-                            child: Center(
-                              child: CircularProgressIndicator(),
-                            ),
+                              ),
+                            ]
                           );
-                        }
+                          break;
+                        default: return Container(
+                          height: 80.0,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
                       }
-                    ),
-                    
-                //   ],
-                // ),
-              ),
+                    }
+                  ),
+                  
+              //   ],
+              // ),
+            ),
 
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top:0.0),
+          child: Text(
+            "Upcoming Events",
+            style: TextStyle(
+              fontSize: 20.0
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(top:0.0),
-            child: Text(
-              "Upcoming Events",
-              style: TextStyle(
-                fontSize: 20.0
-              ),
+        ),
+        Container(
+          padding: EdgeInsets.only(top:16.0,bottom:16.0),
+          //   constraints: BoxConstraints(
+          //   minHeight: 100.0
+          // ),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0)
             ),
-          ),
-          Container(
-            padding: EdgeInsets.only(top:16.0,bottom:16.0),
-            //   constraints: BoxConstraints(
-            //   minHeight: 100.0
-            // ),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0)
-              ),
-              child: Container(
-                // padding: EdgeInsets.fromLTRB(16.0,0,16,0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    FutureBuilder(
-                      future: DatabaseProvider().getAllPostsForUpcomingEvents(),
-                      builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.done:
-                          // print(snapshot.data);
-                          var array = snapshot.data;
-                          // array.retainWhere((i){
-                          //   var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
-                          //   // DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
-                          //   return date.isAfter(DateTime.now());
-                          // });
-                          // loadUpcomingEvents(array);
-                            return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
-                            Container(
-                              padding: EdgeInsets.symmetric(vertical: 5.0),
-                              // height: 80.0,
-                              constraints: BoxConstraints(
-                                maxHeight: 80
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'You have no Upcoming Events right now'
-                                ),
-                              ),
-                            // ) :
-                            // FutureBuilder(
-                            //   future: Future.delayed(Duration(milliseconds: 80),(){
-                            //   return array;
-                            // }),
-                            //   builder: (context,snapshot){
-                            //     switch (snapshot.connectionState) {
-                            //       case ConnectionState.done:
-                            //         var array = snapshot.data;
-                            //         return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
-                            //         Container(
-                            //           padding: EdgeInsets.symmetric(vertical: 5.0),
-                            //           height: 80.0,
-                            //           child: Center(
-                            //             child: Text(
-                            //               'You have no Upcoming Events right now'
-                            //             ),
-                            //           ),
-                                    ) :Column(
-                                      children: <Widget>[
-                                        AnimatedList(
-                                          physics: NeverScrollableScrollPhysics(),
-                                          padding: EdgeInsets.symmetric(vertical: 5.0),
-                                          key: _upcomingEventKey,
-                                          shrinkWrap: true,
-                                          initialItemCount: array.length <3? array.length : 3,
-                                          itemBuilder: (context,index,animation){
-                                            // loadONGoingEvent(array);
-                                            return SizeTransition(
-                                              sizeFactor: animation,
-                                              child: StreamBuilder(
-                                                stream: Stream.periodic(Duration(minutes: 1)),
-                                                builder: (context, snapshot) {
-                                                  return ListItem(
-                                                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                                    postsList: array,
-                                                    // array: array,
-                                                    index: index,
-                                                    eventKey: _upcomingEventKey,
-                                                    load: (){
-                                                      setState(() {
-                                                      });
-                                                    },
-                                                    // key: _upcomingEventKey,
-                                                  );
-                                                }
-                                              ),
-                                            );
-                                          }
-                                        ),
-                                  Container(
-                                    padding: EdgeInsets.only(right:16.0),
-                                  alignment: Alignment.bottomRight,
-                                  child: CupertinoButton(
-                                    padding: EdgeInsets.all(0),
-                                    onPressed: (){
-                                      Navigator.of(context).push(MaterialPageRoute(
-                                        builder: (BuildContext context) {
-                                          return UpcomingEventsPage();
-                                        }));
-                                    },
-                                    child: Text('See All ...',
-                                      style: TextStyle(
-                                        fontSize: 12.0
-                                      )
-                                    )
-                                  ),
-                                ),
-                                      ],
-                                    );
-                            //         break;
-                            //       default: return Container(
-                            //         height: 80.0,
-                            //         child: Center(
-                            //           child: CircularProgressIndicator(),
-                            //         ),
-                            //       );
-                            //     }
-                            //   }
-                            // );
-                            break;
-                          default: return Container(
+            child: Container(
+              // padding: EdgeInsets.fromLTRB(16.0,0,16,0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  FutureBuilder(
+                    future: DatabaseProvider().getAllPostsForUpcomingEvents(),
+                    builder: (context,AsyncSnapshot<List<Posts>> snapshot){
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.done:
+                        // print(snapshot.data);
+                        var array = snapshot.data;
+                        // array.retainWhere((i){
+                        //   var  date = DateTime.fromMillisecondsSinceEpoch(i.startTime);
+                        //   // DateTime endTime= DateTime.fromMillisecondsSinceEpoch(i.endTime);
+                        //   return date.isAfter(DateTime.now());
+                        // });
+                        // loadUpcomingEvents(array);
+                          return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
+                          Container(
                             padding: EdgeInsets.symmetric(vertical: 5.0),
-                            height: 80.0,
-                            child: Center(
-                              child: CircularProgressIndicator(),
+                            // height: 80.0,
+                            constraints: BoxConstraints(
+                              maxHeight: 80
                             ),
-                          );
-                        }
-                        // );
+                            child: Center(
+                              child: Text(
+                                'You have no Upcoming Events right now'
+                              ),
+                            ),
+                          // ) :
+                          // FutureBuilder(
+                          //   future: Future.delayed(Duration(milliseconds: 80),(){
+                          //   return array;
+                          // }),
+                          //   builder: (context,snapshot){
+                          //     switch (snapshot.connectionState) {
+                          //       case ConnectionState.done:
+                          //         var array = snapshot.data;
+                          //         return snapshot.data == null ||snapshot.data.length == 0 || array == null || array.length == 0?
+                          //         Container(
+                          //           padding: EdgeInsets.symmetric(vertical: 5.0),
+                          //           height: 80.0,
+                          //           child: Center(
+                          //             child: Text(
+                          //               'You have no Upcoming Events right now'
+                          //             ),
+                          //           ),
+                                  ) :Column(
+                                    children: <Widget>[
+                                      AnimatedList(
+                                        physics: NeverScrollableScrollPhysics(),
+                                        padding: EdgeInsets.symmetric(vertical: 5.0),
+                                        key: _upcomingEventKey,
+                                        shrinkWrap: true,
+                                        initialItemCount: array.length <3? array.length : 3,
+                                        itemBuilder: (context,index,animation){
+                                          // loadONGoingEvent(array);
+                                          return SizeTransition(
+                                            sizeFactor: animation,
+                                            child: StreamBuilder(
+                                              stream: Stream.periodic(Duration(minutes: 1)),
+                                              builder: (context, snapshot) {
+                                                return ListItem(
+                                                  key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                                  postsList: array,
+                                                  // array: array,
+                                                  index: index,
+                                                  eventKey: _upcomingEventKey,
+                                                  load: (){
+                                                    setState(() {
+                                                    });
+                                                  },
+                                                  // key: _upcomingEventKey,
+                                                );
+                                              }
+                                            ),
+                                          );
+                                        }
+                                      ),
+                                Container(
+                                  padding: EdgeInsets.only(right:16.0),
+                                alignment: Alignment.bottomRight,
+                                child: CupertinoButton(
+                                  padding: EdgeInsets.all(0),
+                                  onPressed: (){
+                                    Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (BuildContext context) {
+                                        return UpcomingEventsPage();
+                                      }));
+                                  },
+                                  child: Text('See All ...',
+                                    style: TextStyle(
+                                      fontSize: 12.0
+                                    )
+                                  )
+                                ),
+                              ),
+                                    ],
+                                  );
+                          //         break;
+                          //       default: return Container(
+                          //         height: 80.0,
+                          //         child: Center(
+                          //           child: CircularProgressIndicator(),
+                          //         ),
+                          //       );
+                          //     }
+                          //   }
+                          // );
+                          break;
+                        default: return Container(
+                          padding: EdgeInsets.symmetric(vertical: 5.0),
+                          height: 80.0,
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        );
                       }
-                    ),
-                  ],
-                ),
+                      // );
+                    }
+                  ),
+                ],
               ),
             ),
-          )
-        ],
-      ),
+          ),
+        )
+      ],
     );
   }
   loadONGoingEvent(array){
@@ -607,17 +599,17 @@ class _HomeDescriptionState extends State<HomeDescription> {
   }
 }
 
-_navigateToPostDesc(context,index,arrayWithPrefs)async {
+_navigateToPostDesc(context,index,arrayWithPrefs,callback)async {
     return await Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
             return FeatureDiscovery(
               child: PostDescription(
                 listOfPosts: arrayWithPrefs, 
-                type: 'display',
+                type: PostDescType.DISPLAY,
                 index: index,
             ));
       }
-    ));
+    )).then((value) => callback() == null? callback(): '');
     // if( result!=null &&result == 'reload'){
     //   print(result);
     //   setState(() {
@@ -631,10 +623,12 @@ _navigateToPostDesc(context,index,arrayWithPrefs)async {
 class Tile extends StatefulWidget {
   
     final int index;
-    final List<PostsSort> arrayWithPrefs;
+    final List<Posts> arrayWithPrefs;
+    final Function callback;
     // final Stream stream;
     // final String time;
-    Tile({key,this.index,/*this.time,*/this.arrayWithPrefs/*,this.stream*/}):super(key:key);
+    // static const Function empty =;
+    Tile({key,this.index,/*this.time,*/this.arrayWithPrefs/*,this.stream*/,this.callback}):super(key:key);
   @override
   _TileState createState() => _TileState();
 }
@@ -643,7 +637,7 @@ class _TileState extends State<Tile> {
   // Timer timer;
   var time;
   @override
-  void initState() { 
+  void initState() {
     super.initState();
     var timeStamp = DateTime.fromMillisecondsSinceEpoch(widget.arrayWithPrefs[widget.index].timeStamp);
       widget.arrayWithPrefs[widget.index].dateAsString = convertDateToString(timeStamp);
@@ -707,7 +701,7 @@ class _TileState extends State<Tile> {
         borderRadius: BorderRadius.circular(16.0),
         onTap: () {
           // return 
-            _navigateToPostDesc(context, widget.index,widget.arrayWithPrefs);
+            _navigateToPostDesc(context, widget.index,widget.arrayWithPrefs,widget.callback);
         },
         child: Stack(
           children: <Widget>[
@@ -742,7 +736,7 @@ class _TileState extends State<Tile> {
                 Container(
                   padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
                   child: AutoSizeText(
-                    widget.arrayWithPrefs[widget.index].sub,
+                    widget.arrayWithPrefs[widget.index].sub[0].toString(),
                       // 'Science and Texhnology Council',
                       textAlign: TextAlign.start,
                       style: TextStyle(

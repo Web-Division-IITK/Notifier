@@ -7,6 +7,8 @@ import 'package:notifier/database/reminder.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'database/hive_database.dart';
 import 'database/student_search.dart';
@@ -59,8 +61,6 @@ class _RootPageState extends State<RootPage> {
         _userId = user.toString();
         uid = user;
       });
-      
-      
       if(uid!=null){
         if(uid != 'notverified'){
           print('populating users');
@@ -194,6 +194,22 @@ class _RootPageState extends State<RootPage> {
   @override
   Widget build(BuildContext context) {
     // print(_userId);
+    // FutureBuilder(
+    //   future: Firebase.initializeApp(),
+    //   builder: (BuildContext context, AsyncSnapshot<FirebaseApp> snapshot) {\
+        // StreamBuilder(
+        //   stream: FirebaseAuth.instance.authStateChanges() ,
+        //   initialData: null ,
+        //   builder: (BuildContext context, AsyncSnapshot<User> snapshot){
+        //     if(snapshot == null || snapshot.data == null){
+        //       return Container();
+        //     }else if(!snapshot.data.emailVerified){
+        //       return Container();
+        //     }else{
+        //       return Container();
+        //     }
+        //   },
+        // );
     switch (authStatus) {
       case AuthStatus.NOT_DETERMINED:
         return buildWaitingScreen();
@@ -226,5 +242,7 @@ class _RootPageState extends State<RootPage> {
       default:
         return buildWaitingScreen();
     }
+    //   },
+    // );
   }
 }

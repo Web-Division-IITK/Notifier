@@ -18,12 +18,16 @@ class CustomColors {
   Color get accentColor => isDarkTheme ? Colors.deepPurpleAccent:Colors.blueAccent;
   /// for * Light theme: `black54` * Dark theme: `a greyish shade of white`
   Color get exapndedTileColor => isDarkTheme ? Colors.black54 : Color.fromARGB(255,247, 247, 245);
-  /// for * Light theme: `deepPurple` * Dark theme: `amber`
-  Color get primaryColor => isDarkTheme ? Colors.deepPurple: Colors.amber;
+  /// for * Light theme: `pink` * Dark theme: `deepOrange`
+  Color get primaryColor => isDarkTheme ? Colors.pink:Colors.deepOrange;
+   /// for * Light theme: `deepPurple` * Dark theme: `amber`
+  Color get markerColor => isDarkTheme ? Colors.amberAccent :Colors.blueGrey[900];
   /// for * Light theme: `pink` * Dark theme: `deepOrange`
   Color get buttonColor => isDarkTheme ? Colors.pink: Colors.deepOrange;
   /// for * Light theme: `deepPurpleAccent[700]` * Dark theme: `blueAccent[700]`
   Color get splashColor => isDarkTheme ? Colors.deepPurpleAccent[700] : Colors.blueAccent[700];
+  /// for * Light theme: `deepOrange` * Dark theme: `blue`
+  Color get dateAvatarColor => isDarkTheme ? Colors.deepOrange : Colors.blue;
   /// for * Light theme: `deepPurpleAccent` * Dark theme: `blueAccent`
   /// 
   /// `NOTE: ` This is same as accentColor
