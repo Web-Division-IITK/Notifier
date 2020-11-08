@@ -67,9 +67,9 @@ class SubCouncil{
       return SubCouncil(
       coordiOfInCouncil: [],
       council:councilName,
-      level2:jsonData['level2'] ==null? []: jsonData['level2'].cast<String>(),
-      entity:jsonData['entity'] ==null? []: jsonData['entity'].cast<String>(),
-      misc: jsonData['misc'] ==null? []:jsonData['misc'].cast<String>(),
+      level2:jsonData['level2'] ==null? []: jsonData['level2']?.cast<String>(),
+      entity:jsonData['entity'] ==null? []: jsonData['entity']?.cast<String>(),
+      misc: jsonData['misc'] ==null? []:jsonData['misc']?.cast<String>(),
       select: List.generate(jsonData['entity'].length, (index)=>true,growable: true)
     );
    }
@@ -88,16 +88,23 @@ class Councils{
   Councils({this.subCouncil,this.coordOfCouncil,this.level3,this.presiAndChairPerson});
   
   factory Councils.fromMap(Map<String,dynamic> jsonData){
-    List<String> councils = jsonData['councils'].cast<String>();
-    List<String> presiAndChairPerson = (jsonData['presiAndChairPerson'] == null || jsonData['presiAndChairPerson'] == [])?
+    List<String> councils = jsonData['councils']?.cast<String>();
+    List<String> presiAndChairPerson = (!jsonData.containsKey('presiAndChairPerson') || 
+      jsonData['presiAndChairPerson'] == null || jsonData['presiAndChairPerson'] == [])?
       []
       : jsonData['presiAndChairPerson'].cast<String>();
     print(jsonData['level3']);
     return Councils(
       coordOfCouncil: [],
-      level3: jsonData['level3'].cast<String>(),
+      level3: jsonData['level3']?.cast<String>(),
       subCouncil: Map.fromIterables(councils, councils.map((council)=> SubCouncil.fromMapToCouncil(jsonData[council], council))),
       presiAndChairPerson: Map.fromIterables(presiAndChairPerson, presiAndChairPerson.map((f)=>SubCouncil.fromMap(jsonData[f], f)))
     );
   }
+  // Map<String, dynamic> toMap() {
+  //   return {
+  //     'coordiOfCOunicl': coordOfCouncil,
+  //     "level3" :level3,
+  //   };
+  // }
 }

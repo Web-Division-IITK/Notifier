@@ -19,7 +19,7 @@ class PeopleModel{
     return PeopleModel(
       councils: Map.fromIterable(council,
         key: (item) => item.toString(),
-        value: (item) => jsonData[item].cast<String>(),
+        value: (item) => jsonData[item]?.cast<String>(),
       ),
       // Map.fromIterables(jsonData['councils'].cast<String>(), jsonData['councils'].map((council)=> jsonData[council].cast<String>())),
       id: jsonData['id'],

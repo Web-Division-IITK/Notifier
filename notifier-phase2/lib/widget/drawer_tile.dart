@@ -3,15 +3,20 @@ import 'package:flutter/material.dart';
 class DrawerTile extends StatelessWidget {
   final Widget routeWidget;
   final Function onTap;
+  final Function navigation;
   final String title;
   final IconData icon;
   DrawerTile(
-      {this.routeWidget, @required this.title, @required this.icon, this.onTap})
-      : assert(routeWidget != null || onTap != null);
+      {this.routeWidget, @required this.title, @required this.icon, this.onTap,this.navigation})
+      : assert(routeWidget != null || onTap != null || navigation != null);
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap: () {
+        onTap: () async{
+          if(navigation != null){
+            Navigator.of(context).pop();
+            return  navigation();
+          }
           if(onTap == null ){  
             Navigator.of(context).pop();
             Navigator.of(context)

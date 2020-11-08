@@ -96,6 +96,12 @@ class _MakeCoordiState extends State<MakeCoordi> {
                   }
                   return v;
                 },ifAbsent: ()=> [_selectedEntity]);
+                allCouncilData.coordOfCouncil = data.keys.toList();
+                  allCouncilData.subCouncil.forEach((councilName,subCouncil){
+                    subCouncil.coordiOfInCouncil = (data[councilName] == null )? 
+                      []
+                        :data[councilName];
+                }); 
                 peopleBox.toMap()[0].councils = data;
                 // peopleBox.putAt(0, peopleBox.toMap()[0]);
               }

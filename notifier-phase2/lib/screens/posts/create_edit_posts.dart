@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart' as intl;
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/options.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
@@ -15,13 +16,14 @@ import 'package:notifier/services/functions.dart';
 import 'package:notifier/widget/addImage.dart';
 import 'package:notifier/widget/chips.dart';
 import 'package:notifier/widget/showtoast.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CreateEditPosts extends StatefulWidget {
-  final String type;
+  final PostDescType type;
 
   /// index of post in globalPOstsArray;
   final int index;
-  final PostsSort post;
+  final Posts post;
   final String title;
   CreateEditPosts(this.type,this.index,this.post,{this.title = 'edit'});
   @override
@@ -30,7 +32,9 @@ class CreateEditPosts extends StatefulWidget {
 
 class _CreateEditPostsState extends State<CreateEditPosts> {
   final _formKey = GlobalKey<FormState>();
-  PostsSort post= PostsSort();
+  Posts post= Posts(
+
+  );
   bool requestPerm = false;
    
   // String   _title;
@@ -65,16 +69,20 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
   }
   @override
   void initState() {
-    post = copyPost(widget.post);
+    post = Posts.copy(widget.post);
+    if(post.author == null || post.author.isEmpty){
+      post.author = id;
+    }
+    // post = widget.post;
     _loadingWidget = false;
-    if(widget.type.toLowerCase() == 'create'){
+    if(widget.type == PostDescType.CREATE_POSTS){
       if((post.owner!=null && post.owner != id) || widget.title == 'perm'){
         title = 'Edit';
       }else{
         title = 'Create';
       }
     }
-    else if(widget.type.toLowerCase() == 'permission'){
+    else if(widget.type == PostDescType.EDIT_POSTS){
       title = 'Edit';
     }
     else{
@@ -86,7 +94,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
     //   _entityList = [councilNameTOfullForms(_councilList[0])];
     // } else {
       _councilList = List.from(_councilList)..addAll(repo.getCoordiCouncil());
-      if(post.sub !=null && post.council != null){
+      if(post.sub !=null && post.sub.isNotEmpty && post.council != null){
         _entityList = List.from(_entityList)..addAll(repo.getEntityofCoordiByCouncil(post.council));
       // }
     }
@@ -131,7 +139,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
     return WillPopScope(
       onWillPop: ()async{
 
-        return !(_loadingWidget && widget.type.toLowerCase() == 'update');
+        return !(_loadingWidget && widget.type == PostDescType.EDIT_POSTS);
       },
       child: AbsorbPointer(
         // absorbing: _loadingWidget && widget.type.toLowerCase() == 'update',
@@ -315,10 +323,11 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                     child: DropdownButtonFormField(
                                       icon: Icon(Entypo.chevron_down),
                                       items: post.owner!=null && post.owner != id  ?
-                                      [post.sub].map((location) {
+                                      post.sub.map((location) {
+                                        print(post.sub);
                                       return DropdownMenuItem(
-                                        child: new Text(location),
-                                        value: location,
+                                        child: new Text(location.toString()),
+                                        value: location.toString(),
                                       );
                                     }).toList()
                                       :_entityList.map((location) {
@@ -335,11 +344,11 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                       ),
                                       onChanged: (newValue) => _onSelectedEntity(newValue),
                                       // hint: Text('Choose Entity'),
-                                      value: post.sub,
+                                      value: post.sub == null || post.sub.isEmpty?null :post.sub[0]??null,
                                       validator: (value) => value == null || value.isEmpty
                                           ? 'This field is required'
                                           : null,
-                                      onSaved: (value) => post.sub = value,
+                                      onSaved: (value) => post.sub = [value],
                                   )):Container(),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 0.0),
@@ -401,7 +410,6 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                             ],
                           ),
                         ),
-
                         Container(
                                 padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                             child: Row(
@@ -418,27 +426,72 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                     controller: _imageController,
                                     readOnly: true,
                                     // enabled: false,
-                                    onTap: (){
+                                    onTap: ()async{
                                       if(_imageController.text.trim() == null || _imageController.text == '' || _imageController.text.trim() == ''){
                                       // setState(() {
                                       //   _imageController.text = null;
                                       // });
                                       _imageController.clear();
                                     }
-                                    return showDialog(
-                                      barrierDismissible: false,
-                                        context: context,
-                                        builder: (context) {
-                                          print(_imageController.text);
-                                          print(_image);
-                                          
-                                          return  AddImage(
-                                                imageController: _imageController, 
-                                                addingImage: AddingImage(image: _image, url: _imageController.text.toString()), 
-                                                type: widget.type
-                                              );
-                                             
-                                        });
+                                    await PermissionHandler().checkPermissionStatus(PermissionGroup.storage).then((value)async{
+                                      try{
+                                        print(value);
+                                        if(value == PermissionStatus.denied || value == PermissionStatus.disabled 
+                                          || value == PermissionStatus.restricted || value == PermissionStatus.unknown){
+                                          await PermissionHandler().requestPermissions([PermissionGroup.storage]).then((value)async{
+                                            if(value[PermissionGroup.storage] == PermissionStatus.unknown){
+                                              print(".....UNKNOWN ............. !!!");
+                                            }else if(value[PermissionGroup.storage] == PermissionStatus.denied){
+                                              return await PermissionHandler().shouldShowRequestPermissionRationale(PermissionGroup.storage).then((value)async{
+                                                if(value)
+                                                  return showErrorToast("You need to allow storage permissions to upload images");
+                                                 await PermissionHandler().openAppSettings().then((value){
+                                                  if(!value)
+                                                    return showErrorToast("Can't open this device's settings");
+                                                });
+                                                await PermissionHandler().checkPermissionStatus(PermissionGroup.storage).then((value){
+                                                if(value == PermissionStatus.denied || value == PermissionStatus.disabled || value == PermissionStatus.restricted){
+                                                  return showInfoToast("You need to allow storage permissions to upload images");
+                                                }
+                                              });
+                                              });
+                                              
+                                            }else if(value[PermissionGroup.storage] == PermissionStatus.restricted){
+                                              await PermissionHandler().openAppSettings().then((value){
+                                                if(!value)
+                                                  showErrorToast("Can't open this device's settings");
+                                              });
+                                              await PermissionHandler().checkPermissionStatus(PermissionGroup.storage).then((value){
+                                                if(value == PermissionStatus.denied || value == PermissionStatus.disabled || value == PermissionStatus.restricted){
+                                                  showInfoToast("You need to allow storage permissions to upload images");
+                                                }
+                                              });
+                                            }else if(value[PermissionGroup.storage] == PermissionStatus.disabled){
+                                              showErrorToast("Your device doesn't support this feature !!!");
+                                            }
+                                            print(value);
+                                            return showDialog(
+                                              barrierDismissible: false,
+                                                context: context,
+                                                builder: (context) {
+                                                  print(_imageController.text);
+                                                  print(_image);
+                                                  
+                                                  return  AddImage(
+                                                        imageController: _imageController, 
+                                                        addingImage: AddingImage(image: _image, url: _imageController.text.toString()), 
+                                                        type: widget.type
+                                                      );
+                                                    
+                                                });
+                                            
+                                          });
+                                        }
+                                      }catch(e){
+                                        showErrorToast("This function is not available for this moment");
+                                        return print(e);
+                                      }
+                                    });
                                   
                                     },
                                     keyboardType: TextInputType.multiline,
@@ -466,33 +519,79 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                     color: Theme.of(context).accentColor,
                                     // size: 30.0,
                                   ),
-                                  onPressed: () {
+                                  onPressed: () async{
                                     if(_imageController.text.trim() == null || _imageController.text == '' || _imageController.text.trim() == ''){
                                       // setState(() {
                                       //   _imageController.text = null;
                                       // });
                                       _imageController.clear();
                                     }
-                                    return showDialog(
-                                      barrierDismissible: false,
-                                        context: context,
-                                        builder: (context) {
-                                          print(_imageController.text);
-                                          print(_image);
-                                          
-                                          return  AddImage(
-                                                imageController: _imageController, 
-                                                addingImage: AddingImage(image: _image, url: _imageController.text.toString()), 
-                                                type: widget.type
-                                              );
-                                             
-                                        });
+                                    await PermissionHandler().checkPermissionStatus(PermissionGroup.storage).then((value)async{
+                                      try{
+                                        print(value);
+                                        if(value == PermissionStatus.denied || value == PermissionStatus.disabled 
+                                          || value == PermissionStatus.restricted || value == PermissionStatus.unknown){
+                                          await PermissionHandler().requestPermissions([PermissionGroup.storage]).then((value)async{
+                                            if(value[PermissionGroup.storage] == PermissionStatus.unknown){
+                                              print(".....UNKNOWN ............. !!!");
+                                            }else if(value[PermissionGroup.storage] == PermissionStatus.denied){
+                                              return await PermissionHandler().shouldShowRequestPermissionRationale(PermissionGroup.storage).then((value)async{
+                                                if(value)
+                                                  return showErrorToast("You need to allow storage permissions to upload images");
+                                                 await PermissionHandler().openAppSettings().then((value){
+                                                  if(!value)
+                                                    return showErrorToast("Can't open this device's settings");
+                                                });
+                                                await PermissionHandler().checkPermissionStatus(PermissionGroup.storage).then((value){
+                                                if(value == PermissionStatus.denied || value == PermissionStatus.disabled || value == PermissionStatus.restricted){
+                                                  return showInfoToast("You need to allow storage permissions to upload images");
+                                                }
+                                              });
+                                              });
+                                              
+                                            }else if(value[PermissionGroup.storage] == PermissionStatus.restricted){
+                                              await PermissionHandler().openAppSettings().then((value){
+                                                if(!value)
+                                                  showErrorToast("Can't open this device's settings");
+                                              });
+                                              await PermissionHandler().checkPermissionStatus(PermissionGroup.storage).then((value){
+                                                if(value == PermissionStatus.denied || value == PermissionStatus.disabled || value == PermissionStatus.restricted){
+                                                  showInfoToast("You need to allow storage permissions to upload images");
+                                                }
+                                              });
+                                            }else if(value[PermissionGroup.storage] == PermissionStatus.disabled){
+                                              showErrorToast("Your device doesn't support this feature !!!");
+                                            }
+                                            print(value);
+                                            return showDialog(
+                                              barrierDismissible: false,
+                                                context: context,
+                                                builder: (context) {
+                                                  print(_imageController.text);
+                                                  print(_image);
+                                                  
+                                                  return  AddImage(
+                                                        imageController: _imageController, 
+                                                        addingImage: AddingImage(image: _image, url: _imageController.text.toString()), 
+                                                        type: widget.type
+                                                      );
+                                                    
+                                                });
+                                            
+                                          });
+                                        }
+                                      }catch(e){
+                                        showErrorToast("This function is not available for this moment");
+                                        return print(e);
+                                      }
+                                    });
                                   }),
                                   ),
                                 ]
                               )
                             ),
-                        (name == null || name == '' )?Padding(
+                        ((name == null || name.isEmpty)&& (id == null || id.isEmpty))?
+                        Padding(
                                           padding: const EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 0.0),
                                           child: new TextFormField(
                                             toolbarOptions: ToolbarOptions(
@@ -877,7 +976,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                                     // color: Colors.blue,
                             onPressed: () async {
                               if (validateAndSave()) {
-                                widget.type.toLowerCase() != 'update'? 
+                                widget.type != PostDescType.EDIT_POSTS? 
                                   Navigator.of(context).push(
                                     MaterialPageRoute(builder: (BuildContext context) {
                                       return FeatureDiscovery(child: PostDescription(listOfPosts: [post],type:widget.type,index: 0,));}))
@@ -886,11 +985,11 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                               }
                           },
                           icon: Icon(
-                            widget.type.toLowerCase() == 'update'? MaterialCommunityIcons.file_upload_outline :MaterialCommunityIcons.open_in_new,
+                            widget.type == PostDescType.EDIT_POSTS? MaterialCommunityIcons.file_upload_outline :MaterialCommunityIcons.open_in_new,
                             color: Colors.white,
                           ),
                           label: Text(
-                            widget.type.toLowerCase() == 'update'? (requestPerm? 'Send Approve Request': 'Update'):'Preview',
+                            widget.type == PostDescType.EDIT_POSTS? ('Update'):'Preview',
                             style: TextStyle(color: Colors.white,
                               fontSize: 15.0
                             ),
@@ -899,7 +998,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
                     ],
                   ),
             ),
-            (_loadingWidget && widget.type.toLowerCase() == 'update')?
+            (_loadingWidget && widget.type == PostDescType.EDIT_POSTS)?
             Container(
               height:MediaQuery.of(context).size.height,
               color: Colors.black.withOpacity(0.8),
@@ -939,7 +1038,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
       // _selectedEntity = "Choose ..";
       // _entity = ["Choose .."];
       post.council = value;
-      post.sub = null;
+      post.sub = [];
       // if (ids.contains(id) && id!='anc') {
       //   _entityList = [councilNameTOfullForms(post.council)];
       // } else {
@@ -956,7 +1055,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
 
   void _onSelectedEntity(String value) {
     setState(() {
-      post.sub = value;
+      post.sub = [value];
     });
   }
   addingTag() {
@@ -1110,7 +1209,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
 
     if(validateAndSave()){
       // requestPerm?
-      showInfoToast('Sending request !!!');
+      showInfoToast('Updating Post !!!');
       // showInfoToast('Updating Posts!!!');
       setState(() {
         _loadingWidget = true;
@@ -1125,17 +1224,19 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
         var response = await createEditPosts(post,true,isCreate: false);
         if(response.statusCode == 200){
           // requestPerm?
-          showSuccessToast('Request Send Successfully!!!');
+          showSuccessToast('Updated Successfully!!!');
           // showSuccessToast('Updated Successfully!!!');
           Navigator.of(context).pop();
           setState(() {
             _loadingWidget = false;
+            time = false;
           });
         }
         else{
           showErrorToast('Can\'t process your request at this time' );
           setState(() {
             _loadingWidget = false;
+            time = false;
           });
         }
       }catch(e){
@@ -1143,6 +1244,7 @@ class _CreateEditPostsState extends State<CreateEditPosts> {
         showErrorToast(e.message??'Can\'t process your request at this time');
         setState(() {
             _loadingWidget = false;
+            time = false;
           });
       }
     }

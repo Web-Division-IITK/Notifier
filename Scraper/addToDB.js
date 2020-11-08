@@ -38,19 +38,19 @@ function updateStudData(data){
     return prom;    
 }
 
-var url = "mongodb+srv://webdivision:webdivision@cluster0-ke6fc.mongodb.net/studdata?retryWrites=true&w=majority";
+var url = "mongodb://127.0.0.1:27017/oarsscrap";
 let options = {
     useNewUrlParser: true,
     useFindAndModify: false,
     useCreateIndex: true
 }
 mongoose.connect(url, options, async function (err) {
-    // let userx = JSON.parse(fs.readFileSync('hexml.json'));
-    // for(let i=0; i<userx.length; i++){
-    //     await createUsers(userx[i]);
-    //     console.log(userx.length);
-    // }
-    console.log(await getAllStudData());
+    let userx = JSON.parse(fs.readFileSync('hexml.json'));
+    for(let i=0; i<userx.length; i++){
+        await createUsers(userx[i]);
+        console.log(userx.length);
+    }
+    // console.log(await getAllStudData());
 })
 
 // async function xx(){

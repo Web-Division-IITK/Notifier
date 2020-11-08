@@ -321,7 +321,7 @@ class _ProfileState extends State<Profile> {
                                                     backgroundColor: Colors.transparent,
                                                     child: InkWell  (
                                                       onTap: (){
-                                                      _updateDialog(UpdateProfile.DEPT);
+                                                      _updateDialog(UpdateProfile.DEPT).then((value) => setState((){}));
                                                     },
                                                       child: Icon(
                                                         Icons.edit,
@@ -388,7 +388,7 @@ class _ProfileState extends State<Profile> {
                                                     backgroundColor: Colors.transparent,
                                                     child: InkWell(
                                                       onTap: (){
-                                                        _updateDialog(UpdateProfile.ROOM);
+                                                        _updateDialog(UpdateProfile.ROOM).then((value) => setState((){}));
                                                       },
                                                       child: Icon(Icons.edit,
                                                       color: Theme.of(context).iconTheme.color,
@@ -426,7 +426,7 @@ class _ProfileState extends State<Profile> {
                                                     backgroundColor: Colors.transparent,
                                                     child: InkWell  (
                                                       onTap: (){
-                                                      _updateDialog(UpdateProfile.HALL);
+                                                      _updateDialog(UpdateProfile.HALL).then((value) => setState((){}));
                                                     },
                                                       child: Icon(
                                                         Icons.edit,
@@ -642,7 +642,9 @@ class _ProfileState extends State<Profile> {
                             Row(
                               children: <Widget>[
                                 Container(
-                                  width: MediaQuery.of(context).size.width -48-200, //100
+                                  width: MediaQuery.of(context).size.width
+                                   * 0.6,
+                                  // -48-200, //100
                                   child: TextFormField(
                                     initialValue: '${searchModel.dept}',
                                     readOnly: true,
@@ -652,17 +654,19 @@ class _ProfileState extends State<Profile> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: 8,),
-                                IconButton(
-                                  icon: Icon(Icons.edit), 
-                                  onPressed: (){
-                                    _updateDialog(UpdateProfile.DEPT);
-                                  },
-                                  tooltip: 'Update Department',
-                                ),
+                                // SizedBox(width: 8,),
+                                // IconButton(
+                                //   icon: Icon(Icons.edit), 
+                                //   onPressed: (){
+                                //     _updateDialog(UpdateProfile.DEPT);
+                                //   },
+                                //   tooltip: 'Update Department',
+                                // ),
                                 SizedBox(width:12),
                                 Container(
-                                  width: 100 - 20.0,
+                                  width: 
+                                  MediaQuery.of(context).size.width * 0.4 -46,
+                                  // 100 - 20.0,
                                   child: TextFormField(
                                     initialValue: '${searchModel.program}',
                                     readOnly: true,
@@ -672,14 +676,14 @@ class _ProfileState extends State<Profile> {
                                     ),
                                   ),
                                 ),
-                                SizedBox(width: 8,),
-                                IconButton(
-                                  icon: Icon(Icons.edit), 
-                                  onPressed: (){
-                                    _updateDialog(UpdateProfile.PROGRM);
-                                  },
-                                  tooltip: 'Update Program',
-                                ),
+                                // SizedBox(width: 8,),
+                                // IconButton(
+                                //   icon: Icon(Icons.edit), 
+                                //   onPressed: (){
+                                //     _updateDialog(UpdateProfile.PROGRM);
+                                //   },
+                                //   tooltip: 'Update Program',
+                                // ),
                               ],
                             ),
                             searchModel == null || searchModel.room == null || searchModel.room.replaceAll(' ', '') == ''?
@@ -711,7 +715,7 @@ class _ProfileState extends State<Profile> {
                                       IconButton(
                                         icon: Icon(Icons.edit), 
                                         onPressed: (){
-                                          _updateDialog(UpdateProfile.ROOM);
+                                          _updateDialog(UpdateProfile.ROOM).then((value) => setState((){}));
                                         },
                                         tooltip: 'Update Room',
                                       ),
@@ -740,7 +744,7 @@ class _ProfileState extends State<Profile> {
                                         IconButton(
                                           icon: Icon(Icons.edit), 
                                           onPressed: (){
-                                            _updateDialog(UpdateProfile.HALL);
+                                            _updateDialog(UpdateProfile.HALL).then((value) => setState((){}));
                                           },
                                           tooltip: 'Update Hall',
                                         ),
@@ -828,7 +832,7 @@ class _ProfileState extends State<Profile> {
     );
   }
   
-  _updateDialog(UpdateProfile type) {
+  Future _updateDialog(UpdateProfile type) {
     return showDialog(
       barrierDismissible: false,
         context: context,
@@ -856,271 +860,273 @@ class _ProfileState extends State<Profile> {
           // type == 'hall'?hallName(searchModel.hall) : searchModel.room;
           return StatefulBuilder(
             builder: (context, setStat) {
-              return AbsorbPointer(
-                absorbing: _loading,
-                child: Container(
-                  width: MediaQuery.of(context).size.width*0.8,
-                  child: AlertDialog(
-                    elevation: 5.0,
-                    contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 20),
-                    shape: new RoundedRectangleBorder(
-                        borderRadius: new BorderRadius.circular(30.0)),
-                        title: Center(
-                          child: Text(
-                            'Update ' + _typeValue
-                          )
-                      ),
-                    content: Form(
-                      key: _formKey,
-                      child: Container(
-                        // width: MediaQuery.of(context).size.width*0.8,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: type == UpdateProfile.HALL || type == UpdateProfile.PROGRM?
-                                  DropdownButtonFormField(
-                                    items: ((){
-                                      if(type == UpdateProfile.HALL)
-                                        return hall;
-                                      return program;}()).map((location) {
-                                    return DropdownMenuItem(
-                                      child: new Text(
-                                        type == UpdateProfile.HALL?hallName(location): location),
-                                      value: location,
-                                    );
-                                  }).toList(),
-                                  decoration: InputDecoration(
-                                    labelText: 'Hall',
-                                    hintText: 'Select Hall',
-                                    isDense: true
-                                  ),
-                                  onChanged: (newValue) =>setStat((){
-                                    type == UpdateProfile.HALL?
-                                    _value = hallName(newValue)
-                                    : _value = newValue;}),
-                                              // hint: Text('Choose Council'),
-                                  value: _value,
-                                  validator: (value) => value == null || value.isEmpty
-                                    ? 'The field is required to update record'
-                                    : null,
-                                  onSaved: (value) => _value = type == UpdateProfile.HALL? hallName(value): value,
-                                )
-                                : TextFormField(
-                                  toolbarOptions: ToolbarOptions(
-                                    copy: true,
-                                    paste: true,
-                                    selectAll: true,
-                                  ),
-                                  maxLines: 1,
-                                  keyboardType: TextInputType.text,
-                                  autofocus: false,
-                                  initialValue: type == UpdateProfile.ROOM ? '${searchModel.room}' : searchModel.dept,
-                                  decoration: new InputDecoration(
-                                    labelText: type == UpdateProfile.ROOM ? 'Room' : 'Department',
-                                    helperText: type == UpdateProfile.ROOM ? 'Room should be like A-508' : 'Your department'
-                                  ),
-                                  validator: (value) => value.isEmpty?'The field is required to update record'
-                                      : null,
-                                  onSaved: (value) => _value = value,
-                                ),
+              return AlertDialog(
+                elevation: 5.0,
+                contentPadding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                shape: new RoundedRectangleBorder(
+                    borderRadius: new BorderRadius.circular(30.0)),
+                    title: Center(
+                      child: Text(
+                        'Update ' + _typeValue
+                      )
+                  ),
+                content: Form(
+                  key: _formKey,
+                  child: Container(
+                    // height: 200,
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    // constraints: BoxConstraints(
+                    //   maxWidth: MediaQuery.of(context).size.width * 0.65,
+                    //   minWidth: MediaQuery.of(context).size.width * 0.45,
+                    // ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Material(
+                          color: Colors.transparent,
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 0.0),
+                            // width: 150,
+                            child: type == UpdateProfile.HALL || type == UpdateProfile.PROGRM?
+                              DropdownButtonFormField(
+                                items: ((){
+                                  if(type == UpdateProfile.HALL)
+                                    return hall;
+                                  return program;}()).map((location) {
+                                return DropdownMenuItem(
+                                  child: new Text(
+                                    type == UpdateProfile.HALL?hallName(location): location),
+                                  value: location,
+                                );
+                              }).toList(),
+                              decoration: InputDecoration(
+                                labelText: 'Hall',
+                                hintText: 'Select Hall',
+                                isDense: true
                               ),
-                            ),
-                            Container(
-                              padding: EdgeInsets.only( top: 25.0,left: 0.0),
-                              // height: 100.0,
-
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: <Widget>[
-                                    FlatButton(
-                                        shape: new RoundedRectangleBorder(
-                                            borderRadius:
-                                                new BorderRadius.circular(30.0)),
-                                        // color: Colors.blue,
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Container(
-                                          // constraints: BoxConstraints(
-                                          //   maxWidth: 85
-                                          //   //  MediaQuery.of(context).size.width - 30 - 109
-                                          // ),
-                                          width: 50,
-                                          child: AutoSizeText('Dismiss'))),
-                                    SizedBox(width: 7),
-                                    Padding(
-                                      padding: const EdgeInsets.only(left:0,right: 0.0),
-                                      child: RaisedButton(
-                                          shape: new RoundedRectangleBorder(
-                                              borderRadius:
-                                                  new BorderRadius.circular(30.0)),
-                                          color: Colors.blue,
-                                          onPressed: () async{
-                                            if (_formKey.currentState.validate()) {
-                                              _formKey.currentState.save();
-                                              setStat(() {
-                                                _loading = true;
-                                              });
-                                              showInfoToast('Updating ' + _typeValue);
-                                              String prev;
-                                              try{
-                                                await changeStudentData({_typeValue.toLowerCase(): _value,"auth": auth}).then((status)async{
-                                                  if(status == true){
-                                                    switch(type){
-                                                      case UpdateProfile.DEPT : {
-                                                        prev = searchModel.dept;
-                                                        setState(() => searchModel.dept = _value);
-                                                      } break;
-                                                      case UpdateProfile.HALL : {
-                                                        prev = searchModel.hall;
-                                                        setState(() => searchModel.hall = _value);
-                                                      } break;
-                                                      case UpdateProfile.PROGRM :{
-                                                        prev = searchModel.program;
-                                                        setState(() => searchModel.program = _value);
-                                                      } break;
-                                                      case UpdateProfile.ROOM : {
-                                                        prev = searchModel.room;
-                                                        setState(() => searchModel.room = _value);
-                                                      } break;
-                                                    }
-                                                    await StuSearchDatabase().updatePosts(searchModel).then((v){
-                                                      if(v ==true){
-                                                        setStat(() {
-                                                          _loading = false;
-                                                        });
-                                                        showSuccessToast('Successfully Updated your' + _typeValue);
-                                                      }else{
-                                                        showErrorToast( 'Updation Failed!!!');
-                                                         setStat(() {
-                                                          _loading = false;
-                                                        });
-                                                        switch(type){
-                                                          case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
-                                                          break;
-                                                          case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
-                                                          break;
-                                                          case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
-                                                          break;
-                                                          case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
-                                                          break;
-                                                        }
-                                                      // if (type == 'hall') {
-                                                      //   setState(() {
-                                                      //     searchModel.hall = prev;
-                                                      //   });
-                                                      // } else {
-                                                      //   setState(() {
-                                                      //     searchModel.room = prev;
-                                                      //   });
-                                                      // }
-                                                      }
-                                                    }).catchError((onError){
-                                                    print(onError);
-                                                     setStat(() {
-                                                          _loading = false;
-                                                    });
-                                                    switch(type){
-                                                        case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
-                                                        break;
-                                                        case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
-                                                        break;
-                                                        case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
-                                                        break;
-                                                        case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
-                                                        break;
-                                                    }
-                                                    showErrorToast( 'Updation Failed!!!');
-                                                  });
-                                                  }else{
-                                                    setStat(() {
-                                                          _loading = false;
-                                                        });
-                                                    switch(type){
-                                                        case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
-                                                        break;
-                                                        case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
-                                                        break;
-                                                        case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
-                                                        break;
-                                                        case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
-                                                        break;
-                                                    }
-                                                  // if (type == 'hall') {
-                                                  //   setState(() {
-                                                  //     searchModel.hall = prev;
-                                                  //   });
-                                                  // } else {
-                                                  //   setState(() {
-                                                  //     searchModel.room = prev;
-                                                  //   });
-                                                  // }
-                                                    showErrorToast( 'Updation Failed!!!');
-                                                  }
-                                                });
-                                              }catch(onError){
-                                                  print(onError);
-                                                   setStat(() {
-                                                          _loading = false;
-                                                        });
-                                                  switch(type){
-                                                          case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
-                                                          break;
-                                                          case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
-                                                          break;
-                                                          case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
-                                                          break;
-                                                          case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
-                                                          break;
-                                                  }
-                                                  // if (type == 'hall') {
-                                                  //   setState(() {
-                                                  //     searchModel.hall = prev;
-                                                  //   });
-                                                  // } else {
-                                                  //   setState(() {
-                                                  //     searchModel.room = prev;
-                                                  //   });
-                                                  // }
-                                                  showErrorToast( 'Updation Failed!!!');
-                                              }
-                                              if(mounted) Navigator.of(context).pop();
-                                            }
-                                          },
-                                          child: Container(
-                                            // width: MediaQuery.of(context).size.width *0.8 - 30 - 57 - 88,
-                                            constraints: BoxConstraints(
-                                              maxWidth: MediaQuery.of(context).size.width *0.8 - 40 - 57-88,
-                                            // MediaQuery.of(context).size.width - 180
-                                            ), //30 + 85 + 7
-                                            child: _loading ?
-                                              Center(
-                                                child: Container(
-                                                  height: 20,
-                                                  width: 20,
-                                                  child: CircularProgressIndicator(backgroundColor: Colors.white,strokeWidth: 2,)),
-                                              )
-                                            : AutoSizeText('Update ' + _typeValue,
-                                              maxLines: 1,
-                                              minFontSize: 2,
-                                              maxFontSize: 15,
-                                              style: TextStyle(color: Colors.white),
-                                            ),
-                                          )),
-                                    ),
-                                  ]),
+                              onChanged: (newValue) =>setStat((){
+                                type == UpdateProfile.HALL?
+                                _value = hallName(newValue)
+                                : _value = newValue;}),
+                                          // hint: Text('Choose Council'),
+                              value: _value,
+                              validator: (value) => value == null || value.isEmpty
+                                ? 'The field is required to update record'
+                                : null,
+                              onSaved: (value) => _value = type == UpdateProfile.HALL? hallName(value): value,
                             )
-                            // )
-                          ],
-                          // )
+                            : TextFormField(
+                              toolbarOptions: ToolbarOptions(
+                                copy: true,
+                                paste: true,
+                                selectAll: true,
+                              ),
+                              maxLines: 1,
+                              keyboardType: TextInputType.text,
+                              autofocus: false,
+                              initialValue: type == UpdateProfile.ROOM ? '${searchModel.room}' : searchModel.dept,
+                              decoration: new InputDecoration(
+                                labelText: type == UpdateProfile.ROOM ? 'Room' : 'Department',
+                                helperText: type == UpdateProfile.ROOM ? 'Room should be like A-508' : 'Your department'
+                              ),
+                              validator: (value) => value.isEmpty?'The field is required to update record'
+                                  : null,
+                              onSaved: (value) => _value = value,
+                            ),
+                          ),
                         ),
-                      ),
+                        Container(
+                          padding: EdgeInsets.only( top: 25.0,left: 0.0),
+                          // height: 100.0,
+
+                          child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: <Widget>[
+                                FlatButton(
+                                    shape: new RoundedRectangleBorder(
+                                        borderRadius:
+                                            new BorderRadius.circular(30.0)),
+                                    // color: Colors.blue,
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Container(
+                                      // constraints: BoxConstraints(
+                                      //   maxWidth: 85
+                                      //   //  MediaQuery.of(context).size.width - 30 - 109
+                                      // ),
+                                      width: 50,
+                                      child: AutoSizeText('Dismiss'))),
+                                SizedBox(width: 7),
+                                Padding(
+                                  padding: const EdgeInsets.only(left:0,right: 0.0),
+                                  child: RaisedButton(
+                                      shape: new RoundedRectangleBorder(
+                                          borderRadius:
+                                              new BorderRadius.circular(30.0)),
+                                      color: Colors.blue,
+                                      onPressed: () async{
+                                        if (_formKey.currentState.validate()) {
+                                          _formKey.currentState.save();
+                                          setStat(() {
+                                            _loading = true;
+                                          });
+                                          showInfoToast('Updating ' + _typeValue);
+                                          String prev;
+                                          switch(type){
+                                            case UpdateProfile.DEPT : prev = searchModel.dept;
+                                            break;
+                                            case UpdateProfile.HALL : prev = searchModel.hall;
+                                            break;
+                                            case UpdateProfile.PROGRM : prev = searchModel.program;
+                                            break;
+                                            case UpdateProfile.ROOM : prev = searchModel.room;
+                                            break;
+                                                }
+                                          try{
+                                            await changeStudentData({_typeValue.toLowerCase(): _value,"auth": auth}).then((status)async{
+                                              if(status == true){
+                                                switch(type){
+                                                  case UpdateProfile.DEPT : {
+                                                    prev = searchModel.dept;
+                                                    searchModel.dept = _value;
+                                                  } break;
+                                                  case UpdateProfile.HALL : {
+                                                    prev = searchModel.hall;
+                                                    searchModel.hall = _value;
+                                                  } break;
+                                                  case UpdateProfile.PROGRM :{
+                                                    prev = searchModel.program;
+                                                    searchModel.program = _value;
+                                                  } break;
+                                                  case UpdateProfile.ROOM : {
+                                                    prev = searchModel.room;
+                                                    searchModel.room = _value;
+                                                  } break;
+                                                }
+                                                await StuSearchDatabase().updatePosts(searchModel).then((v){
+                                                  if(v ==true){
+                                                    setStat(() {
+                                                      _loading = false;
+                                                    });
+                                                    showSuccessToast('Successfully Updated your' + _typeValue);
+                                                  }else{
+                                                    showErrorToast( 'Updation Failed!!!');
+                                                    //  setStat(() {
+                                                      _loading = false;
+                                                    // });
+                                                    switch(type){
+                                                      case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
+                                                      break;
+                                                      case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
+                                                      break;
+                                                      case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
+                                                      break;
+                                                      case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
+                                                      break;
+                                                    }
+                                                  // if (type == 'hall') {
+                                                  //   setState(() {
+                                                  //     searchModel.hall = prev;
+                                                  //   });
+                                                  // } else {
+                                                  //   setState(() {
+                                                  //     searchModel.room = prev;
+                                                  //   });
+                                                  // }
+                                                  }
+                                                }).catchError((onError){
+                                                print(onError);
+                                                //  setStat(() {
+                                                      _loading = false;
+                                                // });
+                                                switch(type){
+                                                    case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
+                                                    break;
+                                                    case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
+                                                    break;
+                                                    case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
+                                                    break;
+                                                    case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
+                                                    break;
+                                                }
+                                                showErrorToast( 'Updation Failed!!!');
+                                              });
+                                              }else{
+                                                // setStat(() {
+                                                  _loading = false;
+                                                // });
+                                                switch(type){
+                                                  case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
+                                                  break;
+                                                  case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
+                                                  break;
+                                                  case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
+                                                  break;
+                                                  case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
+                                                  break;
+                                                }
+                                                showErrorToast( 'Updation Failed!!!');
+                                              }
+                                            });
+                                          }catch(onError){
+                                              print(onError);
+                                              //  setStat(() {
+                                                      _loading = false;
+                                                    // });
+                                              switch(type){
+                                                case UpdateProfile.DEPT : setState((){searchModel.dept = prev;});
+                                                break;
+                                                case UpdateProfile.HALL : setState((){searchModel.hall = prev;});
+                                                break;
+                                                case UpdateProfile.PROGRM : setState((){searchModel.program = prev;});
+                                                break;
+                                                case UpdateProfile.ROOM : setState((){searchModel.room = prev;});
+                                                break;
+                                              }
+                                              // if (type == 'hall') {
+                                              //   setState(() {
+                                              //     searchModel.hall = prev;
+                                              //   });
+                                              // } else {
+                                              //   setState(() {
+                                              //     searchModel.room = prev;
+                                              //   });
+                                              // }
+                                              showErrorToast( 'Updation Failed!!!');
+                                          }
+                                          if(mounted) Navigator.of(context).pop();
+                                        }
+                                      },
+                                      child: Container(
+                                        // width: ,
+                                        // width: MediaQuery.of(context).size.width *0.8 - 30 - 57 - 88,
+                                        // constraints: BoxConstraints(
+                                        //   maxWidth: MediaQuery.of(context).size.width *0.8 - 40 - 57-88,
+                                        // MediaQuery.of(context).size.width - 180
+                                        // ), //30 + 85 + 7
+                                        child: _loading ?
+                                          Center(
+                                            child: Container(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(backgroundColor: Colors.white,strokeWidth: 2,)),
+                                          )
+                                        : AutoSizeText('Update ' + _typeValue,
+                                          maxLines: 1,
+                                          minFontSize: 2,
+                                          maxFontSize: 15,
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      )),
+                                ),
+                              ]),
+                        )
+                        // )
+                      ],
+                      // )
                     ),
                   ),
                 ),

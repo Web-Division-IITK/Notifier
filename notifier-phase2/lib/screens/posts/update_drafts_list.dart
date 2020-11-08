@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
@@ -13,7 +14,7 @@ import 'package:notifier/services/functions.dart';
 import 'package:notifier/widget/showtoast.dart';
 
 class PostList extends StatelessWidget {
-  final String type;
+  final PostDescType type;
   final String id;
   final List<dynamic> prefs;
   PostList(this.type,this.id,this.prefs);
@@ -23,9 +24,9 @@ class PostList extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: Text(
-            type.toLowerCase() == 'update' ?
-              type[0].toUpperCase() + type.substring(1).toLowerCase() + ' Posts'
-              : type[0].toUpperCase() + type.substring(1).toLowerCase()
+            type == PostDescType.EDIT_POSTS ?
+              UPDATE + ' Posts'
+              : DRAFTS
           ),
           centerTitle: true,
         ),
@@ -37,9 +38,9 @@ class PostList extends StatelessWidget {
         child: Scaffold(
           appBar: AppBar(
             title: Text(
-              type.toLowerCase() == 'update' ?
-              type[0].toUpperCase() + type.substring(1).toLowerCase() + ' Posts'
-              : type[0].toUpperCase() + type.substring(1).toLowerCase()
+              type == PostDescType.EDIT_POSTS ?
+                UPDATE + ' Posts'
+              : DRAFTS
             ),
             centerTitle: true,
             bottom: TabBar(
@@ -63,7 +64,7 @@ class PostList extends StatelessWidget {
     print(council);
     final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
     return FutureBuilder(
-      future: type.toLowerCase() == 'update'?
+      future: type == PostDescType.EDIT_POSTS?
         DBProvider().getAllPostswithQuery(GetPosts(queryColumn: 'council', queryData: council,id: id),orderBy: "timeStamp DESC")
           : DatabaseProvider(databaseName: 'drafts',tableName: 'Drafts').getAllPostswithQuery(GetPosts(queryColumn: 'council', queryData: council),orderBy: "timeStamp DESC"),
       builder: (context,snapshot){
@@ -74,7 +75,7 @@ class PostList extends StatelessWidget {
               return Container(
                 child: Center(
                   child: Text(
-                    type.toLowerCase() == 'update'? 'You have not made any post ' + text 
+                    type == PostDescType.EDIT_POSTS? 'You have not made any post ' + text 
                     :
                     'You have not saved any post $text'),),);
             }else{
@@ -145,7 +146,7 @@ class PostList extends StatelessWidget {
                                       Container(
                                         padding: EdgeInsets.fromLTRB(16.0, 8.0, 40.0, 0.0),
                                         child: AutoSizeText(
-                                            arrayOfPosts[index].sub,
+                                            arrayOfPosts[index].sub[0].toString(),
           //                                  'Science and Texhnology Council',
                                             textAlign: TextAlign.start,
                                             style: TextStyle(
@@ -228,7 +229,7 @@ class PostList extends StatelessWidget {
       }
     );
   }
-  confirmDismissDialog(PostsSort postsSort,_listKey,int index,context) {
+  confirmDismissDialog(Posts posts,_listKey,int index,context) {
     return showDialog<bool>(
       barrierDismissible: false,
         context: context,
@@ -251,7 +252,7 @@ class PostList extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      type.toLowerCase() == 'update' ?
+                      type == PostDescType.EDIT_POSTS?
                       'Doing this will remove this post for everyone'
                      : 'Doing this will permanently delete this file',
                       textAlign: TextAlign.center,
@@ -292,8 +293,8 @@ class PostList extends StatelessWidget {
                                   return Container();
                                 }
                               );
-                              if(type.toLowerCase() == 'drafts'){
-                                return await deletePostFromList(postsSort).then((bool status){
+                              if(type == PostDescType.DRAFT_POSTS){
+                                return await deletePostFromList(posts).then((bool status){
                                   if(status){
                                     showSuccessToast('Draft deleted successfully');
                                     return true;
@@ -306,10 +307,10 @@ class PostList extends StatelessWidget {
                               }
                               else{
                                 Response res = await deletePost(
-                                  postsSort
+                                  posts
                                 );
                                 if (res.statusCode == 200) {
-                                  DBProvider().deletePost(postsSort.id);
+                                  DBProvider().deletePost(posts.id);
                                   showSuccessToast('Deleted post successfully');
                                   return true;
                                   // return writeContent('people', json.encode(widget.peopleData));
@@ -335,11 +336,11 @@ class PostList extends StatelessWidget {
                   ]));
         });
   }
-  Future<bool> deletePostFromList(PostsSort postsSort)async{
-    if (postsSort.url != null) {
-      clearSelection(postsSort.url);
+  Future<bool> deletePostFromList(Posts posts)async{
+    if (posts.url != null) {
+      clearSelection(posts.url);
     }
-    return await DatabaseProvider(databaseName: 'drafts',tableName: 'Drafts').deletePost(postsSort.id).then((changes){
+    return await DatabaseProvider(databaseName: 'drafts',tableName: 'Drafts').deletePost(posts.id).then((changes){
       if(changes!=0){
         return true;
       }else{
@@ -349,7 +350,7 @@ class PostList extends StatelessWidget {
   }
   Future<bool> clearSelection(String url) async {
     try {
-      StorageReference storageReference =
+      Reference storageReference =
         await FirebaseStorage.instance.getReferenceFromUrl(url);
       return await storageReference.delete().then((_) {
         return true;

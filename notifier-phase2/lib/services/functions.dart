@@ -122,7 +122,7 @@ removeValues() async {
 /// return null for no data 
 /// 
 /// PROVIDE `last = '0'` if want to fetch all post otherwise any other number in quotes
-Future<bool> p1(last,{@required String owner}) async {
+Future<bool> p1(String last,{@required String owner}) async {
   // var db = Firestore.instance;
   try{
     return await getStringValuesSF().then((String lastTime) async {
@@ -153,28 +153,29 @@ Future<bool> p1(last,{@required String owner}) async {
               if(post.containsKey(ENDTIME)){
                 post[ENDTIME] = (post[ENDTIME] is String)? double.parse(post[ENDTIME]).round() :post[ENDTIME];
               }
-              post.update(SUB, (_){
-                return post[SUB][0];
-                },ifAbsent: ()=>post[SUB][0]);
-              print(json.encode(post));
-              Posts newPosts = postsFromJson(json.encode(post));
+              // post.update(SUB, (_){
+              //   return post[SUB][0];
+              //   },ifAbsent: ()=>post[SUB][0]);
+              print((post)["sub"][0]);
+              Posts newPosts = postsFromJson(jsonEncode(post));
               // save post in permission database
               //TODO remove database permission
               // if(owner == newPosts.owner) 
-              //   await DatabaseProvider(databaseName: PERM_DATABASE,tableName: PERM_TABLENAME).insertPost(postsSortFromJson(json.encode(post)));
+              //   await DatabaseProvider(databaseName: PERM_DATABASE,tableName: PERM_TABLENAME).insertPost(PostsFromJson(json.encode(post)));
               
               if(post.containsKey(TYPE) && post[TYPE] == NOTF_TYPE_PERMISSION){
                 //TODO
                 if(owner == newPosts.owner) 
-                  await DBProvider().newPost(newPosts);
+                  await DBProvider().insertPost(newPosts);
                 else if((ids.contains(id) && allCouncilData.coordOfCouncil.contains(newPosts.council))
                     || allCouncilData.level3.contains(id)){                  
-                  await DBProvider().newPost(newPosts); 
+                  await DBProvider().insertPost(newPosts); 
                 }
               }else{
-                await DBProvider().newPost(newPosts);
+                await DBProvider().insertPost(newPosts);
               }
             });
+            print(".....................DONE POSTS..................");
             addStringToSF(DateTime.now().toIso8601String());
             return true; 
           }
@@ -210,7 +211,7 @@ Future<bool> p1(last,{@required String owner}) async {
       //                   print(json.encode(data));
       //                   Posts nwPosts = postsFromJson(json.encode(data));
       //                   await DBProvider().newPost(nwPosts);
-      //                   if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+      //                   if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(PostsFromJson(json.encode(data)));
       //               }
       //           // });
       //             });
@@ -249,7 +250,7 @@ Future<bool> p1(last,{@required String owner}) async {
     //                     print(json.encode(data));
     //                     Posts nwPosts = postsFromJson(json.encode(data));
     //                     await DBProvider().newPost(nwPosts);
-    //                     if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
+    //                     if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(PostsFromJson(json.encode(data)));
     //                 }
     //               });
     //               addStringToSF(DateTime.now().toIso8601String());
@@ -397,7 +398,7 @@ Future<Councils> councilData() async {
         } catch (e) {
           print('ERROR WHILE SAVING TO HIVE ALL COUNCIL DATA');
           print(e);
-          showErrorToast('${e.message}');
+          showErrorToast('$e');
           return null;
         }
     });
@@ -420,7 +421,7 @@ Future<Councils> councilData() async {
         } catch (e) {
           print('ERROR WHILE SAVING TO HIVE ALL COUNCIL DATA');
           print(e);
-          showErrorToast('${e.message}');
+          showErrorToast('$e');
           return null;
         }
       });
@@ -558,12 +559,13 @@ String convertToCouncilName(String council){
       break;
     case 'psg': return 'PSG';
       break;
+    case 'cs' : return 'CS';
     default: return council == null? 'null':council[0].toUpperCase() + council.substring(1).toLowerCase();
   }
 }
 String councilNameTOfullForms(String council){
     // print(council);
-   switch (council) {
+   switch (council.toLowerCase()) {
      case 'snt': return 'Science and Technology Council';
        break;
     case 'mnc': return 'Media and Cultural Council';
@@ -576,6 +578,7 @@ String councilNameTOfullForms(String council){
     break;
     case 'senate': return 'Students Senate';
     break;
+    case 'cs': return 'Councelling Service';
     // case 'gns': return 'Games and Sports Council';
     // break;
     // case 'gns': return 'Games and Sports Council';
@@ -586,7 +589,7 @@ String councilNameTOfullForms(String council){
    } 
   }
 
-Future<Response> approvePost(PostsSort posts,) async{
+Future<Response> approvePost(Posts posts,) async{
   try{
     Response res = await post(PUBLISH_POST_API, headers: HEADERS, body: json.encode({
       'auth': auth,
@@ -605,13 +608,39 @@ Future<Response> approvePost(PostsSort posts,) async{
     return Response('ERROR', 404);
   }
 }
-Future<Response> createEditPosts(PostsSort posts, bool priority,{bool isCreate = true})async{
+// Future<Response> publishPost(Posts posts,{isCreate = true}) async{
+//   try{
+//     Response res = await createEditPosts(posts, posts.isFeatured, isCreate: isCreate);
+//     print('RESPONSE STATUSCODE FROM APPROVE POSTS - ' + res.statusCode.toString());
+//     print(res.body);
+//     Response res = await post(PUBLISH_POST_API, headers: HEADERS, body: json.encode({
+//       'auth': auth,
+//       'id' : posts.id
+//     }));
+//     print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+//     print(res.body);
+//     if(res != null && res.statusCode == 200 ){
+//       return res;
+//     }
+//     print('ERROR WHILE APPROVING POST....');
+//     return Response('ERROR', 404);
+//   }catch(e){
+//     print('ERROR WHILE APPROVING POST....');
+//     print(e);
+//     return Response('ERROR', 404);
+//   }
+// }
+Future<Response> createEditPosts(Posts posts, bool priority,{bool isCreate = true})async{
   try {
-    Map<String,dynamic> mapData = posts.toMapData();
+    isCreate ?
+    print("....PUBLISHING POST FOR REQUEST APPROVAL......")
+    : print("....UPDATING POSTL......");
+    Map<String,dynamic> mapData = posts.toPostMap();
+    print(mapData[SUB][0]);
     mapData.update('auth', (value) => auth, ifAbsent: ()=> auth,);
     mapData.update('priority', (v){
-      return 'max';
-    },ifAbsent: ()=>'max');
+      return posts.isFeatured;
+    },ifAbsent: ()=>posts.isFeatured);
     print(mapData);
     print(isCreate);
     Response res = await post(
@@ -631,7 +660,7 @@ Future<Response> createEditPosts(PostsSort posts, bool priority,{bool isCreate =
     return Response('ERROR', 404);
   }
 }
-Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool permission = false})async{
+Future<Response> publishPosts(String uid,Posts posts,bool priority,{bool permission = false})async{
   Map<String, String> headers = {"Content-type": "application/json"};
   String url;
   print('permission ' ':' '$permission');
@@ -639,38 +668,38 @@ Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool
   // 'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost' // create post
   // : 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // edit post
   if(permission){
-    postsSort.type = 'permission';
+    posts.type = 'permission';
     
-    url = (postsSort.id == null || postsSort.id.trim() == null || postsSort.id.trim() == '')? 
+    url = (posts.id == null || posts.id.trim() == null || posts.id.trim() == '')? 
       'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost' //create post
       : 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // update post
    
   }else{
-    if(postsSort.type == 'permission' && postsSort.owner != id ){
-      if (postsSort.id != null ) {
-        postsSort.type = 'create';
+    if(posts.type == 'permission' && posts.owner != id ){
+      if (posts.id != null ) {
+        posts.type = 'create';
         // url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost'; // create post
-      //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+      //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
       } else {
-        postsSort.type = 'update';
+        posts.type = 'update';
       }
         url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // update post
       // }
-        await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+        await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
       // }
     }else{
-      postsSort.type = (postsSort.id == null || postsSort.id.trim() == null || postsSort.id.trim() == '')? 
+      posts.type = (posts.id == null || posts.id.trim() == null || posts.id.trim() == '')? 
         'create'
         : 'update';
-      url = (postsSort.id == null || postsSort.id.trim() == null || postsSort.id.trim() == '')? 
+      url = (posts.id == null || posts.id.trim() == null || posts.id.trim() == '')? 
         'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost' // create post
         : 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // update post
-      // await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+      // await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
     } 
   }
 
 
-  Map<String,dynamic> mapData = postsSort.toMapData();
+  Map<String,dynamic> mapData = posts.toMap();
   mapData.update('priority', (v){
     return priority || permission? 'max':'default';
   },ifAbsent: ()=>priority || permission? 'max':'default');
@@ -682,15 +711,15 @@ Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool
     // if(uid == null ) {
       print(res.body); 
      if(res.statusCode == 200){
-        postsSort.id = res.body;
+        posts.id = res.body;
      }else{
-       postsSort.id = '';
+       posts.id = '';
      }
     // }
        
     if(permission && res.statusCode == 200){
-      postsSort.timeStamp = DateTime.now().millisecondsSinceEpoch;
-      await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSort);
+      posts.timeStamp = DateTime.now().millisecondsSinceEpoch;
+      await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(posts);
     } 
     return res;
   }catch(e){
@@ -700,14 +729,14 @@ Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool
   }
 }
 
-Future<Response> deletePost(PostsSort postsSort,{bool permission = false})async{
-  String jsonPost = json.encode(postsSort.toMapData());
-  print(jsonPost);
+Future<Response> deletePost(Posts posts,{bool permission = false})async{
+  Map<String,dynamic> mapData = posts.toPostMap();
+    mapData.update('auth', (value) => auth, ifAbsent: ()=> auth,);
   //  String url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/deletePost';
   //  if(permission){
   //    try {
-  //      return databaseReference.collection('notification').document(postsSort.id).delete().then((val){
-  //        DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+  //      return databaseReference.collection('notification').document(Posts.id).delete().then((val){
+  //        DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(Posts.id);
   //        return Response('Done',200);
   //      });
   //    } catch (e) {
@@ -716,7 +745,8 @@ Future<Response> deletePost(PostsSort postsSort,{bool permission = false})async{
   //    }
   //  }
     try {
-      Response response = await post(DELETE_POST_API, headers: HEADERS, body: jsonPost);
+      print(".................DELETING POST..................");
+      Response response = await post(DELETE_POST_API, headers: HEADERS, body: json.encode(mapData));
       int statusCode = response.statusCode;
       print(statusCode);
       return response;
@@ -728,6 +758,7 @@ Future<Response> deletePost(PostsSort postsSort,{bool permission = false})async{
     }
 }
 
+/// id here is very necessary to fecth post
 Future<Map<String,dynamic>> fetchPostFromFirebase(String uid,{String collection = 'allPosts'}) async{
   try {
     Response res = await post(FETCH_POST_WITH_UID_API, headers: HEADERS, body: json.encode({"id": uid}));
@@ -742,8 +773,8 @@ Future<Map<String,dynamic>> fetchPostFromFirebase(String uid,{String collection 
         return null;
       }else{
         var data = json.decode(res.body);
-        if(data.containsKey(SUB))
-          data.update(SUB, (v)=>v[0]);
+        // if(data.containsKey(SUB))
+        //   data.update(SUB, (v)=>v);
         return data;
       }
     }
@@ -848,7 +879,7 @@ int convertMonthFromStringToInt(month){
 }
 
 /// appends data if not present else updates that data
-List<PostsSort> updateDataInList(List<PostsSort>list,PostsSort data){
+List<Posts> updateDataInList(List<Posts>list,Posts data){
   int index = list.indexWhere((test)=>test.id == data.id);
   if(index != -1){
     list[index] = data;
@@ -861,7 +892,7 @@ List<PostsSort> updateDataInList(List<PostsSort>list,PostsSort data){
 }
 
 
-String convertAbbrvofDeptToF(String abbrv){
+String convertAbbrvofDeptToFF(String abbrv){
   switch (abbrv.toLowerCase()) {
     case 'ae':
     return 'Aerospace Engg.';
@@ -914,17 +945,11 @@ String convertAbbrvofDeptToF(String abbrv){
     case 'mth':
     return 'Mathematics';
     break;
-    case 'nucc. eng.& tech prog.':
+    case 'nucc.eng.&techprog.':
     return 'Nuc. Engg.& Tech Prog.';
     break;
     case 'phy':
     return 'Physics';
-    break;
-    case 'nucc. eng.& tech prog.':
-    return 'Nuc. Engg.& Tech Prog.';
-    break;
-    case 'nucc. eng.& tech prog.':
-    return 'Nuc. Engg.& Tech Prog.';
     break;
     default: return abbrv;
   }
