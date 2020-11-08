@@ -3,6 +3,7 @@ import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
 import 'package:notifier/services/database.dart';
@@ -16,7 +17,7 @@ class BookMarked extends StatefulWidget {
 
 class _BookMarkedState extends State<BookMarked> {
   bool _load = true;
-  List<PostsSort> bookmarkArray = [];
+  List<Posts> bookmarkArray = [];
   bool _noPost = false;
   final GlobalKey<AnimatedListState> _bookmarkKey = GlobalKey<AnimatedListState>();
   DateTime timeOfRefresh ;
@@ -27,10 +28,10 @@ class _BookMarkedState extends State<BookMarked> {
     loadBookMarks();
   }
   // Iterable<Widget> get arrayofTime sync*{
-  // //  List<PostsSort> globalPostsArray= widget.data.globalPostsArray;
+  // //  List<Posts> globalPostsArray= widget.data.globalPostsArray;
   // //  var prefs = widget.data.prefs;
   // //   = postArray.values.toList();
-  //   List<PostsSort> postArray = bookmarkArray;
+  //   List<Posts> postArray = bookmarkArray;
     
   //   // if( postArray==null && postArray.length==0){
   //   //     // yield Container(
@@ -77,6 +78,7 @@ class _BookMarkedState extends State<BookMarked> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Bookmarked Posts'),
+        centerTitle: true,
       ),
       body: 
       // FutureBuilder(
@@ -84,180 +86,185 @@ class _BookMarkedState extends State<BookMarked> {
       //   builder: (context,snapshot){
           // switch (snapshot.connectionState) {
           //   case ConnectionState.done:
-          !_load ?(_noPost ||bookmarkArray ==null || bookmarkArray.length == 0)?
-          //     if(snapshot == null ||snapshot.data == null || snapshot.data.length == 0){
-                // return 
-                Center(child: Text('You have not bookmarked any post'),)
-              // }else{
-                // print(snapshot.data.toString() +  'jdjh');
-                // return 
-                 : AnimatedList(
-              // padding: EdgeInsets.all(16),
-                  // reverse: true,
-                  initialItemCount: bookmarkArray.length,
-                  // snapshot.data.length,
-                  key: _bookmarkKey,
-                  shrinkWrap: true,
-                  itemBuilder: (BuildContext context, index,animation) {
-                    List<PostsSort> arrayOfPosts = bookmarkArray;
-                    // snapshot.data;
-                    return SizeTransition(
-                      sizeFactor: animation,
-                      child: Dismissible(
-                      movementDuration: Duration(milliseconds:30),
-                      resizeDuration: Duration(milliseconds: 60),
-                      dismissThresholds: {DismissDirection.endToStart : 0.8},
-                      background: Card(
-                        color: Colors.red,
-                        margin: index==0? EdgeInsets.fromLTRB(10.0, 16.0, 10.0, 8.0)
-                        : EdgeInsets.fromLTRB(10.0, 8.0, 10.0, 8.0),
-                        elevation: 5.0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0)
-                        ),
-                        // padding: EdgeInsets.symmetric(horizontal: 20),
-                        // alignment: AlignmentDirectional.centerStart,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Icon(
-                              Octicons.trashcan,
-                              color: Colors.white,
-                            ),
-                            SizedBox(width:15.0),
-                            Text(
-                              'Remove from Bookmarks',
-                              style: TextStyle(
+          Container(
+            height: MediaQuery.of(context).size.height - 88,
+            child: !_load ?(_noPost ||bookmarkArray ==null || bookmarkArray.length == 0)?
+            //     if(snapshot == null ||snapshot.data == null || snapshot.data.length == 0){
+                  // return 
+                  Center(child: Text('You have not bookmarked any post'),)
+                // }else{
+                  // print(snapshot.data.toString() +  'jdjh');
+                  // return 
+                   : AnimatedList(
+                // padding: EdgeInsets.all(16),
+                    // reverse: true,
+                    initialItemCount: bookmarkArray.length ,
+                    // snapshot.data.length,
+                    // physics: NeverScrollableScrollPhysics(),
+                    key: _bookmarkKey,
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, index,animation) {
+                      // index =0;
+                      List<Posts> arrayOfPosts = bookmarkArray;
+                      // snapshot.data;
+                      return SizeTransition(
+                        sizeFactor: animation,
+                        child: Dismissible(
+                        movementDuration: Duration(milliseconds:30),
+                        resizeDuration: Duration(milliseconds: 60),
+                        dismissThresholds: {DismissDirection.endToStart : 0.8},
+                        background: Card(
+                          color: Colors.red,
+                          margin: index==0? EdgeInsets.fromLTRB(10.0, 16.0, 10.0, 8.0)
+                          : EdgeInsets.fromLTRB(10.0, 8.0, 10.0, 8.0),
+                          elevation: 5.0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0)
+                          ),
+                          // padding: EdgeInsets.symmetric(horizontal: 20),
+                          // alignment: AlignmentDirectional.centerStart,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Icon(
+                                Octicons.trashcan,
                                 color: Colors.white,
-                                fontSize: 18.0
                               ),
-                            ),
-                          ], 
-                        ), 
-                      ),
-                      direction: DismissDirection.endToStart,
-                      key: Key(arrayOfPosts[index].id),
-                      onDismissed:(direction)async{
-                        _bookmarkKey.currentState.removeItem(index, 
-                          (BuildContext context,Animation<double> animation){
-                            return Container();
-                        });
-                       
-                          if(arrayOfPosts.toList().length == 1){
-                            setState(() {
-                              _noPost = true;
-                            });
-                          }
-                        // });
-                        return await dismiss(arrayOfPosts, index);
-                      },
-                      // confirmDismissDialog(),
-                      child: Card(
-                              elevation: 5.0,
-                            margin: index==0?EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0)
-                              : EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16.0),
-                                onTap: () {
-                                  Navigator.of(context).push(MaterialPageRoute(builder: (context){
-                                            return FeatureDiscovery(child: PostDescription(listOfPosts: arrayOfPosts, type: 'display',index: 0,)); 
-                                          }));
-                              
-                                },
-                                child: Stack(
-                                  children: <Widget>[
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Row(
-                                          children: <Widget>[
-                                            Container(
-                                              padding: EdgeInsets.fromLTRB(16.0, 8.0, 40.0, 0.0),
-                                              child: AutoSizeText(
-                                                  arrayOfPosts[index].sub,
-                //                                  'Science and Texhnology Council',
-                                                  textAlign: TextAlign.start,
-                                                  style: TextStyle(
-                                                    color: Theme.of(context).brightness == Brightness.light
-                                                        ? Colors.blueGrey
-                                                        : Colors.white70,
-                                                    // fontWeight: FontStyle.italic,
-                                                    fontSize: 10.0,
-                                                  )),
-                                            ),
-                                            // Container(
-                                            //   padding: EdgeInsets.only(left:10),
-                                            //   child: arrayOfPosts[index].type.toLowerCase() == 'permission'?
-                                            //   SpinKitThreeBounce(size:20,
-                                            //     color: Theme.of(context).accentColor,
-                                            //   )
-                                            //   : Icon(Ionicons.ios_done_all,color: Colors.green,),
-                                            // )
-                                          ],
-                                        ),
-                                        Container(
-                                          // alignment: Alignment.center,
-                                          padding: EdgeInsets.fromLTRB(16.0, 5.0, 16.0, 10.0),
-                                          child: AutoSizeText(arrayOfPosts[index].title,
-                                              // 'Sit commodo fugiat duis consectetur sunt ipsum cupidatat adipisicing mollit et magna duis.',
-                                              minFontSize: 15.0,
-                                              overflow: TextOverflow.ellipsis,
-                                              maxLines: 2,
-                                              style: TextStyle(
-                                                // fontWeight: FontWeight.bold,
-                                                fontSize: 17.0,
-                                              )),
-                                        ),
-                                        Container(
-                                          padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 5.0),
-                                          constraints: BoxConstraints(
-                                            maxWidth: MediaQuery.of(context).size.width - 84.0,
-                                          ),
-                                          child: AutoSizeText(
-                                            // timenot['message'],
-                                            arrayOfPosts[index].message,
-                                            // 'Dolor consectetur in dolore anim reprehenderit velit pariatur veniam nostrud id ex exercitation.',
-                                            maxLines: 2,
-                                            style: TextStyle(
-                                              fontSize: 12.0,
-                                              color: Theme.of(context).brightness == Brightness.light
-                                                  ? Colors.grey[850]
-                                                  : Colors.white70,
-                                            ),
-                                          ),
-                                        ),
-                                        Container(
-                                            padding: EdgeInsets.fromLTRB(0.0, 0.0, 16.0, 5.0),
-                                            alignment: Alignment.bottomRight,
-                                            child: Text(
-                                              // time,
-                                              convertDateToString(DateTime.fromMillisecondsSinceEpoch(arrayOfPosts[index].timeStamp))+ ' at ' +
-                                              DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(arrayOfPosts[index].timeStamp)),
-                                              style: TextStyle(
-                                                fontSize: 8.0,
-                                                color: Theme.of(context).brightness == Brightness.light
-                                                    ? Colors.grey
-                                                    : Colors.white70,
-                                              ),
-                                            )),
-                                      ],
-                                    ),
-                                  ],
+                              SizedBox(width:15.0),
+                              Text(
+                                'Remove from Bookmarks',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.0
                                 ),
                               ),
-                            ),
-                    ),
-                    );
-                  }
-                )
-              // }
-              // break;
-            // default: return
-            : Container(
-              height:MediaQuery.of(context).size.height ,
-              color: Colors.black.withOpacity(0.8),
-            child: Loading(display: 'Unable to load'))
+                            ], 
+                          ), 
+                        ),
+                        direction: DismissDirection.endToStart,
+                        key: Key(arrayOfPosts[index].id),
+                        onDismissed:(direction)async{
+                          _bookmarkKey.currentState.removeItem(index, 
+                            (BuildContext context,Animation<double> animation){
+                              return Container();
+                          });
+                         
+                            if(arrayOfPosts.toList().length == 1){
+                              setState(() {
+                                _noPost = true;
+                              });
+                            }
+                          // });
+                          return await dismiss(arrayOfPosts, index);
+                        },
+                        // confirmDismissDialog(),
+                        child: Card(
+                                elevation: 5.0,
+                              margin: index==0?EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 8.0)
+                                : EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(16.0),
+                                  onTap: () {
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (context){
+                                              return FeatureDiscovery(child: PostDescription(listOfPosts: arrayOfPosts, type: PostDescType.DISPLAY,index: 0,)); 
+                                            }));
+                                
+                                  },
+                                  child: Stack(
+                                    children: <Widget>[
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Row(
+                                            children: <Widget>[
+                                              Container(
+                                                padding: EdgeInsets.fromLTRB(16.0, 8.0, 40.0, 0.0),
+                                                child: AutoSizeText(
+                                                    arrayOfPosts[index].sub[0].toString(),
+                  //                                  'Science and Texhnology Council',
+                                                    textAlign: TextAlign.start,
+                                                    style: TextStyle(
+                                                      color: Theme.of(context).brightness == Brightness.light
+                                                          ? Colors.blueGrey
+                                                          : Colors.white70,
+                                                      // fontWeight: FontStyle.italic,
+                                                      fontSize: 10.0,
+                                                    )),
+                                              ),
+                                              // Container(
+                                              //   padding: EdgeInsets.only(left:10),
+                                              //   child: arrayOfPosts[index].type.toLowerCase() == 'permission'?
+                                              //   SpinKitThreeBounce(size:20,
+                                              //     color: Theme.of(context).accentColor,
+                                              //   )
+                                              //   : Icon(Ionicons.ios_done_all,color: Colors.green,),
+                                              // )
+                                            ],
+                                          ),
+                                          Container(
+                                            // alignment: Alignment.center,
+                                            padding: EdgeInsets.fromLTRB(16.0, 5.0, 16.0, 10.0),
+                                            child: AutoSizeText(arrayOfPosts[index].title,
+                                                // 'Sit commodo fugiat duis consectetur sunt ipsum cupidatat adipisicing mollit et magna duis.',
+                                                minFontSize: 15.0,
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 2,
+                                                style: TextStyle(
+                                                  // fontWeight: FontWeight.bold,
+                                                  fontSize: 17.0,
+                                                )),
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 5.0),
+                                            constraints: BoxConstraints(
+                                              maxWidth: MediaQuery.of(context).size.width - 84.0,
+                                            ),
+                                            child: AutoSizeText(
+                                              // timenot['message'],
+                                              arrayOfPosts[index].message,
+                                              // 'Dolor consectetur in dolore anim reprehenderit velit pariatur veniam nostrud id ex exercitation.',
+                                              maxLines: 2,
+                                              style: TextStyle(
+                                                fontSize: 12.0,
+                                                color: Theme.of(context).brightness == Brightness.light
+                                                    ? Colors.grey[850]
+                                                    : Colors.white70,
+                                              ),
+                                            ),
+                                          ),
+                                          Container(
+                                              padding: EdgeInsets.fromLTRB(0.0, 0.0, 16.0, 5.0),
+                                              alignment: Alignment.bottomRight,
+                                              child: Text(
+                                                // time,
+                                                convertDateToString(DateTime.fromMillisecondsSinceEpoch(arrayOfPosts[index].timeStamp))+ ' at ' +
+                                                DateFormat("hh:mm a").format(DateTime.fromMillisecondsSinceEpoch(arrayOfPosts[index].timeStamp)),
+                                                style: TextStyle(
+                                                  fontSize: 8.0,
+                                                  color: Theme.of(context).brightness == Brightness.light
+                                                      ? Colors.grey
+                                                      : Colors.white70,
+                                                ),
+                                              )),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                      ),
+                      );
+                    }
+                  )
+                // }
+                // break;
+              // default: return
+              : Container(
+                height:MediaQuery.of(context).size.height ,
+                color: Colors.black.withOpacity(0.8),
+              child: Loading(display: 'Unable to load')),
+          )
           // }
         // }
       ) ;
@@ -362,7 +369,7 @@ class _BookMarkedState extends State<BookMarked> {
     // return await Future.delayed(Duration(milliseconds: 50),()=>true);
     return true;
   }
-  // Widget tile(index, time,List<PostsSort>postArray) {
+  // Widget tile(index, time,List<Posts>postArray) {
   //   postArray = postArray.reversed.toList(); 
   //   return Card(
   //     elevation: 5.0,

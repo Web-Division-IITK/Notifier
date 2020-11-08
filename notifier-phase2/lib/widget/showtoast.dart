@@ -84,6 +84,66 @@ showInfoToast(String msg,){
     ),
   );
 }
+
+showErrorToastWithButton(String msg, Function onTap){
+   return showToastWidget(
+    Container(
+      constraints: BoxConstraints(
+        minWidth: 120.0,
+        minHeight: 50.0,
+      ),
+      padding:EdgeInsets.symmetric(horizontal: 15.0),
+      decoration: BoxDecoration(
+        color: Theme.of(MyApp.navigatorKey.currentContext).brightness == Brightness.dark ?Colors.grey[900]:Colors.white,
+        border: Border.all(
+          color:Colors.blue,
+        ),
+        borderRadius: BorderRadius.circular(25.0),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Flexible(
+            flex:1,
+            child: Icon(Icons.info_outline,
+              color: Colors.blue,size:30,),
+          ),
+          // SizedBox(width:10.0),
+          // Spacer(flex: 1,),
+          Flexible(
+            flex: 7,
+            child: Padding(
+              padding: const EdgeInsets.only(left:8.0),
+              child: AutoSizeText(
+                msg,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: TextStyle(
+                  fontSize:15.0,
+                  color:Colors.blue,
+                ),
+              ),
+            ),
+          ),
+          Flexible(
+            flex: 2,
+            child:Container(
+              padding: EdgeInsets.only(left: 8),
+              child: FlatButton(
+                child: Text('TRY AGAIN',style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.amber),),
+                onPressed: onTap,
+                )
+            ),)
+        ],
+      ),
+    ),
+    duration: Duration(seconds: 20),
+
+  );
+}
 // showSuccessToast(context,String msg){
 //   return ToastUtils.showCustomToast(
 //     context,

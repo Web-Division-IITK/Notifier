@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/hive_models/hive_allCouncilData.dart';
@@ -119,90 +120,156 @@ removeValues() async {
 //   });
 // }
 /// return null for no data 
-Future<bool> p1(last,{@required String owner}) async {
-  var db = Firestore.instance;
-  return await getStringValuesSF().then((String lastTime) async {
-    print(lastTime + 'lasttime line81 funtion.dart');
-    if (lastTime == '0' || last == '0') {
-      return await db
-          .collection('allPosts')
-          .where('type',whereIn: ['create','update'])
-          .orderBy('timeStamp',descending: true).limit(50)
-          .getDocuments()
-          .then((QuerySnapshot snapshot) async {
-            print(snapshot.documents);
-                if(snapshot.documents.length!=0){
-                  snapshot.documents.forEach((f) async{
-                    if(f.data['type'] == 'permission'){}
-                    else{
-                      var data = f.data;
-                        data['timeStamp'] = (data['timeStamp'] is String)? double.parse(data['timeStamp']).round() :data['timeStamp'];
-                        if(data.containsKey("startTime")){
-                          data['startTime'] = (data['startTime'] is String)? double.parse(data['startTime']).round() :data['startTime'];
-                        }
-                        if(data.containsKey("endTime")){
-                          data['endTime'] = (data['endTime'] is String)? double.parse(data['endTime']).round() :data['endTime'];
-                        }
-                        data.update('sub', (_){
-                                return data['sub'][0];
-                            },ifAbsent: ()=>data['sub'][0]);
-                        print(json.encode(data));
-                        Posts nwPosts = postsFromJson(json.encode(data));
-                        await DBProvider().newPost(nwPosts);
-                        if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
-                    }
-                // });
-                  });
-                  addStringToSF(DateTime.now().toIso8601String());
-                  return true; 
-                  }
-                  else{
-                    addStringToSF(DateTime.now().toIso8601String());
-                    return null;
-                  }
-            }).catchError((onError){
-              print('Error in p1\' : $onError');
-              return false;
+/// 
+/// PROVIDE `last = '0'` if want to fetch all post otherwise any other number in quotes
+Future<bool> p1(String last,{@required String owner}) async {
+  // var db = Firestore.instance;
+  try{
+    return await getStringValuesSF().then((String lastTime) async {
+      print(lastTime + ' LASTTIME OF ALL POST FETCH');
+    // if (lastTime == '0' || last == '0') {
+      try {
+        Response res = await post(
+          FETCH_ALLPOST_API, headers: HEADERS, 
+          body: json.encode({
+            'timeStamp' : (lastTime == '0' || last == '0')? 0 : DateTime.parse(lastTime).millisecondsSinceEpoch}));
+        print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+        print(res.body);
+        if(res == null || res.statusCode != 200 || res.body == null){
+          print("ERROR OCCURED WHILE FETCHING POST .....");
+          return false;
+        }
+        else {
+          var data = json.decode(res.body);
+          if(data == null || data.isEmpty || data.length == 0){
+            addStringToSF(DateTime.now().toIso8601String());
+            return null;
+          }else{
+            data.forEach((post) async{
+              post[TIMESTAMP] = (post[TIMESTAMP] is String)? double.parse(post[TIMESTAMP]).round() :post[TIMESTAMP];
+              if(post.containsKey(STARTTIME)){
+                post[STARTTIME] = (post[STARTTIME] is String)? double.parse(post[STARTTIME]).round() :post[STARTTIME];
+              }
+              if(post.containsKey(ENDTIME)){
+                post[ENDTIME] = (post[ENDTIME] is String)? double.parse(post[ENDTIME]).round() :post[ENDTIME];
+              }
+              // post.update(SUB, (_){
+              //   return post[SUB][0];
+              //   },ifAbsent: ()=>post[SUB][0]);
+              print((post)["sub"][0]);
+              Posts newPosts = postsFromJson(jsonEncode(post));
+              // save post in permission database
+              //TODO remove database permission
+              // if(owner == newPosts.owner) 
+              //   await DatabaseProvider(databaseName: PERM_DATABASE,tableName: PERM_TABLENAME).insertPost(PostsFromJson(json.encode(post)));
+              
+              if(post.containsKey(TYPE) && post[TYPE] == NOTF_TYPE_PERMISSION){
+                //TODO
+                if(owner == newPosts.owner) 
+                  await DBProvider().insertPost(newPosts);
+                else if((ids.contains(id) && allCouncilData.coordOfCouncil.contains(newPosts.council))
+                    || allCouncilData.level3.contains(id)){                  
+                  await DBProvider().insertPost(newPosts); 
+                }
+              }else{
+                await DBProvider().insertPost(newPosts);
+              }
             });
-    } else {
-      return await db.collection('allPosts')
-        .where('type',whereIn: ['create','update']).where('timeStamp', isGreaterThanOrEqualTo: DateTime.parse(lastTime))
-        .orderBy('timeStamp',descending: true).limit(50)
-        .getDocuments()
-        .then((QuerySnapshot snapshot) async {
-            if(snapshot.documents.length!=0){
-                  snapshot.documents.forEach((f) async{
-                    if(f.data['type'] == 'permission'){}
-                    else{
-                      var data = f.data;
-                        data['timeStamp'] = (data['timeStamp'] is String)? double.parse(data['timeStamp']).round() :data['timeStamp'];
-                        if(data.containsKey("startTime")){
-                          data['startTime'] = (data['startTime'] is String)? double.parse(data['startTime']).round() :data['startTime'];
-                        }
-                        if(data.containsKey("endTime")){
-                          data['endTime'] = (data['endTime'] is String)? double.parse(data['endTime']).round() :data['endTime'];
-                        }
-                        data.update('sub', (_){
-                                return data['sub'][0];
-                            },ifAbsent: ()=>data['sub'][0]);
-                        print(json.encode(data));
-                        Posts nwPosts = postsFromJson(json.encode(data));
-                        await DBProvider().newPost(nwPosts);
-                        if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSortFromJson(json.encode(data)));
-                    }
-                  });
-                  addStringToSF(DateTime.now().toIso8601String());
-                  return true; 
-            }else{
-              addStringToSF(DateTime.now().toIso8601String());
-              return null;
-            }
-      }).catchError((onError){
-              print('Error in p1\' : $onError');
-              return false;
-            });
-    }
-  });
+            print(".....................DONE POSTS..................");
+            addStringToSF(DateTime.now().toIso8601String());
+            return true; 
+          }
+        }
+
+      } catch (e) {
+        print("ERROR OCCURED WHILE FETCHING POST .....");
+        print(e);
+        return false;
+      }
+      // return await db
+      //     .collection('allPosts')
+      //     .where('type',whereIn: ['create','update'])
+      //     .orderBy('timeStamp',descending: true).limit(50)
+      //     .getDocuments()
+      //     .then((QuerySnapshot snapshot) async {
+      //       print(snapshot.documents);
+      //           if(snapshot.documents.length!=0){
+      //             snapshot.documents.forEach((f) async{
+      //               if(f.data['type'] == 'permission'){}
+      //               else{
+      //                 var data = f.data;
+      //                   data['timeStamp'] = (data['timeStamp'] is String)? double.parse(data['timeStamp']).round() :data['timeStamp'];
+      //                   if(data.containsKey("startTime")){
+      //                     data['startTime'] = (data['startTime'] is String)? double.parse(data['startTime']).round() :data['startTime'];
+      //                   }
+      //                   if(data.containsKey("endTime")){
+      //                     data['endTime'] = (data['endTime'] is String)? double.parse(data['endTime']).round() :data['endTime'];
+      //                   }
+      //                   data.update('sub', (_){
+      //                           return data['sub'][0];
+      //                       },ifAbsent: ()=>data['sub'][0]);
+      //                   print(json.encode(data));
+      //                   Posts nwPosts = postsFromJson(json.encode(data));
+      //                   await DBProvider().newPost(nwPosts);
+      //                   if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(PostsFromJson(json.encode(data)));
+      //               }
+      //           // });
+      //             });
+      //             addStringToSF(DateTime.now().toIso8601String());
+      //             return true; 
+      //             }
+      //             else{
+      //               addStringToSF(DateTime.now().toIso8601String());
+      //               return null;
+      //             }
+      //       }).catchError((onError){
+      //         print('Error in p1\' : $onError');
+      //         return false;
+      //       });
+    // } else {
+    //   return await db.collection('allPosts')
+    //     .where('type',whereIn: ['create','update']).where('timeStamp', isGreaterThanOrEqualTo: DateTime.parse(lastTime))
+    //     .orderBy('timeStamp',descending: true).limit(50)
+    //     .getDocuments()
+    //     .then((QuerySnapshot snapshot) async {
+    //         if(snapshot.documents.length!=0){
+    //               snapshot.documents.forEach((f) async{
+    //                 if(f.data['type'] == 'permission'){}
+    //                 else{
+    //                   var data = f.data;
+    //                     data['timeStamp'] = (data['timeStamp'] is String)? double.parse(data['timeStamp']).round() :data['timeStamp'];
+    //                     if(data.containsKey("startTime")){
+    //                       data['startTime'] = (data['startTime'] is String)? double.parse(data['startTime']).round() :data['startTime'];
+    //                     }
+    //                     if(data.containsKey("endTime")){
+    //                       data['endTime'] = (data['endTime'] is String)? double.parse(data['endTime']).round() :data['endTime'];
+    //                     }
+    //                     data.update('sub', (_){
+    //                             return data['sub'][0];
+    //                         },ifAbsent: ()=>data['sub'][0]);
+    //                     print(json.encode(data));
+    //                     Posts nwPosts = postsFromJson(json.encode(data));
+    //                     await DBProvider().newPost(nwPosts);
+    //                     if(owner == nwPosts.owner) await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(PostsFromJson(json.encode(data)));
+    //                 }
+    //               });
+    //               addStringToSF(DateTime.now().toIso8601String());
+    //               return true; 
+    //         }else{
+    //           addStringToSF(DateTime.now().toIso8601String());
+    //           return null;
+    //         }
+    //   }).catchError((onError){
+    //           print('Error in p1\' : $onError');
+    //           return false;
+    //         });
+    // }
+    });
+  }catch(e){
+    print("ERROR OCCURED WHILE FETCHING LASTTIME .....");
+    print(e);
+    return false;
+  }
 }
 
 
@@ -234,57 +301,61 @@ String convertDateToString(DateTime postTime){
   }
 }
 Future<dynamic> allData() async {
-  final HttpClient _httpClient = HttpClient();
-  var jsonResponse;
   try {
-    final uri = Uri.http('notifier-phase-2.firebaseapp.com',
-        '/data.json'); 
-    final httpRequest = await _httpClient.getUrl(uri);
-    final httpResponse = await httpRequest.close();
-    if (httpResponse.statusCode != 200) {
-      // jsonResponse = 'errorObtaining';
-      jsonResponse = null;
+    print("FETCHING ALL COUNCIL DATA ....");
+    Response res = await get(ALL_COUNCIL_DATA_API);
+    print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+    print('RESPONSE BODY '+res.body);
+    if(res == null || res.statusCode != 200 || res.body == null || res.body.isEmpty){
+      print('ERROR WHILE LOADING ALL COUNCIL DATA');
+      showErrorToast('Something went wrong while fetching app data!!! Try again later or check your connectivity!!!');
       return null;
+    }else{
+      return json.decode(res.body);
     }
-    final responseBody = await httpResponse.transform(utf8.decoder).join();
-    jsonResponse = json.decode(responseBody);
-  } on Exception catch (e) {
+  } catch (e) {
+    print('ERROR RETREIVING ALL COUNCIL DATA');
     print('$e');
-    jsonResponse = null;
-  }
-  if (jsonResponse == null) {
-    print('Error retreiving content data');
     return null;
   }
-  print(jsonResponse);
-  
-  // box.add()
-  // await writeContent('allData', json.encode(jsonResponse));
-
-  return jsonResponse;
 }
 
+Future<bool> sendDeviceToken(String token)async{
+  try {
+    print("SENDING DEVICE TOKEN ....");
+    Response res = await post(
+      SEND_DEVICE_TOKEN,
+      headers: HEADERS,
+      body: json.encode({"auth":auth, "token": token})); //TODO update parameter name token
+    print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+    print('RESPONSE BODY '+res.body);
+    if(res == null || res.statusCode != 200){
+      print('ERROR WHILE LOADING ALL COUNCIL DATA');
+      return false;
+    }else{
+      return true;
+    }
+  } catch (e) {
+    print('ERROR RETREIVING ALL COUNCIL DATA');
+    print('$e');
+    return false;
+  }
+}
 
 Future<bool> getStudentData() async{
   Box _stuData = await HiveDatabaseUser(databaseName: 'ss').hiveBox;
-  final HttpClient _httpClient = HttpClient();
-  var jsonResponse;
   try {
-    final uri = Uri.https('us-central1-notifier-phase-2.cloudfunctions.net',
-        '/getStudData'); 
-    final httpRequest = await _httpClient.getUrl(uri);
-    final httpResponse = await httpRequest.close();
-    if (httpResponse.statusCode != 200) {
-      jsonResponse = null;
-      return false;
+    Response res = await get(GET_STUDENT_SEARCH_DATA_API);
+    print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+    print(res.body);
+    if(res == null || res.statusCode != 200 || res.body == null || res.body.isEmpty){
+      print("ERROR RETREIVING STUDENT SEARCH DATA");
+      return null;
     }
-    final responseBody = await httpResponse.transform(utf8.decoder).join();
-    jsonResponse = json.decode(responseBody);
+    var jsonResponse = json.decode(res.body);
     var map = Map.fromIterable(jsonResponse,key: (item){return item['roll'].toString();},value: (item){
-          // print(item);
           return SearchModel.fromMap(item);
     });
-    // print(map);
     if (_stuData != null&&_stuData.isNotEmpty) {
       _stuData.clear();
     }
@@ -301,9 +372,9 @@ Future<bool> getStudentData() async{
       print(onError);
       return false;
     });
-  } on Exception catch (e) {
+  } catch (e) {
     print('$e');
-    jsonResponse = null;
+    // jsonResponse = null;
     return false;
   }
 }
@@ -313,20 +384,23 @@ Future<Councils> councilData() async {
   Box box = await HiveDatabaseUser(databaseName: 'councilData').hiveBox;
   if(box.isEmpty){
     return await allData().then((var data) async {
-      print(data);
-      try {
-        if(data!=null){
-          Councils myData = Councils.fromMap(data);
-          box.add(myData);
-          return myData;
-        } else {
+        print(data);
+        try {
+          if(data!=null){
+            Councils myData = Councils.fromMap(data);
+            box.add(myData);
+            return myData;
+          } else {
+            print('ERROR WHILE LOADING ALL COUNCIL DATA');
+            showErrorToast('Something went wrong while fetching app data!!! Try again later or check your connectivity!!!');
+            return null;
+          }
+        } catch (e) {
+          print('ERROR WHILE SAVING TO HIVE ALL COUNCIL DATA');
+          print(e);
+          showErrorToast('$e');
           return null;
         }
-      } catch (e) {
-        print(e);
-        showErrorToast('${e.message}');
-        return null;
-      }
     });
   }else{
     if(box.toMap()[0] != null){
@@ -340,11 +414,14 @@ Future<Councils> councilData() async {
             box.add(myData);
             return myData;
           } else {
+            print('ERROR WHILE LOADING ALL COUNCIL DATA');
+            showErrorToast('Something went wrong while fetching app data!!! Try again later or check your connectivity!!!');
             return null;
           }
         } catch (e) {
+          print('ERROR WHILE SAVING TO HIVE ALL COUNCIL DATA');
           print(e);
-          showErrorToast('${e.message}');
+          showErrorToast('$e');
           return null;
         }
       });
@@ -482,12 +559,13 @@ String convertToCouncilName(String council){
       break;
     case 'psg': return 'PSG';
       break;
+    case 'cs' : return 'CS';
     default: return council == null? 'null':council[0].toUpperCase() + council.substring(1).toLowerCase();
   }
 }
 String councilNameTOfullForms(String council){
     // print(council);
-   switch (council) {
+   switch (council.toLowerCase()) {
      case 'snt': return 'Science and Technology Council';
        break;
     case 'mnc': return 'Media and Cultural Council';
@@ -500,6 +578,7 @@ String councilNameTOfullForms(String council){
     break;
     case 'senate': return 'Students Senate';
     break;
+    case 'cs': return 'Councelling Service';
     // case 'gns': return 'Games and Sports Council';
     // break;
     // case 'gns': return 'Games and Sports Council';
@@ -510,7 +589,78 @@ String councilNameTOfullForms(String council){
    } 
   }
 
-Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool permission = false})async{
+Future<Response> approvePost(Posts posts,) async{
+  try{
+    Response res = await post(PUBLISH_POST_API, headers: HEADERS, body: json.encode({
+      'auth': auth,
+      'id' : posts.id
+    }));
+    print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+    print(res.body);
+    if(res != null && res.statusCode == 200 ){
+      return res;
+    }
+    print('ERROR WHILE APPROVING POST....');
+    return Response('ERROR', 404);
+  }catch(e){
+    print('ERROR WHILE APPROVING POST....');
+    print(e);
+    return Response('ERROR', 404);
+  }
+}
+// Future<Response> publishPost(Posts posts,{isCreate = true}) async{
+//   try{
+//     Response res = await createEditPosts(posts, posts.isFeatured, isCreate: isCreate);
+//     print('RESPONSE STATUSCODE FROM APPROVE POSTS - ' + res.statusCode.toString());
+//     print(res.body);
+//     Response res = await post(PUBLISH_POST_API, headers: HEADERS, body: json.encode({
+//       'auth': auth,
+//       'id' : posts.id
+//     }));
+//     print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+//     print(res.body);
+//     if(res != null && res.statusCode == 200 ){
+//       return res;
+//     }
+//     print('ERROR WHILE APPROVING POST....');
+//     return Response('ERROR', 404);
+//   }catch(e){
+//     print('ERROR WHILE APPROVING POST....');
+//     print(e);
+//     return Response('ERROR', 404);
+//   }
+// }
+Future<Response> createEditPosts(Posts posts, bool priority,{bool isCreate = true})async{
+  try {
+    isCreate ?
+    print("....PUBLISHING POST FOR REQUEST APPROVAL......")
+    : print("....UPDATING POSTL......");
+    Map<String,dynamic> mapData = posts.toPostMap();
+    print(mapData[SUB][0]);
+    mapData.update('auth', (value) => auth, ifAbsent: ()=> auth,);
+    mapData.update('priority', (v){
+      return posts.isFeatured;
+    },ifAbsent: ()=>posts.isFeatured);
+    print(mapData);
+    print(isCreate);
+    Response res = await post(
+      isCreate? REQUEST_APPROVAL_POST_API : UPDATE_REQUEST_APPROVAL_POST_API, 
+      headers: HEADERS, body: json.encode(mapData));
+    print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+    print(res.body);
+    if(res != null && res.statusCode == 200 && res.body != null && res.body.isNotEmpty){
+      posts.id = res.body;
+      return res;
+    }
+    print('ERROR WHILE APPROVING POST....');
+    return Response('ERROR', 404);
+  } catch(e){
+    print('ERROR WHILE APPROVING POST....');
+    print(e);
+    return Response('ERROR', 404);
+  }
+}
+Future<Response> publishPosts(String uid,Posts posts,bool priority,{bool permission = false})async{
   Map<String, String> headers = {"Content-type": "application/json"};
   String url;
   print('permission ' ':' '$permission');
@@ -518,38 +668,38 @@ Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool
   // 'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost' // create post
   // : 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // edit post
   if(permission){
-    postsSort.type = 'permission';
+    posts.type = 'permission';
     
-    url = (postsSort.id == null || postsSort.id.trim() == null || postsSort.id.trim() == '')? 
+    url = (posts.id == null || posts.id.trim() == null || posts.id.trim() == '')? 
       'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost' //create post
       : 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // update post
    
   }else{
-    if(postsSort.type == 'permission' && postsSort.owner != id ){
-      if (postsSort.id != null ) {
-        postsSort.type = 'create';
+    if(posts.type == 'permission' && posts.owner != id ){
+      if (posts.id != null ) {
+        posts.type = 'create';
         // url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost'; // create post
-      //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+      //   await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
       } else {
-        postsSort.type = 'update';
+        posts.type = 'update';
       }
         url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // update post
       // }
-        await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+        await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
       // }
     }else{
-      postsSort.type = (postsSort.id == null || postsSort.id.trim() == null || postsSort.id.trim() == '')? 
+      posts.type = (posts.id == null || posts.id.trim() == null || posts.id.trim() == '')? 
         'create'
         : 'update';
-      url = (postsSort.id == null || postsSort.id.trim() == null || postsSort.id.trim() == '')? 
+      url = (posts.id == null || posts.id.trim() == null || posts.id.trim() == '')? 
         'https://us-central1-notifier-phase-2.cloudfunctions.net/makePost' // create post
         : 'https://us-central1-notifier-phase-2.cloudfunctions.net/editPost'; // update post
-      // await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
+      // await DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(posts.id);
     } 
   }
 
 
-  Map<String,dynamic> mapData = postsSort.toMapData();
+  Map<String,dynamic> mapData = posts.toMap();
   mapData.update('priority', (v){
     return priority || permission? 'max':'default';
   },ifAbsent: ()=>priority || permission? 'max':'default');
@@ -561,15 +711,15 @@ Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool
     // if(uid == null ) {
       print(res.body); 
      if(res.statusCode == 200){
-        postsSort.id = res.body;
+        posts.id = res.body;
      }else{
-       postsSort.id = '';
+       posts.id = '';
      }
     // }
        
     if(permission && res.statusCode == 200){
-      postsSort.timeStamp = DateTime.now().millisecondsSinceEpoch;
-      await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(postsSort);
+      posts.timeStamp = DateTime.now().millisecondsSinceEpoch;
+      await DatabaseProvider(databaseName: 'permission',tableName: 'perm').insertPost(posts);
     } 
     return res;
   }catch(e){
@@ -579,48 +729,67 @@ Future<Response> publishPosts(String uid,PostsSort postsSort,bool priority,{bool
   }
 }
 
-Future<Response> deletePost(PostsSort postsSort,{bool permission = false})async{
-  Map<String, String> headers = {"Content-type": "application/json"};
-  String jsonPost = json.encode(postsSort.toMapData());
-  print(jsonPost);
-   String url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/deletePost';
-   if(permission){
-     try {
-       return databaseReference.collection('notification').document(postsSort.id).delete().then((val){
-         DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(postsSort.id);
-         return Response('Done',200);
-       });
-     } catch (e) {
-       print(e);
-       return Response('Error',404);
-     }
-   }
+Future<Response> deletePost(Posts posts,{bool permission = false})async{
+  Map<String,dynamic> mapData = posts.toPostMap();
+    mapData.update('auth', (value) => auth, ifAbsent: ()=> auth,);
+  //  String url = 'https://us-central1-notifier-phase-2.cloudfunctions.net/deletePost';
+  //  if(permission){
+  //    try {
+  //      return databaseReference.collection('notification').document(Posts.id).delete().then((val){
+  //        DatabaseProvider(databaseName: 'permission',tableName: 'perm').deletePost(Posts.id);
+  //        return Response('Done',200);
+  //      });
+  //    } catch (e) {
+  //      print(e);
+  //      return Response('Error',404);
+  //    }
+  //  }
     try {
-      Response response = await post(url, headers: headers, body: jsonPost);
+      print(".................DELETING POST..................");
+      Response response = await post(DELETE_POST_API, headers: HEADERS, body: json.encode(mapData));
       int statusCode = response.statusCode;
       print(statusCode);
-
       return response;
     } catch (e) {
-      print('$e' + 'error while deleting post');
+      print("ERROR WHILE DELETING POST ....");
+      print(e);
       showErrorToast(e.message??'An unknown exception occured while deleting the post');
       return Response('Error', 404);
     }
 }
 
-Future<Map<String,dynamic>> fetchPostFromFirebase(String id,{String collection = 'allPosts'}) async{
+/// id here is very necessary to fecth post
+Future<Map<String,dynamic>> fetchPostFromFirebase(String uid,{String collection = 'allPosts'}) async{
   try {
-    return await databaseReference.collection('allPosts').document(id).get().then((var snapshot) async{
-      var data = snapshot.data;
-      data.update('sub', (v)=>v[0]);
-      // data['timeStamp'] = double.parse(data['timeStamp']).round()??DateTime.now().millisecondsSinceEpoch;
-      // return await DBProvider().newPost(postsFromJson(json.encode(snapshot.data)));
-      return data;
-    }).catchError((onError){
-      print(onError);
+    Response res = await post(FETCH_POST_WITH_UID_API, headers: HEADERS, body: json.encode({"id": uid}));
+    print('RESPONSE STATUSCODE - ' + res.statusCode.toString());
+    print(res.body);
+    if(res == null || res.statusCode != 200 || res.body == null){
+      print("ERROR OCCURRED WHILE FETCHING POPST FROM FIREBASE");
       return null;
-    });
+    }else{
+      if(res.body.isEmpty){
+        print("POSSIBLY AN ERROR OCCURRED AS NO DATA FROM RESPONSE");
+        return null;
+      }else{
+        var data = json.decode(res.body);
+        // if(data.containsKey(SUB))
+        //   data.update(SUB, (v)=>v);
+        return data;
+      }
+    }
+    // return await databaseReference.collection('allPosts').document(id).get().then((var snapshot) async{
+    //   var data = snapshot.data;
+    //   data.update('sub', (v)=>v[0]);
+    //   // data['timeStamp'] = double.parse(data['timeStamp']).round()??DateTime.now().millisecondsSinceEpoch;
+    //   // return await DBProvider().newPost(postsFromJson(json.encode(snapshot.data)));
+    //   return data;
+    // }).catchError((onError){
+    //   print(onError);
+    //   return null;
+    // });
   } catch (e) {
+    print("ERROR OCCURRED WHILE FETCHING POPST FROM FIREBASE .....");
     print(e);
     return null;
   }
@@ -710,7 +879,7 @@ int convertMonthFromStringToInt(month){
 }
 
 /// appends data if not present else updates that data
-List<PostsSort> updateDataInList(List<PostsSort>list,PostsSort data){
+List<Posts> updateDataInList(List<Posts>list,Posts data){
   int index = list.indexWhere((test)=>test.id == data.id);
   if(index != -1){
     list[index] = data;
@@ -723,7 +892,7 @@ List<PostsSort> updateDataInList(List<PostsSort>list,PostsSort data){
 }
 
 
-String convertAbbrvofDeptToF(String abbrv){
+String convertAbbrvofDeptToFF(String abbrv){
   switch (abbrv.toLowerCase()) {
     case 'ae':
     return 'Aerospace Engg.';
@@ -776,17 +945,11 @@ String convertAbbrvofDeptToF(String abbrv){
     case 'mth':
     return 'Mathematics';
     break;
-    case 'nucc. eng.& tech prog.':
+    case 'nucc.eng.&techprog.':
     return 'Nuc. Engg.& Tech Prog.';
     break;
     case 'phy':
     return 'Physics';
-    break;
-    case 'nucc. eng.& tech prog.':
-    return 'Nuc. Engg.& Tech Prog.';
-    break;
-    case 'nucc. eng.& tech prog.':
-    return 'Nuc. Engg.& Tech Prog.';
     break;
     default: return abbrv;
   }

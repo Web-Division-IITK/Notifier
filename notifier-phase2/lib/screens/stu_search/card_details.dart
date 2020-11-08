@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/services/beautify_body.dart';
+import 'package:flutter/services.dart';
+import 'package:notifier/widget/showtoast.dart';
 
 class StudentCard extends StatelessWidget {
   final SearchModel userData;
@@ -179,8 +181,23 @@ class StudentCard extends StatelessWidget {
                 SizedBox(height: 5.0),
                 Row(
                   children: <Widget>[
-                    Icon(Ionicons.md_mail,color: Colors.white,),
+                    GestureDetector(child: Icon(Ionicons.md_mail,color: Colors.white,),
+                      onTap:() =>launchMail('${userData.username}@iitk.ac.in'),
+                    ),
                     SizedBox(width: 5.0),
+                    // GestureDetector(
+                    //   child: new Text('${userData.username}@iitk.ac.in',
+                    //     style: TextStyle(
+                    //       fontSize: 17,
+                    //         color:Colors.white
+                    //         // Theme.of(context).appBarTheme.textTheme.title.color,
+                    //         ),),
+                    //   onTap: () {
+                    //     Clipboard.setData(new ClipboardData(text: '${userData.username}@iitk.ac.in'));
+                    //     showInfoToast("Email id has been coppied to the clipboard");
+                    //   },
+                    //   // onTap: () => launchMail('${userData.username}@iitk.ac.in'),
+                    // ),
                     RichText(
                       text: TextSpan(
                         text: '${userData.username}@iitk.ac.in',
@@ -191,7 +208,8 @@ class StudentCard extends StatelessWidget {
                             ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            launchMail('${userData.username}@iitk.ac.in');
+                            Clipboard.setData(new ClipboardData(text: '${userData.username}@iitk.ac.in'));
+                        showInfoToast("Email id has been coppied to the clipboard");
                           },
                       ),
                     ),

@@ -5,7 +5,7 @@ import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:intl/intl.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:notifier/screens/home.dart';
@@ -53,10 +53,10 @@ class AllPostGetData extends StatelessWidget {
                           // });
                             // break;
                           // default: 
-                        return await DBProvider().getAllPosts().then((list)async{
+                        return await DBProvider().getAllPostsWithoutPermissions().then((list)async{
                           return await Navigator.of(context).push(MaterialPageRoute(
                           builder: (context){
-                            return SearchPost(list,'post');
+                            return SearchPost(list,PostDescType.POSTS);
                           }
                         ));
                         });
@@ -77,7 +77,9 @@ class AllPostGetData extends StatelessWidget {
                 // void callBack(){
                 //   setState((){});
                 // }
+                // print(data.prefs);
                 return TabBarView(
+                  physics: NeverScrollableScrollPhysics(),
                   children: [
                     FutureBuilder(
                       future: _fetchData(data.prefs),
@@ -95,8 +97,8 @@ class AllPostGetData extends StatelessWidget {
                       }
                     ),
                     FutureBuilder(
-                      future: DBProvider().getAllPosts(),
-                      builder: (context,AsyncSnapshot<List<PostsSort>> snapshot){
+                      future: DBProvider().getAllPostsWithoutPermissions(),
+                      builder: (context, snapshot){
                         switch (snapshot.connectionState) {
                           case ConnectionState.done:
                             if(snapshot!=null && snapshot.data!=null && snapshot.data.length!=0){
@@ -118,12 +120,15 @@ class AllPostGetData extends StatelessWidget {
       )
     );
   }
-  Future<List<PostsSort>>_fetchData(data) async{
-    var list = await DBProvider().getAllPosts();
+  Future<List<Posts>>_fetchData(List<String> data) async{
+    var list = await DBProvider().getAllPostsWithoutPermissions();
     return list == null || list.length == 0? 
       []
       : Future.microtask((){
-        list.retainWhere((test)=> data.contains(test.sub));
+        list.retainWhere((test){
+          // print(test.sub);
+          return data.contains(test.sub[0]);
+        });
         return Future.delayed(Duration(milliseconds: 20),()=>list);
       });
   }
@@ -137,7 +142,7 @@ class DoubleHolder {
 
 class PostsPage extends StatefulWidget {
   final DoubleHolder offset = new DoubleHolder();
-  final List<PostsSort> data;
+  final List<Posts> data;
   final String type;
   final UserModel model;
   PostsPage(this.data,this.type,this.model);
@@ -169,8 +174,8 @@ class _PostsPageState extends State<PostsPage>  with AutomaticKeepAliveClientMix
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return LiquidPullToRefresh(
-      showChildOpacityTransition: false,
+    return RefreshIndicator(
+      // showChildOpacityTransition: false,
       key: Key(widget.type),
       onRefresh: ()async{
         // print(timeOfRefresh);
@@ -187,19 +192,33 @@ class _PostsPageState extends State<PostsPage>  with AutomaticKeepAliveClientMix
         }
         timeOfRefresh = DateTime.now();
       },
-      child:  ListView.builder(
-        padding: EdgeInsets.all(16.0),
-        controller: scrollController,
-        shrinkWrap: true,
-        itemCount: widget.data.length,
-        // reverse: true,
-        itemBuilder: (context,index){
-          var i =  widget.data[index];
-          i.dateAsString = convertDateToString(DateTime.fromMillisecondsSinceEpoch(i.timeStamp));
-          if(widget.data.firstWhere((test){
+      child:  Padding(
+        padding: EdgeInsets.only(top:16.0,left: 16,right: 16),
+        child: Container(
+          height: MediaQuery.of(context).size.height - 150,
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: List.generate(
+                widget.data.length, (index){
+                  // return 
+        //           })
+        //       )
+        //     ),
+        //   ],
+        // ),
+        // child: ListView.builder(
+        //   padding: EdgeInsets.all(16.0),
+        //   controller: scrollController,
+        //   itemCount: widget.data.length + 0,
+        //   // reverse: true,
+        //   itemBuilder: (context,index){
+        var i =  widget.data[index];
+        i.dateAsString = convertDateToString(DateTime.fromMillisecondsSinceEpoch(i.timeStamp));
+        if(widget.data.firstWhere((test){
             return convertDateToString(DateTime.fromMillisecondsSinceEpoch(test.timeStamp)) 
               == convertDateToString(DateTime.fromMillisecondsSinceEpoch(i.timeStamp));
-          }) == i){
+        }) == i){
             return Column(
               key: ValueKey(i.timeStamp),
               children: <Widget>[
@@ -213,13 +232,16 @@ class _PostsPageState extends State<PostsPage>  with AutomaticKeepAliveClientMix
                 )
               ],
             );
-          }else{
+        }else{
             return Container(
               key: ValueKey(i.timeStamp),
                 child: PostTile(index,widget.data,widget.type)
             );
-          }
         }
+          })
+          ),
+          )
+          ),
       ),
     );
   }
@@ -247,7 +269,7 @@ class _PostsPageState extends State<PostsPage>  with AutomaticKeepAliveClientMix
 }
 
 class PostTile extends StatefulWidget {
-  final List<PostsSort> postArray;
+  final List<Posts> postArray;
   final int index;
   final String type;
   PostTile(this.index,this.postArray,this.type);
@@ -256,7 +278,7 @@ class PostTile extends StatefulWidget {
 }
 
 class _PostTileState extends State<PostTile> {
-  final List<PostsSort> postArray;
+  final List<Posts> postArray;
   final int index;
   _PostTileState(this.index,this.postArray);
   Timer timer;
@@ -332,7 +354,7 @@ class _PostTileState extends State<PostTile> {
         // );
           return Navigator.of(context)
               .push(MaterialPageRoute(builder: (BuildContext context) {
-            return FeatureDiscovery(child: PostDescription(listOfPosts: postArray, type: 'display' + ' ${widget.type}',index: index,));
+            return FeatureDiscovery(child: PostDescription(listOfPosts: postArray, type: PostDescType.DISPLAY,index: index,));
           }));
         },
         child: Stack(
@@ -369,7 +391,7 @@ class _PostTileState extends State<PostTile> {
                   padding: EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0.0),
                   child: AutoSizeText(
                     // timenot['club'],
-                      postArray[index].sub,
+                      postArray[index].sub.join(";"),
                       // 'Science and Texhnology Council',
                       textAlign: TextAlign.start,
                       style: TextStyle(

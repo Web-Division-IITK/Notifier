@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/authentication/loginsignuppage.dart';
@@ -6,6 +7,8 @@ import 'package:notifier/database/reminder.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/services/database.dart';
 import 'package:notifier/services/functions.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import 'database/hive_database.dart';
 import 'database/student_search.dart';
@@ -31,10 +34,10 @@ class _RootPageState extends State<RootPage> {
   @override
   void initState() {
     super.initState();
-    if (i == 0) {
-      getStudentDataFromServer();
-      i++;
-    }
+    // if (i == 0) {
+    //   getStudentDataFromServer();
+    //   i++;
+    // }
     widget.auth.getCurrentUser().then((user) {
       print(user);
       setState(() {
@@ -58,8 +61,6 @@ class _RootPageState extends State<RootPage> {
         _userId = user.toString();
         uid = user;
       });
-      
-      
       if(uid!=null){
         if(uid != 'notverified'){
           print('populating users');
@@ -145,7 +146,20 @@ class _RootPageState extends State<RootPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Home'),
-
+        actions: [
+          IconButton(
+            icon: Icon(AntDesign.logout),
+            onPressed: ()async{
+              try {
+                // subscribeUnsubsTopic([], (userData.toMap()[0]?.prefs == null)? []:userData.toMap()[0]?.prefs);
+                await widget.auth.signOut();
+                logoutCallback();
+              } catch (e) {
+                print(e);
+              }
+            },
+          )
+        ],
       ),
       
       body: Container(
@@ -156,7 +170,7 @@ class _RootPageState extends State<RootPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               Center(
-                child: Text('Error while doing your operation, pleasetry again later!! \nCheck your internet connection',
+                child: Text('Error while fetching your data , please try again later \nor try checking your connectivity',
                 textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.red,
@@ -180,6 +194,22 @@ class _RootPageState extends State<RootPage> {
   @override
   Widget build(BuildContext context) {
     // print(_userId);
+    // FutureBuilder(
+    //   future: Firebase.initializeApp(),
+    //   builder: (BuildContext context, AsyncSnapshot<FirebaseApp> snapshot) {\
+        // StreamBuilder(
+        //   stream: FirebaseAuth.instance.authStateChanges() ,
+        //   initialData: null ,
+        //   builder: (BuildContext context, AsyncSnapshot<User> snapshot){
+        //     if(snapshot == null || snapshot.data == null){
+        //       return Container();
+        //     }else if(!snapshot.data.emailVerified){
+        //       return Container();
+        //     }else{
+        //       return Container();
+        //     }
+        //   },
+        // );
     switch (authStatus) {
       case AuthStatus.NOT_DETERMINED:
         return buildWaitingScreen();
@@ -212,5 +242,7 @@ class _RootPageState extends State<RootPage> {
       default:
         return buildWaitingScreen();
     }
+    //   },
+    // );
   }
 }
