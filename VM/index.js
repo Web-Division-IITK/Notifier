@@ -562,7 +562,7 @@ async function fetchPostUsingTimestamp(data){
     });
     let f1 = await fetchDoc;
     if(typeof data.auth == 'undefined' || !(await approveDef(data.auth.id, data.auth.uid))) return f1;
-    let fetchDoc = new Promise(function (resolve, reject) {
+    fetchDoc = new Promise(function (resolve, reject) {
         POST.find({timeStamp: {$gte: data.timeStamp}, type:"draft", owner: data.auth.id}, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') resolve([]); else {
                 docs.sort((a, b) => b.timeStamp - a.timeStamp);
@@ -576,7 +576,7 @@ async function fetchPostUsingTimestamp(data){
     if(!coun) return f1;
     let query = {timeStamp: {$gte: data.timeStamp}, type:"permission"};
     if(coun!="l3") query.council = coun;
-    let fetchDoc = new Promise(function (resolve, reject) {
+    fetchDoc = new Promise(function (resolve, reject) {
         POST.find(query, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') resolve([]); else {
                 docs.sort((a, b) => b.timeStamp - a.timeStamp);
