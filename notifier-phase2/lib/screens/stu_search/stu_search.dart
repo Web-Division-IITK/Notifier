@@ -1,9 +1,12 @@
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:notifier/colors.dart';
 import 'package:notifier/model/hive_models/ss_model.dart';
 import 'package:notifier/screens/profile_page.dart';
 import 'package:notifier/screens/stu_search/searched_list.dart';
+import 'package:notifier/services/functions.dart';
 import 'package:notifier/widget/showtoast.dart';
 
 import '../../database/student_search.dart';
@@ -128,6 +131,13 @@ class _StudentSearchState extends State<StudentSearch> {
       appBar: AppBar(
         // title: Text('Student Search'),
         actions: <Widget>[
+          // Switch(value: Theme.of(context).brightness == Brightness.dark,
+          //  onChanged: (value){
+          //    DynamicTheme.of(context).setBrightness(
+          //                       Theme.of(context).brightness == Brightness.light
+          //                         ? Brightness.dark
+          //                         : Brightness.light);
+          //  }),
           // FlatButton(onPressed: ()=>_formKey.currentState.reset(), child: Text('Reset')),
           IconButton(icon: Icon(Icons.refresh), onPressed: ()async{
              if(mounted){
@@ -499,8 +509,15 @@ class _StudentSearchState extends State<StudentSearch> {
                             ),
                           ),
                         )
-                      )
+                      ),
                     ),
+                    SizedBox(height: 5),
+                    Text(
+                      ''' * Note: If you cannot view the profile photos try searching again after connecting to IITK newtwork.''',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: CustomColors(context).noteColor),
+                    ),
+                    SizedBox(height: 15),
                   ],
                 ),
               ),
@@ -539,7 +556,18 @@ bool checkifThereisAvalue(String value,String checkingValue){
   // print(value);
   value = value.replaceAll(' ', '');
   checkingValue = checkingValue != null ? checkingValue.replaceAll(' ', '') : '';
+  // print("........VALUE ........." + value);
+  // print(".......CHECKINGVALUE ............" + checkingValue);
   return checkingValue.toLowerCase().contains(value.toLowerCase());
+}
+bool checkIfThereisAvalueForProgram(String value, String checkingValue){
+  value = value.replaceAll(' ', '');
+  value = convertAbbrvofDeptToFF(value).replaceAll(" ", "").toLowerCase();
+  checkingValue = checkingValue != null ? checkingValue.replaceAll(' ', '').toLowerCase() : '';
+   print("........VALUE ........." + value);
+  print(".......CHECKINGVALUE ............" + checkingValue);
+  return checkingValue.contains(value);
+
 }
 
 converttoGenderAbb(String gender){

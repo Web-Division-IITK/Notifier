@@ -19,6 +19,7 @@ class MakeCoordi extends StatefulWidget {
   final Councils allCouncilData;
   final VoidCallback logoutCallback;
   final String userId;
+  final Box usersBox ;
   MakeCoordi(
     this.ids,
     this.allCouncilData,
@@ -26,6 +27,7 @@ class MakeCoordi extends StatefulWidget {
     this.auth,
     this.logoutCallback,
     this.userId,
+    this.usersBox
   );
   @override
   _MakeCoordiState createState() => _MakeCoordiState();
@@ -41,7 +43,7 @@ class _MakeCoordiState extends State<MakeCoordi> {
   List<String> _council = [];
   List<String> _entity = [];
   Box peopleBox ;
-  Box usersBox ;
+  // Box usersBox ;
   
   bool validateAndSave() {
     final form = _formKey.currentState;
@@ -53,7 +55,7 @@ class _MakeCoordiState extends State<MakeCoordi> {
   }
   initPeopleBox() async{
     peopleBox  = await HiveDatabaseUser(databaseName: 'people').hiveBox;
-    usersBox  = await HiveDatabaseUser().hiveBox;
+    // usersBox  = await HiveDatabaseUser().hiveBox;
     setState(() {
     });
   }
@@ -94,12 +96,18 @@ class _MakeCoordiState extends State<MakeCoordi> {
                   }
                   return v;
                 },ifAbsent: ()=> [_selectedEntity]);
+                allCouncilData.coordOfCouncil = data.keys.toList();
+                  allCouncilData.subCouncil.forEach((councilName,subCouncil){
+                    subCouncil.coordiOfInCouncil = (data[councilName] == null )? 
+                      []
+                        :data[councilName];
+                }); 
                 peopleBox.toMap()[0].councils = data;
                 // peopleBox.putAt(0, peopleBox.toMap()[0]);
               }
               peopleBox.putAt(0, peopleBox.toMap()[0]);
-              usersBox.toMap()[0].admin = true;
-              usersBox.putAt(0,usersBox.toMap()[0] );
+              widget.usersBox.toMap()[0].admin = true;
+               widget.usersBox.putAt(0, widget.usersBox.toMap()[0] );
             }
             setState(() {
               admin = true;
@@ -113,6 +121,12 @@ class _MakeCoordiState extends State<MakeCoordi> {
             showErrorToast('Cannot process request at this time, please try again later !!');
           }
         });
+        // setState(() {
+        //       admin = true;
+        //       loading = false;
+        //       widget.usersBox.toMap()[0].admin = ! widget.usersBox.toMap()[0].admin;
+        //       widget.usersBox.putAt(0,widget.usersBox.toMap()[0] );
+        //     });
       } catch (e) {
         print('Error: $e');
         setState(() {

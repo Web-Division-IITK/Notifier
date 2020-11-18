@@ -3,9 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:notifier/constants.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:notifier/authentication/authentication.dart';
 import 'package:notifier/authentication/reset_password.dart';
+import 'package:notifier/database/student_search.dart';
 import 'package:notifier/screens/home.dart';
 import 'package:notifier/widget/showtoast.dart';
 
@@ -55,6 +57,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
             id = _email.toString().replaceAll('@iitk.ac.in', '');
           });
           userId = await widget.auth.signIn(_email, _password);
+          
           print('Signed in: $userId');
         } else {
           userId = await widget.auth.signUp(_email, _password).whenComplete((){
@@ -74,7 +77,16 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
           _showVerifyEmailDialog();
         }
         if (userId != null && userId.length > 0 ) {
-          
+          // auth().intialiseAuthValues(id, userId);
+          auth.updateAll((key, value) {
+            if(key == 'id'){
+              return value = id??"";
+            }
+            else return value = userId??"";
+          });
+          print(auth);
+          await getStudentDataFromServer();
+          print('MOVING FORWARD TO COUNCIL DATA.....');
           widget.loginCallback();
         }else{
           setState(() {
@@ -85,7 +97,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         print('Error: $e');
         setState(() {
           _isLoading = false;
-          _errorMessage = e.message;
+          _errorMessage = e.toString();
           showErrorToast(
             _errorMessage,
           );
@@ -233,10 +245,10 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
             userId == 'notverified' || userId == null || userId == "" || userId.trim() == '' || userId.trim() == null ?
             
             (_isLoginForm ?
-            Text('Signing in')
-            : Text('Signing up'))
+            Text('Signing in',style: TextStyle(color: Colors.white))
+            : Text('Signing up',style: TextStyle(color: Colors.white)))
             
-            : Text('Fetching up your data from server!!!'),
+            : Text('Fetching up your data from server!!!',style: TextStyle(color: Colors.white)),
             // CircularProgressIndicator(),
             SizedBox(height: 10,),
             SpinKitThreeBounce(color: Theme.of(context).accentColor,size: 30)
@@ -301,7 +313,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         textInputAction: _isLoginForm? TextInputAction.send : TextInputAction.done,
         autofocus: false,
         onFieldSubmitted: (text){
-          _isLoginForm?
+          return _isLoginForm?
           validateAndSubmit()
           : null;
         },
@@ -358,6 +370,7 @@ class _LoginSignupPageState extends State<LoginSignupPage> {
         maxLines: 1,
         obscureText: true,
         autofocus: false,
+        onFieldSubmitted: (value)=>validateAndSubmit(),
         decoration: new InputDecoration(
           // suffix:  IconButton(icon: Icon(
           //     obsecureText1?

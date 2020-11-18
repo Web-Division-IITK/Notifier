@@ -1,8 +1,11 @@
 
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/options.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:notifier/widget/showtoast.dart';
@@ -12,7 +15,7 @@ import 'package:path/path.dart' as Path;
 class AddImage extends StatefulWidget {
   final TextEditingController imageController;
   final AddingImage addingImage;
-  final String type;
+  final PostDescType type;
   AddImage({@required this.imageController,@required this.addingImage,@required this.type});
   @override
   _AddImageState createState() => _AddImageState();
@@ -27,42 +30,51 @@ class _AddImageState extends State<AddImage> {
   //     });
   //   });
   // }
-
+  final ImagePicker picker = ImagePicker();
   Future<bool> uploadFile() async {
     setState(() {
       _loadingWidget = true;
     });
     // Fluttertoast.showToast(msg: 'Uploading Image');
-    StorageReference storageReference = FirebaseStorage.instance.ref()
+    try{
+      Reference storageReference = FirebaseStorage.instance.ref()
         .child('upload_image/${Path.basename(widget.addingImage.image.path)}');
-    StorageUploadTask uploadTask = storageReference.putFile(widget.addingImage.image);
-    await uploadTask.onComplete;
-    print('File Uploaded');
-    return storageReference.getDownloadURL().then((fileURL) {
-      // setState(() {
-        print(fileURL);
-        // _url = fileURL;
-        // widget.addingImage.url = fileURL;
-        widget.imageController.text = fileURL;
-        _loadingWidget = false;
-      // });
-      return true;
-    }).catchError((onError){
+        UploadTask uploadTask = storageReference.putFile(widget.addingImage.image);
+        // await uploadTask.onComplete;
+        print('File Uploaded');
+        return storageReference.getDownloadURL().then((fileURL) {
+          // setState(() {
+            print(fileURL);
+            // _url = fileURL;
+            // widget.addingImage.url = fileURL;
+            widget.imageController.text = fileURL;
+            _loadingWidget = false;
+          // });
+          return true;
+        });
+    }catch(onError){
       print(onError);
+      showErrorToast('Uploading failed !!!');
       return false;
-    });
+    }
   }
 
   Future<bool> clearSelection() async {
-    StorageReference storageReference =
-        await FirebaseStorage.instance.getReferenceFromUrl('${widget.imageController.text}');
-    return await storageReference.delete().then((_) {
-      return true;
-    }).catchError((onError){
-      print(onError);
+    try{
+      Reference storageReference =
+        FirebaseStorage.instance.refFromURL('${widget.imageController.text}');
+        return await storageReference.delete().then((_) {
+          return true;
+        }).catchError((onError){
+          print(onError);
+          showErrorToast('Failed!!!');
+          return false;
+        });
+    }catch(e){
+      print(e);
       showErrorToast('Failed!!!');
       return false;
-    });
+    }
     // StorageUploadTask uploadTask = storageReference.putFile(_image);
   }
   @override
@@ -70,8 +82,10 @@ class _AddImageState extends State<AddImage> {
     super.initState();
     if(widget.imageController.text.trim() == null || widget.imageController.text == '' || widget.imageController.text.trim() == ''){
       setState(() {
-        widget.imageController.clear();
+        if(mounted){
+          widget.imageController.clear();
         widget.addingImage.url = null;
+        }
       });
     }
   }
@@ -118,7 +132,10 @@ class _AddImageState extends State<AddImage> {
                         padding: EdgeInsets.only(bottom: 10.0),
                         height: 250.0,
                         child: widget.addingImage.image != null ?
-                          Image.file(widget.addingImage.image)
+                          // Image.file(widget.addingImage.image,
+                            
+                          // )
+                          Image.memory(widget.addingImage.image.readAsBytesSync(),)
                           : CachedNetworkImage(
                             imageUrl: widget.addingImage.url,
                             errorWidget: (context,url,value){
@@ -129,6 +146,17 @@ class _AddImageState extends State<AddImage> {
                                     style: TextStyle(color: Colors.red),
                                   ),
                                 ),
+                              );
+                            },
+                            progressIndicatorBuilder: (context,value,progress){
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text('Loading Image.....'),
+                                  SizedBox(height: 25,),
+                                  CircularProgressIndicator(),
+                                ],
                               );
                             },
                           ),
@@ -142,13 +170,20 @@ class _AddImageState extends State<AddImage> {
                           // if(widget.addingImage.url != null){
                           //   await clearSelection();
                           // }
-                          
-                          await ImagePicker.pickImage(
-                            source: ImageSource.gallery).then((image) {
-                              setState(() {
-                                widget.addingImage.image = image;
+                          await picker.getImage(
+                            source: ImageSource.gallery).then((image){
+                              setState((){
+                                if(image != null)
+                                  widget.addingImage.image = File(image.path);
+                                else showInfoToast('No image was selected');
                               });
                             });
+                          // await ImagePicker.pickImage(
+                          //   source: ImageSource.gallery).then((image) {
+                          //     setState(() {
+                          //       widget.addingImage.image = image;
+                          //     });
+                          //   });
                         }, 
                         icon: Icon(EvilIcons.image), 
                         label: Text(
@@ -159,7 +194,6 @@ class _AddImageState extends State<AddImage> {
                       ),
                       widget.addingImage.image!=null || widget.addingImage.url!=null?
                         RaisedButton.icon(
-                          // color: Colors.,
                           onPressed: ()async{
                             if(widget.addingImage.url != null){
                               return await clearSelection().then((bool status)async {

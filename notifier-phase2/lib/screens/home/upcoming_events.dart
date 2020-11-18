@@ -4,10 +4,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:feature_discovery/feature_discovery.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/reminder.dart';
 import 'package:notifier/model/posts.dart';
-import 'package:notifier/screens/home/ongoing_events.dart';
 import 'package:notifier/screens/posts/post_desc.dart';
 
 // class UpcomingEvents extends StatefulWidget {
@@ -159,7 +158,7 @@ import 'package:notifier/screens/posts/post_desc.dart';
 //   }
   
 // }
-bool checkDateisBetween(DateTime startTime,DateTime endTime, PostsSort postsSort){
+bool checkDateisBetween(DateTime startTime,DateTime endTime, Posts posts){
     // final time = convertDateToString(startTime).toLowerCase();
     // var now = DateTime.now();
     var today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
@@ -181,7 +180,7 @@ bool checkDateisBetween(DateTime startTime,DateTime endTime, PostsSort postsSort
 class UpcomingEventsPage extends StatefulWidget {
   // final Function load;
   // final Stream stream;
-  // final List<PostsSort> array;
+  // final List<posts> array;
   // UpcomingEventsPage({@required this.array,@required this.load});
   @override
   _UpcomingEventsPageState createState() => _UpcomingEventsPageState();
@@ -189,14 +188,14 @@ class UpcomingEventsPage extends StatefulWidget {
 
 class _UpcomingEventsPageState extends State<UpcomingEventsPage> with AutomaticKeepAliveClientMixin<UpcomingEventsPage> {
   final GlobalKey<AnimatedListState> _upcomingKey = GlobalKey<AnimatedListState>();
-  List<PostsSort> array = [];
+  List<Posts> array = [];
   // StreamController streamController = StreamController.broadcast();
   // StreamSubscription streamSubscription;
   @override
   bool get wantKeepAlive => true;
 
-  refresh(){
-    setState(() {});
+  Future<void>refresh(){
+    return Future.delayed(Duration(seconds: 2),()=>setState(() {}));
   }
   // @override
   // void initState() { 
@@ -219,99 +218,110 @@ class _UpcomingEventsPageState extends State<UpcomingEventsPage> with AutomaticK
         centerTitle: true,
       ),
       body: Container(
-        child: FutureBuilder(
-          future: _fetchData(),
-          builder: (context,AsyncSnapshot<List<PostsSort>> snapshot) {
-            switch (snapshot.connectionState) {
-              case ConnectionState.done:
-                if(snapshot == null || snapshot.data == null || snapshot.data.length ==0){
-                  // streamController.close();
-                  return Container(
-                    height: MediaQuery.of(context).size.height*0.8,
-                    // height: double.maxFinite,
-                    child: Center(child: Text('No ongoing events right now')),
-                  );
-                }else{
-                  // if(streamController.isClosed){
-                  //   streamController.addStream(Stream.periodic(Duration(minutes: 1)));
-                  // }
-                  return LiquidPullToRefresh(
-                    showChildOpacityTransition: false,
-                    onRefresh: ()async{
-                      refresh();
-                    },
-                    child: ListView(
-                      shrinkWrap: true,
-                      padding: EdgeInsets.symmetric(vertical: 16.0),
-                      children: <Widget>[
-                        snapshot.data == null ||snapshot.data.length == 0?
-                        Container(
-                          height: MediaQuery.of(context).size.height*0.8,
-                          // height: double.maxFinite,
-                          child: Center(child: Text('No ongoing events right now')),
-                        ):
-                        AnimatedList(
-                          shrinkWrap: true,
-                          key: _upcomingKey,
-                          physics: NeverScrollableScrollPhysics(),
-                          initialItemCount: snapshot.data.length,
-                          itemBuilder: (context,index,animation){
-                            
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              child: 
-                              (snapshot.data == null ||snapshot.data.length == 0)?
-                              Container(
-                                child: Center(child: Text('No ongoing events right now')),
-                              ):
-                              StreamBuilder(
-                                stream: Stream.periodic(Duration(minutes: 1)),
-                                builder: (context, snapsht) {
-                                  return ListItem(
-                                    key: ValueKey(DateTime.now().millisecondsSinceEpoch),
-                                    postsList: snapshot.data,
-                                    // array: snapshot.data,
-                                    load: refresh,
-                                    eventKey: _upcomingKey,
-                                    index: index, 
-                                  );
-                                }
-                              ), 
-                            );
-                          }
+        height: MediaQuery.of(context).size.height - MediaQuery.of(context).viewPadding.top,
+        child: RefreshIndicator(
+          onRefresh: refresh,
+          child: Container(
+            height: MediaQuery.of(context).size.height - 88,
+            child: FutureBuilder(
+              future: DatabaseProvider().getAllPostsForUpcomingEvents(),
+              builder: (context,AsyncSnapshot<List<Posts>> snapshot) {
+                switch (snapshot.connectionState) {
+                  case ConnectionState.done:
+                    if(snapshot == null || snapshot.data == null || snapshot.data.length ==0){
+                      // streamController.close();
+                      return Container(
+                        height: MediaQuery.of(context).size.height*0.8,
+                        // height: double.maxFinite,
+                        child: Center(child: Text('No upcoming events right now')),
+                      );
+                    }else{
+                      // if(streamController.isClosed){
+                      //   streamController.addStream(Stream.periodic(Duration(minutes: 1)));
+                      // }
+                      // LiquidPullToRefresh(
+                      //   showChildOpacityTransition: false,
+                      //   onRefresh: ()async{
+                      //     refresh();
+                      //   },
+                      return SingleChildScrollView(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          // itemExtent: MediaQuery.of(context).size.height - MediaQuery.of(context).viewPadding.top,
+                          // shrinkWrap: true,
+                          // padding: EdgeInsets.symmetric(vertical: 16.0),
+                          children: <Widget>[
+                           ( snapshot.data == null ||snapshot.data.length == 0)?
+                            Container(
+                              height: MediaQuery.of(context).size.height*0.8,
+                              // height: double.maxFinite,
+                              child: Center(child: Text('No upcoming events right now')),
+                            ):
+                            AnimatedList(
+                              shrinkWrap: true,
+                              key: _upcomingKey,
+                              physics: NeverScrollableScrollPhysics(),
+                              initialItemCount: snapshot.data.length ,
+                              itemBuilder: (context,index,animation){
+                                // index =0;
+                                return SizeTransition(
+                                  sizeFactor: animation,
+                                  child: 
+                                  (snapshot.data == null ||snapshot.data.length == 0)?
+                                  Container(
+                                    child: Center(child: Text('No upcoming events right now')),
+                                  ):
+                                  StreamBuilder(
+                                    stream: Stream.periodic(Duration(minutes: 1)),
+                                    builder: (context, snapsht) {
+                                      return ListItem(
+                                        key: ValueKey(DateTime.now().millisecondsSinceEpoch),
+                                        postsList: snapshot.data,
+                                        // array: snapshot.data,
+                                        load: refresh,
+                                        eventKey: _upcomingKey,
+                                        index: index, 
+                                      );
+                                    }
+                                  ), 
+                                );
+                              }
+                            ),
+                          ],
                         ),
-                      ],
-                    ), 
-                    
+                      );
+                    }
+                    break;
+                  default: return Container(
+                    child: Center(child: CircularProgressIndicator()),
                   );
                 }
-                break;
-              default: return Container(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-          }
+              }
+            ),
+          ),
         ),
       ),
     );
   }
-   Future<List<PostsSort>> _fetchData()async{
-    return await DatabaseProvider().getAllPosts().then((list){
+   Future<List<Posts>> _fetchData()async{
+    return await DatabaseProvider().getAllPostsForUpcomingEvents().then((list){
+      print(list);
       if(list == null || list.length == 0){
         return [];
       }
-      else return Future.microtask((){
-        list.retainWhere((test)=> checkDateForONisBetween(
-          DateTime.fromMillisecondsSinceEpoch(test.startTime), 
-          DateTime.fromMillisecondsSinceEpoch(test.endTime),test));
-        return Future.delayed(Duration(milliseconds: 10),()=>list);
-      });
+      else return list;
+      // Future.microtask((){
+      //   list.retainWhere((test)=> checkDateForONisBetween(
+      //     DateTime.fromMillisecondsSinceEpoch(test.startTime), 
+      //     DateTime.fromMillisecondsSinceEpoch(test.endTime),test));
+      //   return Future.delayed(Duration(milliseconds: 10),()=>list);
+      // });
     });
   } 
 }
 class ListItem extends StatefulWidget {
   final Function load;
-  final List<PostsSort> postsList;
+  final List<Posts> postsList;
   final int index;
   final GlobalKey<AnimatedListState> eventKey;
   // final StreamController streamController;
@@ -323,14 +333,14 @@ class ListItem extends StatefulWidget {
 
 class _ListItemState extends State<ListItem> {
   var minutes;
-  PostsSort postsSort;
+  Posts posts;
   // StreamSubscription subscription;
   @override
   void initState() {
     super.initState();
-    postsSort = widget.postsList[widget.index];
-    var date = DateTime.fromMillisecondsSinceEpoch(postsSort.startTime);
-    // DateTime endTime= convertDateFromStringToDateTime(postsSort.endTime);
+    posts = widget.postsList[widget.index];
+    var date = DateTime.fromMillisecondsSinceEpoch(posts.startTime);
+    // DateTime endTime= convertDateFromStringToDateTime(posts.endTime);
     minutes = date.difference(DateTime.now());
     // subscription = widget.streamController.stream.listen((onData){
       if(minutes == 0){  
@@ -406,9 +416,9 @@ class _ListItemState extends State<ListItem> {
         onTap: (){
           return Navigator.of(context).push(
             MaterialPageRoute(builder: (context){
-              return FeatureDiscovery(child: PostDescription(listOfPosts: widget.postsList, type: 'reminder'));
+              return FeatureDiscovery(child: PostDescription(listOfPosts: widget.postsList, type: PostDescType.REMINDER));
             })
-          );
+          ).then((value) => widget.load()??{});
         },
         child: Container(
           decoration: BoxDecoration(
@@ -416,14 +426,14 @@ class _ListItemState extends State<ListItem> {
           ),
           width: double.maxFinite,
           constraints: BoxConstraints(
-            minHeight: 80.0,
+            minHeight: 100.0,
             // maxHeight: 90.0
           ),
           padding: EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              AutoSizeText(postsSort.sub,
+              AutoSizeText(posts.sub[0].toString(),
                   style: TextStyle(
                     color: Theme.of(context).brightness == Brightness.light
                               ? Colors.blueGrey
@@ -431,7 +441,8 @@ class _ListItemState extends State<ListItem> {
                     fontSize: 10.0,
                   ),
                 ),
-                Text(postsSort.title,
+                SizedBox(height:  5),
+                Text(posts.title,
                   style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold

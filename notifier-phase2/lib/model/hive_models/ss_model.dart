@@ -56,8 +56,19 @@ class SearchModel{
       year: yearIndex
     );
   }
-  fromMaptoMap(Map<String,dynamic> jsonData) =>{
-   'bloodGroup': jsonData.containsKey('blood_group')?jsonData['blood_group']:'',
+  fromMaptoMap(Map<String,dynamic> jsonData){
+    String roll = jsonData.containsKey('roll')?jsonData['roll']:'Others'.substring(0,2);
+    String yearIndex = "";
+    if(!roll.startsWith(RegExp(r'[0-9]')) ){
+      yearIndex = "Others";
+    }else{
+      if(int.parse(roll)<=DateTime.now().year.remainder(1000)){
+        yearIndex = "Y$roll";
+      }else{
+        yearIndex = "Others";
+      }
+    }
+   return {'bloodGroup': jsonData.containsKey('blood_group')?jsonData['blood_group']:'',
       'dept': jsonData.containsKey('dept')?jsonData['dept']:'',
       'gender': jsonData.containsKey('gender')?jsonData['gender']:'',
       'hall': jsonData.containsKey('hall')?jsonData['hall']:'',
@@ -67,8 +78,9 @@ class SearchModel{
       'rollno': jsonData.containsKey('roll')?jsonData['roll']:'',
       'room': jsonData.containsKey('room')?jsonData['room']:'',
       'username': jsonData.containsKey('username')?jsonData['username']:'',
-      'year': 'Others'
-  };
+      'year': yearIndex
+    };
+  }
   Map<String, dynamic> toMap() =>{
     'rollno':rollno!=null && rollno.replaceAll(' ', '')!=''?rollno:'',
     'name': name!=null && name.replaceAll(' ', '')!=''?name:'',

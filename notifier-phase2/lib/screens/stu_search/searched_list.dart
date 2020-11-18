@@ -52,7 +52,8 @@ class Seraching extends StatelessWidget {
        return list.where((test){
         return 
         (checkifThereisAvalue(query.bloodGroup, test.bloodGroup) && 
-        (checkifThereisAvalue(query.dept, test.dept)||checkifThereisAvalue(convertAbbrvofDeptToF(query.dept), test.dept)) &&
+        // (checkifThereisAvalue(query.dept, test.dept)||checkifThereisAvalue(convertAbbrvofDeptToFF(query.dept), test.dept)) &&
+        checkIfThereisAvalueForProgram(query.dept,test.dept) &&
         checkifThereisAvalue(query.gender, test.gender) &&
         checkifThereisAvalue(query.hall, test.hall) &&
         checkifThereisAvalue(query.hometown, test.hometown) && 
@@ -127,8 +128,17 @@ class SearchedList extends StatelessWidget {
                   ),
                 ),
               )
-            : CupertinoScrollbar(
-              child: ListView.builder(
+            : Scrollbar(
+              child: 
+              // SingleChildScrollView(
+              //   child: Column(
+              //     children: List.generate(list.length, (index){
+              //       return ListItemStudent(
+              //         MediaQuery.of(context).size.width, list[index]);
+              //     })
+              //   )
+              // )
+              ListView.builder(
                 shrinkWrap: true,
                 itemCount: list.length,
                 itemBuilder: (context, index) {
@@ -144,6 +154,7 @@ class SearchedList extends StatelessWidget {
 class ListItemStudent extends StatelessWidget {
   final double itemWidth;
   final SearchModel user;
+  final AsyncMemoizer _memoizer = AsyncMemoizer();
   ListItemStudent(this.itemWidth, this.user);
   // final AsyncMemoizer _memorizer = AsyncMemoizer();
   @override
@@ -162,7 +173,7 @@ class ListItemStudent extends StatelessWidget {
             return showDialog(
                 context: (context),
                 builder: (context) {
-                  return StudentCard(user,ProfilePic(user).getUserProfilePic());
+                  return StudentCard(user,ProfilePic(user).getProfilePic());
                 });
           },
           borderRadius: BorderRadius.circular(16),
@@ -200,7 +211,7 @@ class ListItemStudent extends StatelessWidget {
                 Flexible(
                   flex: 4,
                   child: FutureBuilder(
-                  future: ProfilePic(user).getUserProfilePic(),
+                  future: this._memoizer.runOnce(() => ProfilePic(user).getProfilePic(),),
                   builder: (context,  snapshot) {
                     switch (snapshot.connectionState) {
                     case ConnectionState.done:

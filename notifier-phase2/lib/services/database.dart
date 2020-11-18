@@ -3,10 +3,12 @@ import 'dart:io';
 import 'dart:async';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart';
+import 'package:notifier/constants.dart';
 import 'package:notifier/database/hive_database.dart';
 import 'package:notifier/model/hive_models/hive_model.dart';
 import 'package:notifier/model/hive_models/people_hive.dart';
 import 'package:notifier/model/posts.dart';
+import 'package:notifier/screens/home.dart';
 import 'package:path/path.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -22,17 +24,13 @@ Future<File> file(String filename) async {
 }
 class DBProvider {
   final String databaseName = 'posts';
-  // DBProvider();
-  // static final DBProvider db = DBProvider();
-  
+  static const String tableName = 'Posts';
   static Database _database;
 
   Future<Database> get database async {
     if (_database != null){
       return _database;
     }
-
-    // if _database is null we instantiate it
     _database = await initDB();
     return _database;
   }
@@ -59,32 +57,6 @@ class DBProvider {
     try {
       Directory documentsDirectory = await getApplicationDocumentsDirectory();
       String path = join(documentsDirectory.path,databaseName,'.db');
-      // String data;
-      // switch (path) {
-      //   case 'posts':
-      //     data = "CREATE TABLE Posts("
-      //         "id TEXT PRIMARY KEY,"
-      //         "council TEXT,"
-      //         "owner TEXT,"
-      //         "sub TEXT,"
-      //         "tags TEXT,"
-      //         "timeStamp INTEGER,"
-      //         "title TEXT,"
-      //         "message TEXT,"
-      //         "body TEXT,"
-      //         "author TEXT,"
-      //         "url TEXT,"
-      //       ")";
-      //     break;
-      //   default: data = "CREATE TABLE User("
-      //         "id TEXT PRIMARY KEY,"
-      //         "uid TEXT,"
-      //         "name TEXT,"
-      //         "rollno INTEGER,"
-      //         "admin INTEGER,"
-      //         "email TEXT,"
-      //       ")";
-      // }
       return await openDatabase(
         path,version:1,
         onCreate: (db,version)async{
@@ -97,7 +69,9 @@ class DBProvider {
           startTime INTEGER,
           reminder INTEGER,
           endTime INTEGER,
+          isFeatured INTEGER,
           body TEXT,author TEXT,
+          isFetched INTEGER,
           url TEXT)""",);
         }
       );
@@ -109,141 +83,137 @@ class DBProvider {
   }
 
   /// this functionn returns 1,0 and null
-  newPost(Posts newPosts) async{
+  insertPost(Posts newPosts) async{
     final db = await database;
     try{
-      return await db.insert('Posts',newPosts.toMapData(),conflictAlgorithm: ConflictAlgorithm.replace);
+      return await db.insert('Posts',newPosts.toMap(),conflictAlgorithm: ConflictAlgorithm.replace);
     }
     catch(e){
       print(e);
       return null;
     }
-    // var raw= await db.rawInsert(
-    //   "INSERT INTO Posts (id,council,owner,tags,timeStamp,title,message,body,author,url)"
-    //   " VALUES ('${newPosts.id}',${newPosts.council},${newPosts.owner},${newPosts.tags},${newPosts.timeStamp},${newPosts.title},${newPosts.message},${newPosts.body},'${newPosts.author}',${newPosts.url})"
-    // );
-    // return raw;
   }
 
-  Future<PostsSort>getPosts(GetPosts query) async{
-    final db = await database;
+  Future<Posts>getPosts(GetPosts query) async{
+    try{
+      final db = await database;
     var res = await db.query("Posts",where: "${query.queryColumn} = ?",whereArgs: [query.queryData]);
-    // printPosts(Posts.fromMap(res.first));
-    return res.isNotEmpty ? PostsSort.fromMap(res.first):Null;
+    print("...POSTS WITH ID.... " + res.toString());
+    return res.isNotEmpty ? Posts.fromMap(res.first): Posts(isFetched: false);
+    }catch(e){
+      print(e);
+      return Posts(isFetched: false);
+    }
 
   }
   /// return null when exception occurs
-  Future<List<PostsSort>>getAllPosts({ orderBy}) async{
+  // Future<List<Posts>>getAllPosts({ orderBy}) async{
+  //   try{
+  //     final db = await database;
+  //     var res = await db.query("Posts",orderBy: "timeStamp DESC");
+  //     List<Posts> v = [];
+  //     if(res.isNotEmpty){
+  //       return v..addAll( res.map((f) => Posts.fromMap(f)));
+  //     }
+  //     else{
+  //       return [];
+  //     }
+  //   }
+  //   catch(e){
+  //     print(e);
+  //     return [];
+  //   }
+  // }
+
+  /// return List<Posts> if isfeatured == 0 & Map<String,List<Posts>> if isFeatured == 1
+  Future<List<Posts>>getAllPostsWithoutPermissions(
+    {int isFeatured = 0,bool map = false, String council = "snt"}
+  ) async{
     try{
+      print(council);
       final db = await database;
-      var res = await db.query("Posts",orderBy: "timeStamp DESC");
-      List<PostsSort> v = [];
+      var res = isFeatured == 0 && map == false ?
+      await db.query("Posts",where: "$TYPE = ? AND $IS_FEATURED = ?",
+        whereArgs: [NOTF_TYPE_CREATE, isFeatured], orderBy: "timeStamp DESC")
+     : await db.query("Posts", where: " $TYPE = ? AND $IS_FEATURED = ? AND $COUNCIL = ?",
+        whereArgs: [NOTF_TYPE_CREATE, isFeatured,council], orderBy: "timeStamp DESC") ;
+      
+      List<Posts> v = [];
+      Map<String,List<Posts>> postMap = {};
+      postMap = Map.fromIterables(allCouncilData.subCouncil.keys, 
+        Iterable.generate(allCouncilData.subCouncil.keys.length, (v)=>[]));
       // print(res);
-      // Map<String,PostsSort> list = {};
-      // if(res.isNotEmpty) {
-      //   res.forEach((f){
-      //   list.update(f['id'], (_)=>PostsSort.fromMap(f),ifAbsent: ()=>PostsSort.fromMap(f));
-      // });
-      // }
       if(res.isNotEmpty){
-      //   res.forEach((value){
-      //   v.add(PostsSort.fromMap(value));
-      // });
-      // }
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+        // if(isFeatured == 1 || map == true){
+        //   res.forEach((post){
+        //     postMap.update(post[COUNCIL], (value){
+        //       if(value == null || value.isEmpty)
+        //         return [Posts.fromMap(post)];
+        //       value.add(Posts.fromMap(post));
+        //       return value;
+        //     },ifAbsent: () =>[Posts.fromMap(post)]);
+        //   });
+        //   return postMap;
+        // }
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
       }
       else{
-        return [];
+        return  [];
       }
-      // print(list);
-      // return res.isNotEmpty?list:null;
     }
     catch(e){
+      print("..... ERROR WHILE RETREIVING POSTS WITHOUT PERMISSION .....");
       print(e);
       return [];
     }
   }
   
-  Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
-    try {
-      final db= await database;
-      final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
-      final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
-      var res = await db.rawQuery(
-        ''' SELECT * FROM $Posts
-            WHERE startTime BETWEEN 
-            $startDate AND $endDate
-            ORDER BY startTime
-        '''
-      );
-      // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
-      // print(res);
-      
-      List<PostsSort> v = [];
-      if(res.isNotEmpty){
-        // print(res.first);
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
-      }
-      else{
-        return [];
-      }
-    } catch (e) {
-      print(e);
-      return [];
-    }
-  }
-  Future<List<PostsSort>> getAllPostswithQuery(GetPosts query,{orderBy = "timeStamp",type = 'update'})async{
+  // Future<List<Posts>> getAllPostswithDate(DateTime date)async{
+  //   try {
+  //     final db= await database;
+  //     final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
+  //     final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
+  //     var res = await db.rawQuery(
+  //       ''' SELECT * FROM $Posts
+  //           WHERE startTime BETWEEN 
+  //           $startDate AND $endDate
+  //           ORDER BY startTime
+  //       '''
+  //     );
+  //     List<Posts> v = [];
+  //     if(res.isNotEmpty){
+  //       return v..addAll( res.map((f) => Posts.fromMap(f)));
+  //     }
+  //     else{
+  //       return [];
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     return [];
+  //   }
+  // }
+  Future<List<Posts>> getAllPostswithQuery(GetPosts query,{orderBy = "timeStamp",type = 'update'})async{
     try {
       final db= await database;
       List<Map<String,dynamic>> res;
       switch (type) {
         case 'update':
-          res = await db.query("Posts",where: "${query.queryColumn} = ? AND owner = ?",whereArgs: [query.queryData,query.id],orderBy:orderBy );
-      //     List<PostsSort> v = [];
-      //   if(res.isNotEmpty){
-      // //   res.forEach((value){
-      // //   v.add(PostsSort.fromMap(value));
-      // // });
-      // // }
-      //   return v..addAll(res.map((f) => PostsSort.fromMap(f)));
-      // }
+          res = await db.query("Posts",where: "${query.queryColumn} = ? AND owner = ? AND type = ?",whereArgs: [query.queryData,query.id,NOTF_TYPE_CREATE],orderBy:orderBy );
           break;
-        default: res = await db.query("Posts",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy:orderBy );
-        // List<PostsSort> v = [];
-      //   if(res.isNotEmpty){
-      // //   res.forEach((value){
-      // //   v.add(PostsSort.fromMap(value));
-      // // });
-      // // }
-      //   return v..addAll(res.map((f) => PostsSort.fromMap(f)));
-      // }
+        default: res = await db.query("Posts",where: "${query.queryColumn} = ? AND type = ?",whereArgs: [query.queryData, NOTF_TYPE_CREATE],orderBy:orderBy );
         break;
       }
-      
-      // Map<String,PostsSort> list = {};
-      // if(res.isNotEmpty) {
-        // print('res $res');
-      //   res.forEach((f){
-      //   list.update(f['id'], (_)=>PostsSort.fromMap(f),ifAbsent: ()=>PostsSort.fromMap(f));
-      // });
-      // }
-      List<PostsSort> v = [];
-        if(res.isNotEmpty){
-      //   res.forEach((value){
-      //   v.add(PostsSort.fromMap(value));
-      // });
-      // }
-        return v..addAll(res.map((f) => PostsSort.fromMap(f)));
-      }
-      else{
+      List<Posts> v = [];
+      if(res.isNotEmpty)
+        return v..addAll(res.map((f) => Posts.fromMap(f)));
+      else
         return [];
-      }
     } catch (e) {
       print(e);
       return [];
     }
   }
-  Future<List<PostsSort>> getPostInPrefs(GetPosts query)async{
+  Future<List<Posts>> getPostInPrefs(GetPosts query)async{
     try {
       final db = await database;
       // var res = await db.query('Posts',where: "sub=ANY?x",whereArgs: prefs.getRange(0, 10).toList());
@@ -251,9 +221,9 @@ class DBProvider {
         "SELECT * FROM Posts WHERE council = ? ? ORDER",[query.queryData,query.id]
       );
       print(res);
-      List<PostsSort> v = [];
+      List<Posts> v = [];
         if(res.isNotEmpty){
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
         }else{
           return  [];
         }
@@ -262,7 +232,26 @@ class DBProvider {
       return [];
     }
   }
-  //id is necessary
+  Future<List<Posts>> getAllApprovalPost(GetPosts query, bool islevel2,String id)async{
+    try {
+      final db = await database;
+      var res = islevel2?
+      await db.query("Posts",where: "$COUNCIL = ? AND $TYPE = ?",whereArgs: [query.queryData,NOTF_TYPE_PERMISSION],orderBy: "timeStamp DESC")
+       : await db.query("Posts",where: "owner = ?",whereArgs: [id], orderBy: "timeStamp DESC");
+      // print(res);
+      List<Posts> v = [];
+        if(res.isNotEmpty){
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
+        }else{
+          return  [];
+        }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+  
+  /// id is necessary
   updateQuery(GetPosts query)async{
     try {
       final db= await database;
@@ -278,15 +267,15 @@ class DBProvider {
     }
   }
 
-  updatePosts(Posts newPosts)async{
-    try {
-      final db= await database;
-      var res= await db.update("Posts",newPosts.toMap(),where:"id = ?",whereArgs: [newPosts.id],conflictAlgorithm: ConflictAlgorithm.replace);
-      return res;
-    } catch (e) {
-      print(e);
-    }
-  }
+  // updatePosts(Posts newPosts)async{
+  //   try {
+  //     final db= await database;
+  //     var res= await db.update("Posts",newPosts.toMap(),where:"id = ?",whereArgs: [newPosts.id],conflictAlgorithm: ConflictAlgorithm.replace);
+  //     return res;
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
   deletePost(String id) async{
     final db = await database;
     try {
@@ -403,47 +392,55 @@ class DBProvider {
 // }
 final databaseReference = Firestore.instance;
 /// return false for any error while true for evrything alright and saves data in hive database
-Future<bool> populateUsers(String uid) async{
-  return await databaseReference.collection('users').document(uid).get().then((snapshot)async{
-    Box userData;
-    userData = await HiveDatabaseUser().hiveBox;
-     if(snapshot.data == null || snapshot.data==null){
-        return false;
-      }else{
-        try {
-          print(snapshot.data);
-          print(snapshot.data['id']);
-          var data = snapshot.data['council'];
+Future<bool> populateUsers() async{
+  // final String url = FETCH_USERDATA_API;
+  try{
+    print("FETCHING USERDATA ...");
+    Box userBox = await HiveDatabaseUser().hiveBox;
+    print(auth);
+    Response res = await post(FETCH_USERDATA_API,headers: HEADERS, body: json.encode({'auth': auth}));
+    print(res.statusCode);
+    print("BODY "+res.body);
+    if(res == null || res.statusCode != 200){
+      return false;
+    }else{
+      try {
+        var userData = json.decode(res.body);
+          print(userData[ID]);
+          var data = userData[USER_PREFS];
           var prefs = [];
           data.forEach((key,value){
             prefs += value['entity'] + value['misc'];
           });
           // return await writeContent('users', json.encode(snaphot.data));
           UserModel user= UserModel(
-            id: snapshot.data['id'],
-            name: snapshot.data['name'],
-            rollno: snapshot.data['rollno'],
-            uid: snapshot.data['uid'],
-            prefs: prefs.cast<String>(),
-            admin: snapshot.data['admin'],
+            id: userData[ID]??"",
+            name: userData['name']??"",
+            rollno: userData['rollno']??"",
+            uid: userData['uid']??"",
+            prefs: prefs.cast<String>()??[],
+            admin: (userData['admin'] is bool) ?userData['admin']?? false : userData['admin'] == "true",
           );
-          userData.add(user);
+          // print(user.admin);
+          userBox.add(user);
           return true;
         } catch (e) {
+          print("ERROR IN POPULATING USER FUNCTION line 461!!!");
           print(e);
           return false;
         }
-      }
-  }).catchError((onError){
-      print('error in populateUsers function $onError ');
-      return false;
-    });
+    }
+  }catch(e){
+    print("ERROR IN POPULATING USER FUNCTION !!!");
+    print(e);
+    return false;
+  }
 }
 /// returns are false null and true
 Future<dynamic> populateAppData(String uid) async{
   Box userData;
     userData = await HiveDatabaseUser().hiveBox;
-  return await populateUsers(uid).then((status)async{
+  return await populateUsers().then((status)async{
     if(status == true){
       return await p1('5',owner:userData.toMap()[0].id);
     }else{
@@ -466,38 +463,52 @@ Future<dynamic> populateAppData(String uid) async{
 }
 
 Future<bool> populatePeople(String id)async{
-  return await databaseReference.collection('people').document('$id').get().then((var value)async{
-    if(value !=null && value.data!=null){
-      Box box = await HiveDatabaseUser(databaseName: 'people').hiveBox;
-      PeopleModel model = PeopleModel.fromMap(value.data);
+  try{
+    Box box = await HiveDatabaseUser(databaseName: 'people').hiveBox;
+    print("FETCHING  FROM PEOPLE ... $auth");
+    Response res = await post(FETCH_PEOPLE_DATA_API,headers: HEADERS, body: json.encode({'auth': auth}));
+    print(res.statusCode);
+    print(res.body);
+    if(res == null || res.statusCode != 200|| res.body == null || res.body.isEmpty){
+      return false;
+    }else{
+      PeopleModel model = PeopleModel.fromMap(json.decode(res.body));
       print(model.councils);
       box.add(model);
       return true;
-    }else{
-      return false;
     }
-    // return await writeContent('people',json.encode(value.data)).then((status){
-    //   if(status){
-    //     return People(value.data, status);
-    //   }else{
-    //     return People(value.data, status);
-    //   }
-    // });
-  }).catchError((onError){
-    print(onError);
+  }catch(e){
+    print("ERROR IN POPULATING PEOPLE FUNCTION ...");
+    print(e);
     return false;
-  });
+  }
 }
 
-Future<bool> updateUserDataInFirebase(String uid,dynamic type,dynamic data)async{
-   return await databaseReference.collection('users').document(uid).updateData({'$type': data}).then((_){
-    return true;
-  }).catchError((var e){
-    print('Error in updateusersdata:' + e.toString());
-    return false;
-  });
-}
+// Future<bool> updateUserDataInFirebase(String uid,dynamic type,dynamic data)async{
+//    return await databaseReference.collection('users').document(uid).updateData({'$type': data}).then((_){
+//     return true;
+//   }).catchError((var e){
+//     print('Error in updateusersdata:' + e.toString());
+//     return false;
+//   });
+// }
+// TODO add auth
 Future<bool> updatePrefsInFirebase(String uid,dynamic data)async{
+  try {
+    print("UPDATING PREFERNCES....");
+    Response res = await post(
+      UPDATE_PREFERENCES_API,
+      headers: HEADERS,
+      body: json.encode({'auth': auth, "council" : data}));
+    if(res.statusCode == 200)
+      return true;
+    return false;
+  } catch (e) {
+    print("ERROR WHILE UPDATING PERFERENCES");
+    print(e);
+    return false;
+  }
+  
    return await databaseReference.collection('users').document(uid).updateData({'council': data}).then((_){
     return true;
   }).catchError((var e){
@@ -505,6 +516,7 @@ Future<bool> updatePrefsInFirebase(String uid,dynamic data)async{
     return false;
   });
 }
+
 final FirebaseMessaging _fcm = FirebaseMessaging();
 void subscribeUnsubsTopic(var subscribe, var unsubscribe) {
  
@@ -525,28 +537,15 @@ checkSpace(String name) {
   return name.replaceAll(' ', '_');
 }
 Future<int> submit(String id, var council,var value) async {
-  Map<String, String> headers = {"Content-type": "application/json"};
-  // value = json.encode(value);
-  // String json = '{
-  //   "id": "$id";
-  //   "councils":"$value["councils"]",
-  //   "snt":"$value["snt"]","ss":"$value["ss"]","mnc":"$value["mnc"],
-  
-  // }';
   String jsonDataBody = json.encode({
+    'auth': auth,
     'id': id,
     'council':council,
     'por':value,
   });
   print(jsonDataBody);
-  // try{
-  String url =
-      'https://us-central1-notifier-phase-2.cloudfunctions.net/elevatePerson';
-  // //   // }catch(e){
-  // //   //   print(e.toString());
-  // //   // }
   try {
-    Response response = await post(url, headers: headers, body: jsonDataBody);
+    Response response = await post(MAKE_COORDINATOR_API, headers: HEADERS, body: jsonDataBody);
     int statusCode = response.statusCode;
     print(statusCode);
     print(response.body.toString());

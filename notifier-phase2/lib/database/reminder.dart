@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:notifier/constants.dart';
 import 'package:notifier/model/posts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -78,7 +79,9 @@ class DatabaseProvider{
       startTime INTEGER,
       endTime INTEGER,
       reminder INTEGER,
+      isFeatured INTEGER,
       body TEXT,author TEXT,
+      isFetched INTEGER,
       url TEXT)""";
     return await openDatabase(
       path,version: 1,onCreate: (db,version)async{
@@ -87,32 +90,32 @@ class DatabaseProvider{
     );
   }
   ///returns null for an error
-  Future<int>insertPost(PostsSort postsSort) async{
+  Future<int>insertPost(Posts posts) async{
     final db = await database;
     try {
-      // printPosts(postsSort);
-      print(postsSort.toMap());
+      // printPosts(Posts);
+      print(posts.toMap());
       return await db.insert(
         "$tableName", 
-        postsSort.toMap(),conflictAlgorithm: ConflictAlgorithm.replace
+        posts.toMap(),conflictAlgorithm: ConflictAlgorithm.replace
       );
     } catch (e) {
       print(e);
       return -1;
     }
   }
-  Future<PostsSort>getPosts(GetPosts query) async{
+  Future<Posts>getPosts(GetPosts query) async{
     final db = await database;
     try {
       var res = await db.query("$tableName",where:"${query.queryColumn} = ?",whereArgs: [query.queryData] ,orderBy: "startTime");
       
-      return res.isNotEmpty ? PostsSort.fromMap(res.first):PostsSort(reminder: false);
+      return res.isNotEmpty ? Posts.fromMap(res.first):Posts(reminder: false);
     } catch (e) {
       print(e);
-      return PostsSort(reminder: false);
+      return Posts(reminder: false);
     }
   }
-  Future<List<PostsSort>> getAllPosts() async{
+  Future<List<Posts>> getAllPosts() async{
     final db = await database;
 //    print(db);
     try {
@@ -120,9 +123,9 @@ class DatabaseProvider{
         "$tableName",orderBy: "timeStamp DESC"
       );
       // print(res);
-      List<PostsSort> v = [];
+      List<Posts> v = [];
       if(res.isNotEmpty){
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
       }
       else{
         return [];
@@ -132,25 +135,82 @@ class DatabaseProvider{
       return [];
     }
   }
-  Future<List<PostsSort>> getAllPostswithQuery(GetPosts query,{orderBy = "startTime"})async{
+  Future<List<Posts>> getAllPostsForOngoingEvent() async{
+    final db = await database;
+    try {
+      int today = DateTime.now().millisecondsSinceEpoch;
+      // int day = DateTime(today.year,today.month,today.day).millisecondsSinceEpoch;
+      var res = await db.query(
+        "$tableName",where: "$STARTTIME < ? AND $ENDTIME > ? AND $TYPE = ?",whereArgs: [today,today,NOTF_TYPE_CREATE], orderBy: "timeStamp DESC"
+      );
+      List<Posts> v = [];
+      if(res.isNotEmpty){
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+  Future<int> noOfPosts() async{
+    try {
+      final db = await database;
+      final today = DateTime.now();
+      int day = DateTime(today.year,today.month,today.day).millisecondsSinceEpoch;
+      var res = await db.query(
+        "$tableName", orderBy: "timeStamp DESC"
+      );
+      if(res != null){
+        return res.length;
+      }
+      else return 0;
+    } catch (e) {
+      print(e);
+      return 0;
+    }
+  }
+  Future<List<Posts>> getAllPostsForUpcomingEvents() async{
+    final db = await database;
+    try {
+      int today = DateTime.now().millisecondsSinceEpoch;
+      // int day = DateTime(today.year,today.month,today.day).millisecondsSinceEpoch;
+      var res = await db.query(
+        "$tableName",where: "$STARTTIME > ? AND $TYPE = ?",whereArgs: [today,NOTF_TYPE_CREATE], orderBy: "timeStamp DESC"
+      );
+      List<Posts> v = [];
+      if(res.isNotEmpty){
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
+      }
+      else{
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+  Future<List<Posts>> getAllPostswithQuery(GetPosts query,{orderBy = "startTime"})async{
     try {
       final db= await database;
       var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
       // Map<String,PostsSort> list = {};
       // if(res.isNotEmpty) {
       //   res.forEach((f){
-      //   list.update(f['id'], (_)=>PostsSort.fromMap(f),ifAbsent: ()=>PostsSort.fromMap(f));
+      //   list.update(f['id'], (_)=>PostsSort.fromMap(f),ifAbsent: ()=>Posts.fromMap(f));
       // });
       // }
       // print(res);
       
-      List<PostsSort> v = [];
+      List<Posts> v = [];
       if(res.isNotEmpty){
       //   res.forEach((value){
-      //   v.add(PostsSort.fromMap(value));
+      //   v.add(Posts.fromMap(value));
       // });
       // }
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
       }
       else{
         return [];
@@ -161,25 +221,14 @@ class DatabaseProvider{
       return [];
     }
   }
-  Future<List<PostsSort>> getAllPostswithDate(DateTime date)async{
+  Future<List<Posts>> getAllEventsWithCouncil(int startTime, int endTime, String type,{orderBy = "startTime"})async{
     try {
       final db= await database;
-      final startDate = DateTime(date.year,date.month,date.day,).millisecondsSinceEpoch;
-      final endDate = DateTime(date.year,date.month,date.day,23,59,59).millisecondsSinceEpoch;
-      var res = await db.rawQuery(
-        ''' SELECT * FROM $tableName
-            WHERE startTime BETWEEN 
-            $startDate AND $endDate
-            ORDER BY startTime
-        '''
-      );
-      // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
-      // print(res);
-      
-      List<PostsSort> v = [];
-      if(res.isNotEmpty){
-        // print(res.first);
-        return v..addAll( res.map((f) => PostsSort.fromMap(f)));
+      var res = await db.query("$tableName",where: "$STARTTIME BETWEEN ? AND ? AND $TYPE = ?",
+        whereArgs: [startTime,endTime,type],orderBy: orderBy);
+      List<Posts> v = [];
+      if(res != null && res.isNotEmpty){
+        return v..addAll( res.map((f) => Posts.fromMap(f)));
       }
       else{
         return [];
@@ -187,6 +236,89 @@ class DatabaseProvider{
     } catch (e) {
       print(e);
       return [];
+    }
+  }
+  
+      /// givenWeekday is a weekday whoose date is to be find
+      /// 
+      /// This is an integer taking `Monday` as 1
+  Future<Map<DateTime,List<Posts>>> getAllPostswithDate(DateTime date,{int givenWeekday})async{
+    try {
+      final db= await database;
+      final startDate = DateTime(date.year,date.month,1,).millisecondsSinceEpoch;
+      final endDate = DateTime(date.year,date.month,noOfDaysInMonths(date.month, date.year),23,59,59).millisecondsSinceEpoch;
+      var res = await db.rawQuery(
+        ''' SELECT * FROM $tableName
+            WHERE startTime BETWEEN 
+            $startDate AND $endDate
+            ORDER BY startTime
+        '''
+      );
+      // int firstDateWithGivenWeekDate;
+      // if((givenWeekday - date.weekday) %7 == 0)
+      //   firstDateWithGivenWeekDate = date.day;
+      // else 
+      //   firstDateWithGivenWeekDate = (givenWeekday + 8 - date.weekday) % 7;
+      
+      // var dbRes = await db.query(tableName,where: "council = ?", whereArgs: ['true'], orderBy: "$STARTTIME");
+      // int noOfWeekDays = ((date.subtract(Duration(days: givenWeekday)).weekday 
+      //     - date.day + noOfDaysInMonths(date.month, date.year))/7).floor();
+      Map<DateTime,List<Posts>> v = {};
+      // res.forEach((post) {
+      //   List.generate(noOfWeekDays, (index){
+      //     DateTime _startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
+      //     DateTime startTime = DateTime(
+      //       date.year,date.month, firstDateWithGivenWeekDate, _startTime.hour, _startTime.minute
+      //     ).add(Duration(days: 7*index));
+      //     v.update(
+      //       DateTime(startTime.year,startTime.month,startTime.day),
+      //       (value){
+      //         value.add(Posts.fromMap(post));
+      //         return value;
+      //       },
+      //       ifAbsent: (){
+      //         return [Posts.fromMap(post)];
+      //       }
+      //     );
+      //   });
+        // 
+      // });
+      // var res = await db.query("$tableName",where: "${query.queryColumn} = ?",whereArgs: [query.queryData],orderBy: orderBy);
+      // print(res);
+      
+      // List<Posts> v = [];
+      // if(res.isNotEmpty){
+      //   // print(res.first);
+      //   v..addAll( res.map((f) => Posts.fromMap(f)));
+      // }
+      
+      res.forEach((post) {
+        DateTime startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
+        v.update(
+          DateTime(startTime.year,startTime.month,startTime.day),
+          (value){
+            if(value == null || value.isEmpty)
+              return [Posts.fromMap(post)]  ;
+            value.add(Posts.fromMap(post));
+            return value;
+          },
+          ifAbsent: (){
+            return [Posts.fromMap(post)];
+          }
+        );
+      });
+      // print(v);
+      return v;
+      // return Map.fromIterable(res,
+      //   key: (post) {
+      //     DateTime startTime = DateTime.fromMillisecondsSinceEpoch(post["startTime"]);
+      //     return DateTime(startTime.year,startTime.month,startTime.day);
+      //   },
+      //   value: (post) => post
+      // );
+    } catch (e) {
+      print(e);
+      return {};
     }
   }
   updateQuery(GetPosts query)async{
@@ -204,12 +336,12 @@ class DatabaseProvider{
       print(e);
     }
   }
-  updatePosts(PostsSort postsSort)async{
+  updatePosts(Posts posts)async{
     try {
         final db= await database;
       var res= await db.update(
-        "$tableName",postsSort.toMap(),
-        where:"id = ?",whereArgs: [postsSort.id],
+        "$tableName",posts.toMap(),
+        where:"id = ?",whereArgs: [posts.id],
         conflictAlgorithm: ConflictAlgorithm.replace);
       return res;
     } catch (e) {
