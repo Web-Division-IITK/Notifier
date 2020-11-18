@@ -88,5 +88,11 @@
             "International Relations Wing"
             ],
             "misc" : ["Students' Research Convention","Career Fair","Academics and Career Council"]
+    },
+    "cs": {
+        "entity": [],
+        "misc": [
+            "Counselling Service"
+        ]
     }
 }

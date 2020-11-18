@@ -102,8 +102,7 @@ async function genericNotification(data){
         }
     }
     payload["tokens"] = data2.deviceid;
-    if(payload["tokens"]!=[])
-    await fcm.sendMulticast(payload);
+    if(payload["tokens"]!=[]) await fcm.sendMulticast(payload);
 }
 
 /**
@@ -216,6 +215,13 @@ async function verifyApproval(data){
     let postDoc = await fetchDoc;
     if(structure[postDoc.council].level2.includes(data.auth.id)) return true;
     return false;
+}
+
+function isLevelled(id){
+    let reply = false;
+    structure.level3.forEach(acc=>{if(acc==id) reply = "l3";});
+    structure.councils.forEach(coun => {if(structure[coun]["level2"]==id) reply = coun;});
+    return reply;
 }
 
 async function approveDraft(data){
@@ -547,26 +553,40 @@ async function fetchPostUsingID(data){
 
 async function fetchPostUsingTimestamp(data){
     let fetchDoc = new Promise(function (resolve, reject) {
-        POST.find({timeStamp: {$gte: data.timeStamp}}, function (err, docs) {
+        POST.find({timeStamp: {$gte: data.timeStamp}, type:"create"}, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') resolve([]); else {
                 docs.sort((a, b) => b.timeStamp - a.timeStamp);
                 resolve(docs);
             }
         });
     });
-    return fetchDoc;
-}
-
-async function fetchPostUsingTypeCouncil(data){
+    let f1 = await fetchDoc;
+    if(typeof data.auth == 'undefined' || !(await approveDef(data.auth.id, data.auth.uid))) return f1;
     let fetchDoc = new Promise(function (resolve, reject) {
-        POST.find({type: data.type, council: data.council}, function (err, docs) {
+        POST.find({timeStamp: {$gte: data.timeStamp}, type:"draft", owner: data.auth.id}, function (err, docs) {
             if (err || typeof docs[0] === 'undefined') resolve([]); else {
                 docs.sort((a, b) => b.timeStamp - a.timeStamp);
                 resolve(docs);
             }
         });
     });
-    return fetchDoc;
+    f1= f1.concat(await fetchDoc);
+    f1.sort((a, b) => b.timeStamp - a.timeStamp);
+    let coun = isLevelled(data.auth.id);
+    if(!coun) return f1;
+    let query = {timeStamp: {$gte: data.timeStamp}, type:"permission"};
+    if(coun!="l3") query.council = coun;
+    let fetchDoc = new Promise(function (resolve, reject) {
+        POST.find(query, function (err, docs) {
+            if (err || typeof docs[0] === 'undefined') resolve([]); else {
+                docs.sort((a, b) => b.timeStamp - a.timeStamp);
+                resolve(docs);
+            }
+        });
+    });
+    f1= f1.concat(await fetchDoc);
+    f1.sort((a, b) => b.timeStamp - a.timeStamp);
+    return f1;
 }
 
 async function storeDevice(data){
@@ -580,6 +600,7 @@ async function storeDevice(data){
     return data.deviceid;
 }
 
+// change 'em
 async function updateSData(data){
     let datax = {reminder: data.reminder, bookmark: data.bookmark}
     var addToPref = new Promise((resolve, reject) => {
@@ -687,12 +708,6 @@ app.post('/getPostWithTimestamp', async (req, res)=>{
     res.end();
 })
 
-app.post('/getPostWithTypeCouncil', async (req, res)=>{
-    let data = req.body;
-    res.json(await fetchPostUsingTypeCouncil(data));
-    res.end();
-})
-
 app.post('/storeDevice', async (req, res)=>{
     let data = req.body;
     let v = await approveDef(data.auth.id, data.auth.uid);
@@ -733,8 +748,12 @@ app.post('/updatePrefs', async (req, res)=>{
 })
 
 app.get('/dev', (req, res)=>{
-    res.send("DEV end-points: ENABLED.");
+    res.send("DEV end-points: ENABLED?");
 })
+
+app.get('*', function(req, res){
+    res.status(404).sendFile(__dirname+'/static/404.html');
+});
 
 mongoose.connect(url, options, async function (err) {
     // let userx = JSON.parse(fs.readFileSync(__dirname + '/hexml.json'));
